@@ -57,7 +57,7 @@
 		{:else if data?.__typename === "page_blocks_v3_organism_card_row"}
 			<CardRow {data} {projectData} />
 		{:else if data?.__typename === "page_blocks_v3_organism_data_feed"}
-			<DataFeed {data} {projectData} />
+			<DataFeed {data} />
 		{:else if data?.__typename === "page_blocks_v3_organism_hero"}
 			<Hero {data} project />
 		{:else}
