@@ -240,6 +240,36 @@ export const _query = gql`
 							}
 						}
 					}
+					... on page_blocks_v3_organism_data_feed {
+						change_background_color
+						section_background_color
+						change_breadcrumbs
+						section_anchor_text
+						section_anchor_link
+						feed_source
+						feed_show_filter_menu
+						feed_filter_logic
+						feed_filter_markets {
+							markets_id {
+								name
+							}
+						}
+						feed_filter_services {
+							services_id {
+								name
+							}
+						}
+						feed_filter_location_cities {
+							locations_cities_id {
+								city_name
+							}
+						}
+						feed_filter_topics {
+							news_topics_id {
+								name
+							}
+						}
+					}
 					... on page_blocks_v3_organism_hero {
 						hero_media_type
 						hero_image {
