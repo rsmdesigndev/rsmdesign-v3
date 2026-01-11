@@ -7,18 +7,31 @@
 
 	// Types
 	export type CardGridData = {
-		projects_per_row?: number;
-		limit_posts_to?: number;
-		grid_style: string | null;
-		filter_projects?: boolean | null;
-		results_logic?: boolean | null;
-		market_filters?: {
+		change_background_color?: boolean | null;
+		section_background_color?: string | null;
+		change_breadcrumbs?: boolean | null;
+		section_anchor_text?: string | null;
+		section_anchor_link?: string | null;
+		feed_source?: string | null;
+		feed_show_filter_menu?: boolean | null;
+		feed_filter_logic?: string | null;
+		feed_filter_markets?: {
 			markets_id?: {
 				name?: string | null
 			}
 		}[]
-		service_filters?: {
+		feed_filter_services?: {
 			services_id?: {
+				name?: string | null
+			}
+		}[]
+		feed_filter_location_cities?: {
+			locations_cities_id?: {
+				city_name?: string | null
+			}
+		}[]
+		feed_filter_topics?: {
+			news_topics_id?: {
 				name?: string | null
 			}
 		}[]
