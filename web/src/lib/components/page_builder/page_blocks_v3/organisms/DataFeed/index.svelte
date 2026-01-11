@@ -85,8 +85,8 @@
 	}
 
 	// Extract markets
-	if (data.market_filters) {
-	  for (let item of data.market_filters) {
+	if (data.feed_filter_markets) {
+	  for (let item of data.feed_filter_markets) {
 		if (item?.markets_id?.name) {
 		  markets.push(item.markets_id.name);
 		}
@@ -94,8 +94,8 @@
 	}
 
 	// Extract services
-	if (data.service_filters) {
-	  for (let item of data.service_filters) {
+	if (data.feed_filter_services) {
+	  for (let item of data.feed_filter_services) {
 		if (item?.services_id?.name) {
 		  services.push(item.services_id.name);
 		}
