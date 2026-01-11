@@ -3,16 +3,16 @@
 	import { assetUrl } from "$lib/cms/assets";
 	import { request } from "graphql-request";
 	import { env } from "$env/dynamic/public";
-	import { projectGridQuery } from "$lib/cms/projectGridQueries";
+	import { dataFeedQuery } from "$lib/cms/dataFeedQueries";
 
 	// Types
-	export type CardGridData = {
+	export type DataFeedData = {
 		change_background_color?: boolean | null;
 		section_background_color?: string | null;
 		change_breadcrumbs?: boolean | null;
 		section_anchor_text?: string | null;
 		section_anchor_link?: string | null;
-		feed_source?: string | null;
+		feed_source: string;
 		feed_show_filter_menu?: boolean | null;
 		feed_filter_logic?: string | null;
 		feed_filter_markets?: {
@@ -38,12 +38,12 @@
 	}
 
 	// Props
-	export let data: CardGridData;
+	export let data: DataFeedData;
 	export let order: number;
 
 	// Stateful component variables
 	let loaded = false;
-	let projects: any[] = [];
+	let feedData: any[] = [];
 	let displayCount: number = 6;
 	let totalLimit: number = 24;
 	let loadCount: number = 6;
@@ -62,86 +62,155 @@
 
   // Lifecycle
   onMount(async () => {
-	// Data based variables
-	let limit;
-	let markets: string[] = [];
-	let services: string[] = [];
-	let queryVariables;
+	// // Data based variables
+	// let limit;
 
-	// Set limit
-	if (data.limit_posts_to !== null) {
-	  limit = data.limit_posts_to;
-	}
+	// // Set limit
+	// if (data.limit_posts_to !== null) {
+	//   limit = data.limit_posts_to;
+	// }
 
-	// Calculate projects per row
-	if (data.projects_per_row === 4) {
-	  displayCount = 8;
-	  loadCount = 8;
-	}
+	// // Calculate projects per row
+	// if (data.projects_per_row === 4) {
+	//   displayCount = 8;
+	//   loadCount = 8;
+	// }
 
-	// Calculate total rows
-	if (data.limit_posts_to) {
-	  totalLimit = data.limit_posts_to;
-	}
+	// // Calculate total rows
+	// if (data.limit_posts_to) {
+	//   totalLimit = data.limit_posts_to;
+	// }
 
-	// Extract markets
-	if (data.feed_filter_markets) {
-	  for (let item of data.feed_filter_markets) {
-		if (item?.markets_id?.name) {
-		  markets.push(item.markets_id.name);
+	switch (data.feed_source) {
+	case "Projects": {
+		let filters = [];
+
+		// Extract markets
+		if (data.feed_filter_markets && data.feed_filter_markets.length > 0) {
+			let markets = [];
+			for (let item of data.feed_filter_markets) {
+				if (item?.markets_id?.name) {
+					markets.push(`"${item.markets_id.name}"`);
+				}
+			}
+			filters.push(`{ markets: { markets_id: { name: { _in: [${markets.join(",")}] } } } }`);
 		}
-	  }
-	}
 
-	// Extract services
-	if (data.feed_filter_services) {
-	  for (let item of data.feed_filter_services) {
-		if (item?.services_id?.name) {
-		  services.push(item.services_id.name);
+		// Extract services
+		if (data.feed_filter_services && data.feed_filter_services.length > 0) {
+			let services = [];
+			for (let item of data.feed_filter_services) {
+				if (item?.services_id?.name) {
+					services.push(`"${item.services_id.name}"`);
+				}
+			}
+			filters.push(`{ services: { services_id: { name: { _in: [${services.join(",")}] } } } }`);
 		}
-	  }
+
+		// Extract cities
+		if (data.feed_filter_location_cities && data.feed_filter_location_cities.length > 0) {
+			let cities = [];
+			for (let item of data.feed_filter_location_cities) {
+				if (item?.locations_cities_id?.city_name) {
+					cities.push(`"${item.locations_cities_id.city_name}"`);
+				}
+			}
+			filters.push(`{ project_location_city: { city_name: { _in: [${cities.join(",")}] } } }`);
+		}
+
+		let query = `
+			query Projects($limit: Int) {
+				projects(
+					limit: $limit
+					filter: { 
+						_and: [
+							{ visibility: { _nin: ["draft", "archived"] } },
+							{
+								_${data.feed_filter_logic}: [
+									${filters.join(",\n")}
+								]
+							}
+						]
+					}
+				) {
+					slug
+					project_title
+					location
+					grid_image {
+						filename_disk
+						title
+						description
+					}
+				}
+			}
+		`
+
+		let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {});
+		
+		if(response) {
+			console.log(response);
+			feedData = response.projects;
+			loaded = true;
+		}
+		break;
+	}
+	case "Articles": {
+		let filters = [];
+
+		if (data.feed_filter_topics && data.feed_filter_topics.length > 0) {
+			let topics = [];
+			for (let item of data.feed_filter_topics) {
+				if (item?.news_topics_id?.name) {
+					topics.push(`"${item.news_topics_id.name}"`);
+				}
+			}
+			filters.push(`{ topics_list: { _eq: ${topics.join(" ")} } }`);
+		}
+
+		let query = `
+			query Articles($limit: Int) {
+				news_posts(
+					limit: $limit
+					sort: [ "-published_date" ]
+					filter: {
+						_${data.feed_filter_logic}: [
+							${filters.join(",\n")}
+						]
+					}
+				) {
+					slug
+					post_title
+					published_date
+					grid_image {
+						filename_disk
+						description
+					}
+				}
+			}
+		`
+		let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {});
+		
+		if(response) {
+			console.log(response);
+			feedData = response.news_posts;
+			loaded = true;
+		}
+		break;
+	}
+	case "Team": {
+		break;
+	}
+	case "Awards": {
+		break;
+	}
+	case "Testimonials": {
+		break;
+	}
+	case "Manual": {
+		break;
+	}
 	}
 
-	// Determine filter levels and call correct query
-	let projectsQuery: string = "";
-
-	if (markets.length > 0 && services.length > 0) {
-	  if (data.results_logic) {
-		projectsQuery = "both";
-	  } else {
-		projectsQuery = "either";
-	  }
-	  queryVariables = {
-		limit,
-		markets,
-		services
-	  }
-	} else if (markets.length > 0) {
-	  projectsQuery = "market";
-	  queryVariables = {
-		limit,
-		markets
-	  }
-	} else if (services.length > 0) {
-	  projectsQuery = "service";
-	  queryVariables = {
-		limit,
-		services
-	  }
-	} else {
-	  projectsQuery = "default";
-	  queryVariables = {
-		limit
-	  }
-	}
-
-	let response = await request(env.PUBLIC_DIRECTUS_API_URL, `${projectGridQuery(projectsQuery)}`, queryVariables);
-	
-	if(response) {
-	  console.log(response);
-	  projects = response.projects;
-	  loaded = true;
-	}
   });
 </script>
 
@@ -151,10 +220,10 @@
 			{#key loaded}
 				{#if !loaded}
 					<p>Loading...</p>
-				{:else if projects.length === 0}
+				{:else if feedData.length === 0}
 					<p>No projects match your query. Try another search or set of filters.</p>
 				{:else}
-					{#each projects.slice(0, loadCount) as project}
+					{#each feedData.slice(0, loadCount) as project}
 						<a class="grid-item"
 						   href="/work/{project.slug}"
 						>
