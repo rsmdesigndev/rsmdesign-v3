@@ -4,6 +4,8 @@
 	import { request } from "graphql-request";
 	import { env } from "$env/dynamic/public";
 
+	import DataFeedGrid from "./DataFeedGrid.svelte";
+	import DataFeedTable from "./DataFeedTable.svelte";
 	import Card, { type CardData } from "../../molecules/Card.svelte";
 
 	// Types
@@ -144,6 +146,11 @@
 							title
 							description
 						}
+						hero_image {
+							filename_disk
+							title
+							description
+						}
 					}
 				}
 			`
@@ -218,14 +225,20 @@
 </script>
 
 <template>
-	<div class="advanced-project-grid">
-		<div class="advanced-project-grid__projects" data-layout={data.projects_per_row}>
-			{#key loaded}
-				{#if !loaded}
-					<p>Loading...</p>
-				{:else if feedData.length === 0}
-					<p>No projects match your query. Try another search or set of filters.</p>
-				{:else}
+	<div class="feed">
+		{#key loaded}
+			{#if !loaded}
+				<p>Loading...</p>
+			{:else if feedData.length === 0}
+				<p>No projects match your query. Try another search or set of filters.</p>
+			{:else}
+				{#if data.feed_view === "Grid"}
+					<DataFeedGrid {feedData}
+						data={ { feed_source: data.feed_source,
+								 feed_grid_columns: data.feed_grid_columns,
+							     feed_grid_style: data.feed_grid_style
+							 } }
+					/>
 					{#each feedData.slice(0, loadCount) as project}
 						<a class="grid-item"
 						   href="/work/{project.slug}"
@@ -241,26 +254,33 @@
 							</figure>
 						</a>
 					{/each}
-				{/if}
-			{/key}
-		</div>
-		{#if data.cta_link}
-			<a href={data.cta_link}>
-				{#if data.cta_text}
-					<span>{data.cta_text}</span>
 				{:else}
-					<span>View more projects</span>
+					<DataFeedTable {feedData} />
 				{/if}
-			</a>
-		{:else}
-			{#if loadCount < totalLimit}
-				
 			{/if}
-		{/if}
+		{/key}
 	</div>
+	{#if data.cta_link}
+		<a href={data.cta_link}>
+			{#if data.cta_text}
+				<span>{data.cta_text}</span>
+			{:else}
+				<span>View more projects</span>
+			{/if}
+		</a>
+	{:else}
+		{#if loadCount < totalLimit}
+			
+		{/if}
+	{/if}
 </template>
 
 <style lang="scss">
+	.feed {
+		grid-column: viewport;
+		display: grid;
+		grid-template-columns: subgrid;
+	}
   .advanced-project-grid {
 	display: flex;
 	flex-flow: column nowrap;
