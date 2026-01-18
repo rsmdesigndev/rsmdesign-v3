@@ -11,6 +11,7 @@
 	import { request } from "graphql-request";
 	import { setContext, afterUpdate, onMount, tick } from 'svelte';
 	import { env } from "$env/dynamic/public";
+	import { afterNavigate, beforeNavigate } from "$app/navigation";
 
 	export let headerHeight;
 	export let navMenu;
@@ -38,7 +39,7 @@
 	let oneLevelUpLink = "";
 	let oneLevelUpText = "";
 
-	onMount(async () => {
+	afterNavigate(async () => {
 		if ($page.url.pathname != "" && $page.url.pathname != "/") {
 			root_links: for (let item of navMenu.nav_menu_links) {
 				let link = item.nav_menu_links_id;
