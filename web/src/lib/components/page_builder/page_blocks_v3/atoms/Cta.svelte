@@ -30,19 +30,23 @@
 	let boldText: HTMLElement;
 	let lightText: HTMLElement;
 	onMount(() => {
-		const linksInBoldText = boldText.querySelectorAll('p');
-		if (linksInBoldText.length) {
-			boldText.innerHTML = "";
-			linksInBoldText.forEach((link) => {
-				boldText.append(link.innerHTML);
-			});
+		if (data.cta_text_bold) {
+			const paragraphsInBoldText = boldText.querySelectorAll('p');
+			if (paragraphsInBoldText.length) {
+				boldText.innerHTML = "";
+				paragraphsInBoldText.forEach((paragraph) => {
+					boldText.append(paragraph.innerHTML);
+				});
+			}
 		}
-		const linksInLightText = lightText.querySelectorAll('p');
-		if (linksInLightText.length) {
-			lightText.innerHTML = "";
-			linksInLightText.forEach((link) => {
-				lightText.append(link.innerHTML);
-			});
+		if (data.cta_text_light) {
+			const paragraphsInLightText = lightText.querySelectorAll('p');
+			if (paragraphsInLightText.length) {
+				lightText.innerHTML = "";
+				paragraphsInLightText.forEach((paragraph) => {
+					lightText.append(paragraph.innerHTML);
+				});
+			}
 		}
 	});
 </script>

@@ -1,10 +1,26 @@
 <script lang="ts" context="module">
 	// export types
 	export type PageBlockV3 =
-		//| ({ __typename: "page_blocks_v3_organism_data_feed" } 	& DataFeedData)
-		| ({ __typename: "page_blocks_v3_organism_card_row" } 	   	& CardRowData)
-		| ({ __typename: "page_blocks_v3_organism_hero" } 			& HeroData)
+		| ({ __typename: "page_blocks_v3_organism_data_feed" } 	& DataFeedData)
+		| ({ __typename: "page_blocks_v3_organism_card_row" } 	& CardRowData)
+		| ({ __typename: "page_blocks_v3_organism_hero" } 		& HeroData)
 		;
+
+	type Market = {
+		markets_id?: {
+			slug?: string | null;
+			name?: string | null;
+			short_name?: string | null;
+		} | null;
+	}
+
+	type Service = {
+		services_id?: {
+			slug?: string | null;
+			name?: string | null;
+			short_name?: string | null;
+		} | null;
+	}
 
 	type Collaborator = {
 		collaborators_id?: {
@@ -14,26 +30,32 @@
 	} | null;
 
 	export type ProjectData = {
-		project_client?: Collaborator[];
-		project_client_count?: number;
-		project_developer?: Collaborator[];
-		project_developer_count?: number;
-		project_architect?: Collaborator[];
-		project_architect_count?: number;
-		project_landscape?: Collaborator[];
-		project_landscape_count?: number;
-		project_lighting?: Collaborator[];
-		project_lighting_count?: number;
-		project_fabricator?: Collaborator[];
-		project_fabricator_count?: number;
-		project_painter?: Collaborator[];
-		project_painter_count?: number;
-		project_sign_painter?: Collaborator[];
-		project_sign_painter_count?: number;
-		project_photographer?: Collaborator[];
-		project_photographer_count?: number;
-		project_other_collaborators?: Collaborator[];
-		project_other_collaborators_count?: number;
+		project_title?: string | null;
+		project_location_city?: string | null;
+		project_location_state?: string | null;
+		project_location_country?: string | null;
+		project_markets?: Market[] | null;
+		project_services?: Service[] | null;
+		project_client?: Collaborator[] | null;
+		project_client_count?: number | null;
+		project_developer?: Collaborator[] | null;
+		project_developer_count?: number | null;
+		project_architect?: Collaborator[] | null;
+		project_architect_count?: number | null;
+		project_landscape?: Collaborator[] | null;
+		project_landscape_count?: number | null;
+		project_lighting?: Collaborator[] | null;
+		project_lighting_count?: number | null;
+		project_fabricator?: Collaborator[] | null;
+		project_fabricator_count?: number | null;
+		project_painter?: Collaborator[] | null;
+		project_painter_count?: number | null;
+		project_sign_painter?: Collaborator[] | null;
+		project_sign_painter_count?: number | null;
+		project_photographer?: Collaborator[] | null;
+		project_photographer_count?: number | null;
+		project_other_collaborators?: Collaborator[] | null;
+		project_other_collaborators_count?: number | null;
 	} | null;
 </script>
 
@@ -59,7 +81,7 @@
 		{:else if data?.__typename === "page_blocks_v3_organism_data_feed"}
 			<DataFeed {data} />
 		{:else if data?.__typename === "page_blocks_v3_organism_hero"}
-			<Hero {data} project />
+			<Hero {data} {projectData} project />
 		{:else}
 			No page content
 		{/if}
