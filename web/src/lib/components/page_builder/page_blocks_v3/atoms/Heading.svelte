@@ -16,7 +16,10 @@
 <script lang="ts">
 	import type { BleedData } from "../organisms/CardColumn.svelte";
 	export let data: HeadingData;
-	export let bleed: BleedData;
+	export let bleed: BleedData = {
+		left: false,
+		right: false
+	};
 
 	let weightLarge: number = 300;
 	let weightSmall: number = 600;
@@ -28,19 +31,22 @@
 			}
 			break;
 		case "xxl":
-			if (data.heading_weight === "bold") {
-				weightLarge = 400;
-				weightSmall = 700;
-			}
+			weightLarge = 400;
+			weightSmall = 700;
 			break;
 		case "xl":
 			if (data.heading_weight === "bold") {
 				weightLarge = 500;
+			} else {
+				weightLarge = 400;
 			}
 			break;
 		case "lg":
 			if (data.heading_weight === "bold") {
 				weightLarge = 700;
+			} else {
+				weightLarge = 500;
+				weightSmall = 500;
 			}
 			break;
 	}
@@ -56,24 +62,28 @@
 		 style:--grid-column-end={bleed.right ? "-2" : "-1"}
 	>
 		{#if data.heading_has_small_text && data.heading_small}
-			<svelte:element this={data.heading_type === "page" && data.heading_primary === "small" ? "h1" : 
-								 (data.heading_type === "page" || data.heading_primary === "small") ? "h2" : "h3"}
-							class="heading-small"
-							style:--font-size={`var(--FONT-SIZE-${data.heading_size === "lg" ? "XS" :
-																 (data.heading_size === "xl" ? "SM" : "MD")})`}
-							style:--font-weight={weightSmall}
-							style:--line-height="1.333"
+			<svelte:element 
+				this={data.heading_type === "gridItem" ? "h4" :
+					 (data.heading_type === "page" && data.heading_primary === "small" ? "h1" : 
+					 (data.heading_type === "page" || data.heading_primary === "small" ? "h2" : "h3"))}
+				class="heading-small"
+				style:--font-size={`var(--FONT-SIZE-${data.heading_size === "lg" ? "XS" :
+													 (data.heading_size === "xl" ? "SM" : "MD")})`}
+				style:--font-weight={weightSmall}
+				style:--line-height="1.333"
 			>
 				{data.heading_small}
 			</svelte:element>
 		{/if}
 		{#if data.heading_has_large_text && data.heading_large}
-			<svelte:element this={data.heading_type === "page" && data.heading_primary === "large" ? "h1" : 
-								 (data.heading_type === "page" || data.heading_primary === "large" ? "h2" : "h3")}
-							class="heading-large"
-							style:--font-size={`var(--FONT-SIZE-${data.heading_size.toUpperCase()})`}
-							style:--font-weight={weightLarge}
-							style:--line-height={data.heading_size === "lg" ? "1.167" :
+			<svelte:element 
+				this={data.heading_type === "gridItem" ? "h3" :
+					 (data.heading_type === "page" && data.heading_primary === "large" ? "h1" : 
+					 (data.heading_type === "page" || data.heading_primary === "large" ? "h2" : "h3"))}
+				class="heading-large"
+				style:--font-size={`var(--FONT-SIZE-${data.heading_size.toUpperCase()})`}
+				style:--font-weight={weightLarge}
+				style:--line-height={data.heading_size === "lg" ? "1.167" :
 												(data.heading_size === "xl" ? "1.133" : "1")}
 
 			>
@@ -93,11 +103,10 @@
 		.heading-large, 
 		.heading-small {
 			font-size: var(--font-size);
-			font-weight: var(--font-weight);
+			font-weight: var(--font-weight, 700);
 			line-height: var(--line-height);
 		}
 		.heading-small {
-			font-weight: 700;
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
 		}

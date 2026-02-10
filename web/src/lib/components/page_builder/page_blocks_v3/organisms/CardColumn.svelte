@@ -13,10 +13,11 @@
 	}
 
 	export type ColumnItem =
-		| ({ __typename: "page_blocks_v3_molecule_accordion" } 	& AccordionData)
-		| ({ __typename: "page_blocks_v3_molecule_card" } 	   	& CardData)
-		| ({ __typename: "page_blocks_v3_molecule_cta_list" } 	& CtaListData)
-		| ({ __typename: "page_blocks_v3_atom_spacer" } 		& SpacerData)
+		| ({ __typename: "page_blocks_v3_molecule_accordion" }		& AccordionData)
+		| ({ __typename: "page_blocks_v3_organism_card_carousel" }	& CardCarouselData)
+		| ({ __typename: "page_blocks_v3_molecule_card" }			& CardData)
+		| ({ __typename: "page_blocks_v3_molecule_cta_list" }		& CtaListData)
+		| ({ __typename: "page_blocks_v3_atom_spacer" }				& SpacerData)
 		;
 
 	export type BleedData = {
@@ -28,13 +29,15 @@
 </script>
 
 <script lang="ts">
+	import Accordion, { type AccordionData } from "../molecules/Accordion.svelte";
 	import Card, { type CardData } from "../molecules/Card.svelte";
+	import CardCarousel, { type CardCarouselData } from "./CardCarousel.svelte";
 	import CtaList, { type CtaListData } from "../molecules/CtaList.svelte";
 	import Spacer, { type SpacerData } from "../atoms/Spacer.svelte";
 	import type { ProjectData } from "../index.svelte";
 	
 	export let data: CardColumnData;
-	export let projectData: ProjectData;
+	export let projectData: ProjectData | null | undefined = undefined;
 
 	type ColumnsData = {
 		numCols: number,
@@ -83,9 +86,11 @@
 >
 	{#each data.column_items?.map((c) => c?.item) ?? [] as data}
 		{#if data?.__typename === "page_blocks_v3_molecule_accordion"}
-			Accordion
+			<Accordion {data} {bleed} />
 		{:else if data?.__typename === "page_blocks_v3_molecule_card"}
 			<Card {data} {bleed} bind:offsetDimensions />
+		{:else if data?.__typename === "page_blocks_v3_organism_card_carousel"}
+			Carousel
 		{:else if data?.__typename === "page_blocks_v3_molecule_cta_list"}
 			<CtaList {data} {projectData} {bleed} {offsetDimensions} />
 		{:else if data?.__typename === "page_blocks_v3_atom_spacer"}

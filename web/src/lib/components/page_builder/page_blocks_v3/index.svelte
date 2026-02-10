@@ -67,7 +67,7 @@
 
 
 	export let blocks: ({ item?: PageBlockV3 | null } | null | undefined)[] | null | undefined;
-	export let projectData: ProjectData;
+	export let projectData: ProjectData | null | undefined = undefined;
 </script>
 
 <template>

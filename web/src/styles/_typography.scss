@@ -122,56 +122,56 @@ $BREAKPOINT-LG: 125em;
 
 	:not(article.rich-text).xxs {
 		font-size: var(--FONT-SIZE-XXS);
-		font-weight: 400;
+		font-weight: 300;
 		line-height: 1.333;
 		--moveY-from: 0.571rem;
 	}
 
 	:not(article.rich-text).xs {
 		font-size: var(--FONT-SIZE-XS);
-		font-weight: 400;
+		font-weight: 300;
 		line-height: 1.333;
 		--moveY-from: 0.667rem;
 	}
 
 	:not(article.rich-text).sm {
 		font-size: var(--FONT-SIZE-SM);
-		font-weight: 400;
+		font-weight: 300;
 		line-height: 1.333;
 		--moveY-from: 0.75rem;
 	}
 
 	:not(article.rich-text).md {
 		font-size: var(--FONT-SIZE-MD);
-		font-weight: 400;
+		font-weight: 300;
 		line-height: 1.333;
 		--moveY-from: 1rem;
 	}
 
 	:not(article.rich-text).lg {
 		font-size: var(--FONT-SIZE-LG);
-		font-weight: 700;
+		font-weight: 300;
 		line-height: 1.167;
 		--moveY-from: 1.143rem;
 	}
 
 	:not(article.rich-text).xl {
 		font-size: var(--FONT-SIZE-XL);
-		font-weight: 700;
+		font-weight: 300;
 		line-height: 1;
 		--moveY-from: 1.5rem;
 	}
 
 	:not(article.rich-text).xxl {
 		font-size: var(--FONT-SIZE-XXL);
-		font-weight: 700;
+		font-weight: 400;
 		line-height: 1;
 		--moveY-from: 2rem;
 	}
 
 	:not(article.rich-text).xxxl {
 		font-size: var(--FONT-SIZE-XXXL);
-		font-weight: 700;
+		font-weight: 400;
 		line-height: 1;
 		--moveY-from: 2.5rem;
 	}

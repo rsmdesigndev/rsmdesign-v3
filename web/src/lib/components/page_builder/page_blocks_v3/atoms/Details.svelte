@@ -66,7 +66,7 @@
 	details {
 		display: flex;
 		flex-direction: column;
-		row-gap: 1em;
+		row-gap: var(--SPACE-MD);
 
 		> summary {
 			cursor: pointer;

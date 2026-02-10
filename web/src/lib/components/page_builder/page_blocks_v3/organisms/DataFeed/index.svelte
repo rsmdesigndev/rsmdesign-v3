@@ -48,7 +48,6 @@
 
 	// Props
 	export let data: DataFeedData;
-	export let order: number;
 
 	// Stateful component variables
 	$: feedData = [];
@@ -57,22 +56,16 @@
 	$: loadOffset = 0;
 	let loadTotalCount: number = 0;
 
+	if (data.feed_view === "Grid") {
+		if (data.feed_grid_style === "dynamic") {
+			numItems = 14;
+		} else {
+			numItems = data.feed_grid_columns * data.feed_grid_rows_per_load;
+		}
+	}
+
 	// Load more functionality
 	const loadMore = async () => {
-		if (data.feed_view === "grid") {
-			if (data.feed_grid_style === "dynamic") {
-				if (data.feed_grid_columns === 3) {
-					numItems = 14;
-				} else {
-					numItems = 10;
-				}
-			} else {
-				numItems = data.feed_grid_columns * data.feed_grid_rows_per_load;
-			}
-		} else {
-			numItems = 10;
-		}
-
 		switch (data.feed_source) {
 			case "Projects": {
 				let filters = [];
@@ -259,7 +252,7 @@
 </script>
 
 <template>
-	<section>
+	<section class="padding-top-xl padding-bottom-none">
 		{#key loaded}
 			{#if !loaded}
 				<p>Loading...</p>
@@ -301,220 +294,50 @@
 		grid-column: viewport;
 		display: grid;
 		grid-template-columns: subgrid;
-	}
-  .advanced-project-grid {
-	display: flex;
-	flex-flow: column nowrap;
-	gap: 24px;
 
-	&__heading {
-	  text-align: left;
-	}
+		align-items: start;
 
-	&__projects {
-	  display: grid;
-	  grid-template-columns: repeat(3, 1fr);
-	  grid-gap: 24px;
-
-	  &[data-layout="2"] {
-		grid-template-columns: repeat(2, 1fr);
-	  }
-
-	  &[data-layout="4"] {
-		grid-template-columns: repeat(4, 1fr);
-	  }
-
-	  &.dynamic {
-		a.grid-item:nth-of-type(12n + 4),
-		a.grid-item:nth-of-type(12n + 11) {
-		  grid-column: span 2;
-		  grid-row: span 2;
-
-		  @media (max-width: 46.875em) {
-			grid-column: span 1;
-			grid-row: span 1;
-		  }
-
-		  > figure > figcaption > h3 {
-			font-size: var(--FONT-SIZE-XXL);
-
-			@media (max-width: 46.875em) {
-			  font-size: var(--FONT-SIZE-XL);
-			}
-		  }
-		  > figure > figcaption > p {
-			font-size: var(--FONT-SIZE-LG);
-
-			@media (max-width: 46.875em) {
-			  font-size: var(--FONT-SIZE-SM);
-			}
-		  }
-		}
-	  }
-
-	  > a.grid-item {
-		@media (max-width: 46.875em) {
-		  &:nth-of-type(5n) {
-			grid-column: span 2;
-			> figure > figcaption > h3 {
-			  font-size: var(--FONT-SIZE-XXL);
-			}
-			> figure > figcaption > p {
-			  font-size: var(--FONT-SIZE-MD);
-			}
-		  }
-		}
-		@media (max-width: 31.25em) {
-		  &:nth-of-type(5n) {
-			grid-column: span 1;
-			> figure > figcaption > h3 {
-			  font-size: var(--FONT-SIZE-XL);
-			}
-			> figure > figcaption > p {
-			  font-size: var(--FONT-SIZE-SM);
-			}
-		  }
-		}
-		> figure {
-		  padding: 0;
-		  margin: 0;
-
-		  display: grid;
-		  grid-template-columns: 1fr;
-		  grid-template-rows: 1fr;
-		  overflow: hidden;
-
-		  > img {
-			grid-row: 1;
-			grid-column: 1;
-			width: 100%;
-			height: auto;
-			aspect-ratio: 1/1;
-			margin-bottom: 0;
-			position: relative;
-			z-index: 1;
-			transform: scale(1);
-			transition: transform 1.25s ease;
-		  }
-
-		  > figcaption {
-			grid-row: 1;
-			grid-column: 1;
-			padding: calc(var(--GRID-CELL) / 2);
-			width: calc(100% - var(--GRID-CELL));
-			height: calc(100% - var(--GRID-CELL));
-			position: relative;
-			z-index: 2;
-
-			display: flex;
-			flex-direction: column;
-			align-items: flex-start;
-			justify-content: flex-end;
-
-			background-color: rgba(255, 255, 255, 0.7);
-			color: var(--COLOR-BLACK);
-
-			opacity: 0;
-			transition: opacity 0.3s ease;
-
-			@media (max-width: 46.875em) {
-			  grid-row: 2;
-			  opacity: 1;
-			  padding: 0;
-			  margin-top: 0.5rem;
-			  width: unset;
-			  height: unset;
-			  background-color: transparent;
-			  align-items: flex-start;
-			  justify-content: flex-end;
-			}
-
-			> h3 {
-			  width: 100%;
-			  text-align: left;
-
-			  @media (max-width: 46.875em) {
-				transition: color 0.3s ease;
-			  }
-			}
-			> p {
-			  width: 100%;
-			  text-align: left;
-			  font-size: var(--FONT-SIZE-MD);
-			  font-weight: 700;
-			  margin-bottom: 0;
-
-			  @media (max-width: 46.875em) {
-				font-size: var(--FONT-SIZE-SM);
-			  }
-			}
-		  }
+		button {
+			grid-column: main;
 		}
 
-		&:hover {
-		  > figure {
-			> figcaption {
-			  opacity: 1;
-			  @media (max-width: 46.875em) {
-				> h3 {
-				  color: var(--COLOR-ORANGE);
-				}
-			  }
-			}
-			> img {
-			  transform: scale(1.1);
+		row-gap: var(--SPACE-XL);
 
-			  @media (max-width: 46.875em) {
-				transform: scale(1);
-			  }
-			}
-		  }
+		&.padding-top-sm {
+			padding-top: var(--SPACE-SM);
 		}
-	  }
+		&.padding-bottom-sm {
+			padding-bottom: var(--SPACE-SM);
+		}
+		&.padding-top-md {
+			padding-top: var(--SPACE-MD);
+		}
+		&.padding-bottom-md {
+			padding-bottom: var(--SPACE-MD);
+		}
+		&.padding-top-lg {
+			padding-top: var(--SPACE-LG);
+		}
+		&.padding-bottom-lg {
+			padding-bottom: var(--SPACE-LG);
+		}
+		&.padding-top-xl {
+			padding-top: var(--SPACE-XL);
+		}
+		&.padding-bottom-xl {
+			padding-bottom: var(--SPACE-XL);
+		}
+		&.padding-top-xxl {
+			padding-top: var(--SPACE-XXL);
+		}
+		&.padding-bottom-xxl {
+			padding-bottom: var(--SPACE-XXL);
+		}
+		&.padding-top-xxxl {
+			padding-top: var(--SPACE-XXXL);
+		}
+		&.padding-bottom-xxxl {
+			padding-bottom: var(--SPACE-XXXL);
+		}
 	}
-
-	.load-controls {
-	  display: flex;
-	  gap: var(--SPACE-MD);
-	  justify-content: flex-end;
-	}
-
-	.loadmore{
-	  background: var(--COLOR-ORANGE);
-	  width: fit-content;
-	  padding: var(--SPACE-SM) var(--SPACE-MD);
-	  border: 0;
-	  color: #FFF;
-	  font-size: var(--FONT-SIZE-SM);
-	  cursor: pointer;
-	  transition: background-color 0.3s ease;
-
-	  &:hover {
-		background: var(--COLOR-ORANGE-HOVER);
-	  }
-
-	  &:disabled {
-		background: var(--COLOR-MID-GRAY);
-		color: var(--COLOR-DIM-GRAY);
-		cursor: not-allowed;
-		opacity: 0.4;
-	  }
-	}
-
-	.showLess {
-	  background-color: transparent;
-	  width: fit-content;
-	  padding: var(--SPACE-SM) var(--SPACE-MD);
-	  border: 1px solid var(--COLOR-ORANGE);
-	  color: var(--COLOR-ORANGE);
-	  font-size: var(--FONT-SIZE-SM);
-	  cursor: pointer;
-	  transition: all 0.3s ease;
-
-	  &:hover {
-		background: var(--COLOR-ORANGE);
-		color: #FFF;
-	  }
-	}
-  }
 </style>

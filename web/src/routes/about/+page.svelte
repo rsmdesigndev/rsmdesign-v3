@@ -8,8 +8,11 @@
 	import DottedArrow from "$lib/components/DottedArrow.svelte";
 	import DottedArrowHover from "$lib/components/DottedArrowHover.svelte";
 	import PageBlocks from "$lib/components/page_builder/page_blocks/index.svelte";
+	import PageBlocksV3 from "$lib/components/page_builder/page_blocks_v3/index.svelte";
 	
 	export let data: PageData;
+
+	console.log(data.about.about_page_blocks_v3);
 
 	let testimonialIndex = 0;
 	$: currentTestimonial = data.testimonials[testimonialIndex];
@@ -42,7 +45,13 @@
 	{/each}
 </svelte:head>
 
-{#if data.about.use_page_blocks}
+{#if data.about.about_use_page_blocks_v3}
+	{#if data.about.about_page_blocks_v3}
+		<PageBlocksV3 blocks={data.about.about_page_blocks_v3} />
+	{:else}
+		<div class="container">Page Blocks v3 selected, but no blocks added.</div>
+	{/if}
+{:else if data.about.use_page_blocks}
 	<PageBlocks content={data.about.page_content} />
 {:else}
 	<template>

@@ -84,7 +84,7 @@
 <template>
 	<Loading />
 	<Header {headerHeight} navMenu={data.nav_menu} />
-	<main style:--HEADER-HEIGHT={headerHeight}>
+	<main style:--header-height={headerHeight}>
 		<slot />
 	</main>
 	<Footer />
@@ -94,6 +94,6 @@
 	@use "../styles/theme";
 
 	main {
-		margin-top: calc(var(--HEADER-HEIGHT) * -1);
+		margin-top: calc(var(--header-height) * -1);
 	}
 </style>

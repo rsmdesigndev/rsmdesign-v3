@@ -13,33 +13,88 @@
 </script>
 
 <script lang="ts">
+	import { animate, AnimateTrigger } from "$lib/animate";
 	import CardColumn, { type CardColumnData } from "./CardColumn.svelte";
 	import type { ProjectData } from "../index.svelte";
 
 	export let data: CardRowData;
-	export let projectData: ProjectData;
+	export let projectData: ProjectData | null | undefined = undefined;
 
 	let offsetDimensions: (number | string)[];
 
 	let numCols: number = data.columns.length;
 </script>
 
-<section
-	class={`padding-top-${data.section_padding_top}
-			padding-bottom-${data.section_padding_bottom}`}
-	style:--columns-alignment={data.columns_alignment}
->
-	{#each data.columns as data, i}
-		<CardColumn {data} 
-					{projectData} 
-					columns={{numCols: numCols, currCol: i+1}}
-					bind:offsetDimensions 
-		/>
-	{/each}
-</section>
+<svelte:head>
+
+</svelte:head>
+
+<template>
+	<div class="background-color" />
+
+	<section
+		class={`padding-top-${data.section_padding_top}
+				padding-bottom-${data.section_padding_bottom}`}
+		style:--columns-alignment={data.columns_alignment}
+		style:--bg-color={data.section_background_color ?? "inherit"}
+	>
+		{#each data.columns as data, i}
+			<CardColumn {data} 
+						{projectData} 
+						columns={{numCols: numCols, currCol: i+1}}
+						bind:offsetDimensions 
+			/>
+		{/each}
+	</section>
+
+	<div class="menu-bar" />
+</template>
 
 <style lang="scss">
+	div.background-color {
+		/* 
+			Z-Indexes
+			1: Background color
+			2: Content
+			3: Menu bar
+			4: Logo
+			5: Hero
+			6: Breadcrumbs
+			7: Menu overlay
+			8: Menu button
+		*/
+		z-index: 1;
+	}
+
+	div.menu-bar {
+		/* 
+			Z-Indexes
+			1: Background color
+			2: Content
+			3: Menu bar
+			4: Logo
+			5: Hero
+			6: Breadcrumbs
+			7: Menu overlay
+			8: Menu button
+		*/
+		z-index: 3;
+	}
+
 	section {
+		/* 
+			Z-Indexes
+			1: Background color
+			2: Content
+			3: Menu bar
+			4: Logo
+			5: Hero
+			6: Breadcrumbs
+			7: Menu overlay
+			8: Menu button
+		*/
+		z-index: 2;
+
 		grid-column: viewport;
 		display: grid;
 		grid-template-columns: subgrid;
@@ -81,5 +136,9 @@
 		&.padding-bottom-xxxl {
 			padding-bottom: var(--SPACE-XXXL);
 		}
+	}
+
+	:global {
+		
 	}
 </style>

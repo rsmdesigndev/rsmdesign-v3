@@ -16,7 +16,8 @@
 </script>
 
 <template>
-	<div class="rich-text-v3 rich-text-{data.rich_text_size}"
+	<div class={`rich-text-v3 rich-text-${data.rich_text_size}`}
+		 class:read-more={data.rich_text_has_read_more}
 		 style:--grid-column-start={bleed.left ? "2" : "1"}
 		 style:--grid-column-end={bleed.right ? "-2" : "-1"}
 	>
@@ -44,7 +45,12 @@
 		:global {
 			p {
 				font-size: inherit;
+
+				&:last-of-type {
+					margin-bottom: 0;
+				}
 			}
+
 			h3 {
 				font-size: inherit;
 				font-weight: 700;
@@ -54,6 +60,14 @@
 			h4 {
 				font-size: inherit;
 				font-weight: 700;
+			}
+		}
+
+		&.read-more {
+			:global {
+				p:last-of-type {
+					margin-bottom: var(--SPACE-MD);
+				}
 			}
 		}
 	}

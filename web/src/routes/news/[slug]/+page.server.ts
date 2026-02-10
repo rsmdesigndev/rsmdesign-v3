@@ -11,6 +11,11 @@ export const _query = gql`
 			post_title
 			seo_page_description
 			published_date
+			topics {
+				news_topics_id {
+					name
+				}
+			}
 			hero_image {
 				title
 				filename_disk

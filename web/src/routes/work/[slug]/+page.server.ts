@@ -195,6 +195,8 @@ export const _query = gql`
 															description
 														}
 													}
+													media_slider_autoplay
+													media_slider_autoplay_interval
 													media_slider_images_per_slide
 													media_swiper {
 														directus_files_id {
@@ -203,6 +205,7 @@ export const _query = gql`
 															description
 														}
 													}
+													media_swiper_start_position
 													media_caption
 												}
 												... on page_blocks_v3_atom_rich_text {
@@ -215,6 +218,12 @@ export const _query = gql`
 													spacer_height
 												}
 											}
+										}
+									}
+									... on page_blocks_v3_organism_card_carousel {
+										carousel_cards {
+											card_item_spacing
+											
 										}
 									}
 									... on page_blocks_v3_molecule_cta_list {

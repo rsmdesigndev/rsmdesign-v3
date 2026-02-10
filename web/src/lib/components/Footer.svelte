@@ -139,6 +139,17 @@
 <style lang="scss">
 	footer {
 		margin-top: var(--GRID-CELL);
+		//
+		flex: 0 0 auto;
+		align-self: flex-start;
+
+		width: 100%;
+		
+		padding: 0;
+
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 
 		nav {
 			> a {

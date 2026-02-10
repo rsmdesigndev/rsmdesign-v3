@@ -35,7 +35,7 @@
 			if (paragraphsInBoldText.length) {
 				boldText.innerHTML = "";
 				paragraphsInBoldText.forEach((paragraph) => {
-					boldText.append(paragraph.innerHTML);
+					boldText.innerHTML += paragraph.innerHTML;
 				});
 			}
 		}
@@ -44,7 +44,7 @@
 			if (paragraphsInLightText.length) {
 				lightText.innerHTML = "";
 				paragraphsInLightText.forEach((paragraph) => {
-					lightText.append(paragraph.innerHTML);
+					lightText.innerHTML += paragraph.innerHTML;
 				});
 			}
 		}
@@ -76,7 +76,8 @@
 			{/if}
 			{#if data.cta_style != "bold" && data.cta_text_light}
 				<span bind:this={lightText}
-					  class="light">
+					  class="light"
+				>
 					{@html data.cta_text_light}
 				</span>
 			{/if}

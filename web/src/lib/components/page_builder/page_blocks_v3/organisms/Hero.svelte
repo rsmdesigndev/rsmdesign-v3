@@ -1,5 +1,5 @@
 <script lang="ts" context="module">
-	export type CardRowData = {
+	export type HeroData = {
 		hero_media_type?: string | null;
 		hero_image?: ImageAssetRelation | null;
 		hero_video_source?: string | null;
@@ -17,7 +17,7 @@
 	import type { ProjectData } from "../index.svelte";
 	import Cta from "../atoms/Cta.svelte";
 
-	export let data: CardRowData;
+	export let data: HeroData;
 	export let project: boolean = false;
 	export let projectData: ProjectData;
 
@@ -148,6 +148,7 @@
 
 			<div bind:offsetHeight={expertiseHeight}
 				 class="project-expertise"
+				 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#rsmdesign-logo", animClass: "foobar" } }
 			>
 				{#if projectData.project_services.length > 0}
 					<div class="project-type">
@@ -185,8 +186,19 @@
 
 <style lang="scss">
 	.hero {
-		z-index: 3; // stack this on top of the header background
-
+		/* 
+			Z-Indexes
+			1: Background color
+			2: Content
+			3: Menu bar
+			4: Logo
+			5: Hero
+			6: Breadcrumbs
+			7: Menu overlay
+			8: Menu button
+		*/
+		z-index: 5;
+		
 		grid-column: viewport;
 		width: 100%;
 		//min-height: calc(200vh + var(--expertise-height) * 1px);
@@ -194,6 +206,7 @@
 		margin-bottom: calc(var(--expertise-height) * 1px);
 
 		.video-container {
+			//z-index: 5; // stack this on top of the header background
 			width: 100%;
 			height: 100vh;
 			position: sticky;
@@ -211,6 +224,7 @@
 		}
 
 		img {
+			//z-index: 5; // stack this on top of the header background
 			width: 100%;
 			height: 100vh;
 			object-fit: cover;
@@ -219,6 +233,7 @@
 		}
 
 		.hero-scrim-top {
+			//z-index: 5; // stack this on top of the header background
 			position: absolute;
 			top: 0;
 			left: 0;
@@ -242,6 +257,7 @@
 		}
 
 		.hero-scrim-bottom {
+			//z-index: 5; // stack this on top of the header background
 			position: relative;
 			width: 100%;
 			height: 100vh;
@@ -266,6 +282,7 @@
 		}
 
 		.project-details {
+			//z-index: 5; // stack this on top of the header background
 			position: absolute;
 			top: 0;
 			left: 0;
