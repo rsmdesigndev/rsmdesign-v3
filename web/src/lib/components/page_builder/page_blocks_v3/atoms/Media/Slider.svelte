@@ -12,10 +12,10 @@
 	export let autoplay: boolean | null;
 	export let autoplay_interval: number | null;
 
-	let current = 0;
-	let isAnimating = false;
-	let animationDir = 0; // -1 for left, 1 for right
-	let animationDuration = 200;
+	let current: number = 0;
+	let isAnimating: boolean = false;
+	let animationDir: -1 | 0 | 1 = 0; // -1 for left, 1 for right
+	let animationDuration: number = 200;
 	let intervalId: any = null;
 
 	$: imagesPerSlide = images_per_slide ?? 1;

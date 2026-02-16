@@ -7,6 +7,7 @@
 		feed_source?: string | null;
 		feed_grid_columns?: number | null;
 		feed_grid_style?: string | null;
+		feed_grid_dynamic_start_position?: string | null;
 	};
 
 	export let data: dataFeedGridData;
@@ -26,9 +27,11 @@
 <template>
 	{#each feedData as item, i}
 		<a href="/work/{item.slug}"
-		   class="grid-item 
-		   		 {data.feed_grid_columns === 3 ? "third" : "fourth"}
-		   		 {data.feed_grid_style === "dynamic" ? "dynamic" : ""}"
+		   class={`grid-item 
+		   		   ${data.feed_grid_columns === 3 ? "third" : "fourth"}
+		   		   ${data.feed_grid_style === "dynamic" ? "dynamic" : ""}
+		   		   ${data.feed_grid_dynamic_start_position === "left" ? "start-left" : "start-right"}
+		   		`}
 		   style:--grid-column-units={data.feed_grid_columns === 3 ? "sixth" : "eighth"}
 		>
 			<figure>
@@ -185,23 +188,6 @@
 					grid-column: eighth-start 7 / eighth-end 8;
 				}
 				&.dynamic {
-					&:nth-of-type(14n+1) {
-						grid-column: eighth-start 1 / eighth-end 2;
-					}
-					&:nth-of-type(14n+2) {
-						grid-column: eighth-start 3 / eighth-end 4;
-					}
-					&:nth-of-type(14n+3) {
-						grid-column: eighth-start 5 / viewport-end;
-
-						picture.image-container {
-							aspect-ratio: 16 / 9;
-						}
-
-						figcaption {
-							grid-column-end: -2;
-						}
-					}
 					&:nth-of-type(7n+4) {
 						grid-column: eighth-start 1 / eighth-end 2;
 					}
@@ -214,22 +200,77 @@
 					&:nth-of-type(7n) {
 						grid-column: eighth-start 7 / eighth-end 8;
 					}
-					&:nth-of-type(14n+8) {
-						grid-column: viewport-start / eighth-end 4;
+					&.start-left {
+						&:nth-of-type(14n+1) {
+							grid-column: viewport-start / eighth-end 4;
 
-						picture.image-container {
-							aspect-ratio: 16 / 9;
+							picture.image-container {
+								aspect-ratio: 16 / 9;
+							}
+
+							figcaption {
+								grid-column-start: 2;
+							}
 						}
+						&:nth-of-type(14n+2) {
+							grid-column: eighth-start 5 / eighth-end 6;
+						}
+						&:nth-of-type(14n+3) {
+							grid-column: eighth-start 7 / eighth-end 8;
+						}
+						&:nth-of-type(14n+8) {
+							grid-column: eighth-start 1 / eighth-end 2;
+						}
+						&:nth-of-type(14n+9) {
+							grid-column: eighth-start 3 / eighth-end 4;
+						}
+						&:nth-of-type(14n+10) {
+							grid-column: eighth-start 5 / viewport-end;
 
-						figcaption {
-							grid-column-start: 2;
+							picture.image-container {
+								aspect-ratio: 16 / 9;
+							}
+
+							figcaption {
+								grid-column-end: -2;
+							}
 						}
 					}
-					&:nth-of-type(14n+9) {
-						grid-column: eighth-start 5 / eighth-end 6;
-					}
-					&:nth-of-type(14n+10) {
-						grid-column: eighth-start 7 / eighth-end 8;
+					&.start-right {
+						&:nth-of-type(14n+1) {
+							grid-column: eighth-start 1 / eighth-end 2;
+						}
+						&:nth-of-type(14n+2) {
+							grid-column: eighth-start 3 / eighth-end 4;
+						}
+						&:nth-of-type(14n+3) {
+							grid-column: eighth-start 5 / viewport-end;
+
+							picture.image-container {
+								aspect-ratio: 16 / 9;
+							}
+
+							figcaption {
+								grid-column-end: -2;
+							}
+						}
+						&:nth-of-type(14n+8) {
+							grid-column: viewport-start / eighth-end 4;
+
+							picture.image-container {
+								aspect-ratio: 16 / 9;
+							}
+
+							figcaption {
+								grid-column-start: 2;
+							}
+						}
+						&:nth-of-type(14n+9) {
+							grid-column: eighth-start 5 / eighth-end 6;
+						}
+						&:nth-of-type(14n+10) {
+							grid-column: eighth-start 7 / eighth-end 8;
+						}
 					}
 				}
 			}

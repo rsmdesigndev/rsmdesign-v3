@@ -10,7 +10,7 @@
 
 <template>
 	<div class="spacer" 
-		 style:--spacer-height={`var(--SPACE-${data.spacer_height.toUpperCase()})`}
+		 style:--spacer-height={`var(--SPACE-${data.spacer_height?.toUpperCase()})`}
 	/>
 </template>
 

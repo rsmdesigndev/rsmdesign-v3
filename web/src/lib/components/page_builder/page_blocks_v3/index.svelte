@@ -71,11 +71,11 @@
 </script>
 
 <template>
-	{#each blocks?.map((c) => c?.item) ?? [] as data}
+	{#each blocks?.map((c) => c?.item) ?? [] as data, i}
 		{#if data?.__typename === "page_blocks_v3_organism_card_row"}
-			<CardRow {data} {projectData} />
+			<CardRow {data} {projectData} rowNumber={i} />
 		{:else if data?.__typename === "page_blocks_v3_organism_data_feed"}
-			<DataFeed {data} />
+			<DataFeed {data} rowNumber={i} />
 		{:else if data?.__typename === "page_blocks_v3_organism_hero"}
 			<Hero {data} {projectData} project />
 		{:else}

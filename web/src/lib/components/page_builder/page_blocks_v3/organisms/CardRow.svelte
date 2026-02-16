@@ -19,6 +19,7 @@
 
 	export let data: CardRowData;
 	export let projectData: ProjectData | null | undefined = undefined;
+	export let rowNumber: number;
 
 	let offsetDimensions: (number | string)[];
 
@@ -26,17 +27,20 @@
 </script>
 
 <svelte:head>
-
+	{@html `<`+`style>:root{--bg-color-${rowNumber}:${data.section_background_color ?? '#' + Math.floor(Math.random()*16777215).toString(16)};}</style>`}
 </svelte:head>
 
 <template>
-	<div class="background-color" />
+	<div id={`bg-color-${rowNumber}`}
+		 class="bg-color"
+		 style:--bg-color={data.section_background_color}
+	/>
 
 	<section
 		class={`padding-top-${data.section_padding_top}
 				padding-bottom-${data.section_padding_bottom}`}
 		style:--columns-alignment={data.columns_alignment}
-		style:--bg-color={data.section_background_color ?? "inherit"}
+		use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#bg-color-${rowNumber}`, animClass: "bg-color-animate" } }
 	>
 		{#each data.columns as data, i}
 			<CardColumn {data} 
@@ -47,11 +51,21 @@
 		{/each}
 	</section>
 
-	<div class="menu-bar" />
+	<div class="menu-bar" 
+		 style:--bg-color={data.section_background_color}
+	/>
 </template>
 
 <style lang="scss">
-	div.background-color {
+	div.bg-color,
+	div.menu-bar {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100vw;
+		height: 100vh;
+	}
+	div.bg-color {
 		/* 
 			Z-Indexes
 			1: Background color
@@ -79,6 +93,9 @@
 			8: Menu button
 		*/
 		z-index: 3;
+
+		height: var(--SPACE-LG);
+		margin-bottom: calc(-1 * var(--SPACE-LG));
 	}
 
 	section {
@@ -139,6 +156,24 @@
 	}
 
 	:global {
-		
+		.bg-color-animate {
+			background: transparent;
+			animation: bg-color-animate 1s linear forwards;
+		}
+
+		@keyframes bg-color-animate {
+			0% {
+				background: transparent;
+			}
+			25% {
+				background: transparent;
+			}
+			50% {
+				background: var(--bg-color);
+			}
+			100% {
+				background: var(--bg-color);
+			}
+		}
 	}
 </style>

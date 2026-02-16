@@ -41,13 +41,15 @@
 		feed_view?: string | null;
 		feed_load_functionality?: string | null;
 		feed_grid_columns?: number;
-		feed_grid_style?: string | null;
 		feed_grid_rows_per_load?: number;
+		feed_grid_style?: string | null;
+		feed_grid_dynamic_start_position?: string | null;
 		feed_cards?: CardData[] | null;
 	}
 
 	// Props
 	export let data: DataFeedData;
+	export let rowNumber: number;
 
 	// Stateful component variables
 	$: feedData = [];
@@ -58,7 +60,14 @@
 
 	if (data.feed_view === "Grid") {
 		if (data.feed_grid_style === "dynamic") {
-			numItems = 14;
+			if (data.feed_grid_columns === 4) {
+				let quotient: number = Math.floor(data.feed_grid_rows_per_load / 2);
+				let remainder: number = data.feed_grid_rows_per_load % 2;
+				numItems = quotient + remainder;
+			} else {
+				// TODO: for 3-col dynamic: if rows == 1, subtract 1; if rows == 2, subtract 2; if rows = 3, subtract 2; 
+				numItems = 14;
+			}
 		} else {
 			numItems = data.feed_grid_columns * data.feed_grid_rows_per_load;
 		}
@@ -263,7 +272,8 @@
 					<DataFeedGrid {feedData}
 						data={ { feed_source: data.feed_source,
 								 feed_grid_columns: data.feed_grid_columns,
-							     feed_grid_style: data.feed_grid_style
+							     feed_grid_style: data.feed_grid_style,
+							     feed_grid_dynamic_start_position: data.feed_grid_dynamic_start_position
 							 } }
 					/>
 				{:else}

@@ -95,5 +95,6 @@
 
 	main {
 		margin-top: calc(var(--header-height) * -1);
+		position: relative;
 	}
 </style>

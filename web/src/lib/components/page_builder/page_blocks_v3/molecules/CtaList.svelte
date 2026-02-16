@@ -40,7 +40,7 @@
 		{#if data.cta_list_source === "manual"}
 			{#if data.cta_list_has_heading}
 				<h3 class={`heading heading-${data.cta_list_heading_style}`}
-					style:--font-size={`var(--FONT-SIZE-${sizeOverride.toUpperCase()})`}
+					style:--font-size={`var(--FONT-SIZE-${sizeOverride?.toUpperCase()})`}
 					style:--line-height={sizeOverride === "lg" ? "1.167" : "1.333"}
 				>
 					{data.cta_list_heading}

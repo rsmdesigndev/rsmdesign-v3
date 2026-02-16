@@ -27,12 +27,11 @@
 	export let bleed: BleedData;
 
 	let headingHeight: number;
-	export let offsetDimensions: (number | string)[] = [headingHeight, data.card_item_spacing.toUpperCase()];
 </script>
 
 <template>
 	<div class="card"
-		 style:--row-gap={`var(--SPACE-${data.card_item_spacing.toUpperCase()}`}
+		 style:--row-gap={`var(--SPACE-${data.card_item_spacing?.toUpperCase()}`}
 	>
 		{#each data.card_atoms?.map((c) => c?.item) ?? [] as data}
 			{#if data?.__typename === "page_blocks_v3_atom_blockquote"}

@@ -58,28 +58,30 @@
 		 style:--h3-height={h3Height}
 >
 	{#if data.hero_media_type === "Video"}
-		<div class="video-container">
-			{#if data.hero_video_source === "vimeo"}
-				<iframe
-					title="Video"
-					src={`https://player.vimeo.com/video/${data.hero_video_vimeo}?background=1`}
-					height="100%"
-					frameborder="0"
-					allow="autoplay; fullscreen"
-					allowfullscreen
-					loading="lazy"
-				/>
-			{:else}
-				<iframe
-					title="Video"
-					src={`https://www.youtube.com/embed/${data.hero_video_youtube}?autoplay=1&muted=1`}
-					height="100%"
-					frameborder="0"
-					allow="autoplay; fullscreen"
-					allowfullscreen
-					loading="lazy"
-				/>
-			{/if}
+		<div class="video-wrapper">
+			<div class="video-container">
+				{#if data.hero_video_source === "vimeo"}
+					<iframe
+						title="Video"
+						src={`https://player.vimeo.com/video/${data.hero_video_vimeo}?background=1`}
+						height="100%"
+						frameborder="0"
+						allow="autoplay; fullscreen"
+						allowfullscreen
+						loading="lazy"
+					/>
+				{:else}
+					<iframe
+						title="Video"
+						src={`https://www.youtube.com/embed/${data.hero_video_youtube}?controls=0&autoplay=1&mute=1&playsinline=1&loop=1`}
+						height="100%"
+						frameborder="0"
+						allow="autoplay; fullscreen"
+						allowfullscreen
+						loading="lazy"
+					/>
+				{/if}
+			</div>
 		</div>
 	{:else}
 		<img
@@ -148,7 +150,6 @@
 
 			<div bind:offsetHeight={expertiseHeight}
 				 class="project-expertise"
-				 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#rsmdesign-logo", animClass: "foobar" } }
 			>
 				{#if projectData.project_services.length > 0}
 					<div class="project-type">
@@ -201,25 +202,34 @@
 		
 		grid-column: viewport;
 		width: 100%;
-		//min-height: calc(200vh + var(--expertise-height) * 1px);
 		position: relative;
 		margin-bottom: calc(var(--expertise-height) * 1px);
 
-		.video-container {
-			//z-index: 5; // stack this on top of the header background
-			width: 100%;
+		.video-wrapper {
+			width: 100vw;
 			height: 100vh;
+
 			position: sticky;
 			top: 0;
 			overflow-x: hidden;
-
 			display: flex;
 			align-items: center;
 			justify-content: center;
 
-			> iframe {
+			.video-container {
+				//z-index: 5; // stack this on top of the header background
 				height: 100%;
-				width: 177.78vh;
+				flex: 1 0 calc(100vh * 16 / 9);
+
+				@media (min-width: 177.777vh) {
+					height: calc(100vw * 9 / 16);
+					flex-basis: 100vw;
+				}
+
+				> iframe {
+					height: 100%;
+					width: 100%;
+				}
 			}
 		}
 
@@ -446,12 +456,14 @@
 				font-size: var(--FONT-SIZE-LG);
 				font-weight: 700;
 				color: var(--COLOR-BLACK);
+				transform: translate(0rem, 0rem);
 			}
 			100% {
 				top: calc((var(--h1-container-height) - var(--h1-height)) * 1px);
 				font-size: var(--FONT-SIZE-LG);
 				font-weight: 700;
 				color: var(--COLOR-BLACK);
+				transform: translate(0rem, calc(var(--SPACE-LG) * -1));
 			}
 		}
 
@@ -471,9 +483,11 @@
 			}
 			66.7% {
 				opacity: 1;
+				transform: translate(0rem, 0rem);
 			}
 			100% {
 				opacity: 1;
+				transform: translate(0rem, calc(var(--SPACE-SM) * -1));
 			}
 		}
 	}

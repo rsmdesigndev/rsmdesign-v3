@@ -21,7 +21,7 @@
 	<figure style:--grid-column-start={bleed.left ? "2" : "1"}
 			style:--grid-column-end={bleed.right ? "-2" : "-1"}
 	>
-		<blockquote style:--font-size={`var(--FONT-SIZE-${data.blockquote_size.toUpperCase()})`}
+		<blockquote style:--font-size={`var(--FONT-SIZE-${data.blockquote_size?.toUpperCase()})`}
 					style:--line-height={data.blockquote_size === "xl" ? "1.133" : "1"}
 					cite={data.blockquote_link ?? ""}>
 			{@html data.blockquote_text}

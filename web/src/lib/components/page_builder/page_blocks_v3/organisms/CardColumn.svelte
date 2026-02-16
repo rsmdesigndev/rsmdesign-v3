@@ -79,18 +79,18 @@
 	 style:--grid-column={`${data.grid_col_start_units}-start ${data.grid_col_start} / ${data.grid_col_end_units}-end ${data.grid_col_end}`}
 	 style:--grid-column-tablet={`${colStartUnits}-start ${colStart} / ${colEndUnits}-end ${colStart - 1 + colSpan}`}
 	 style:--grid-column-mobile={data.grid_col_start_units === "viewport" ? "viewport" : "main"}
-	 style:--row-gap={`var(--SPACE-${data.column_item_spacing.toUpperCase()}`}
-	 style:--padding-left={`var(--SPACE-${data.column_padding_left.toUpperCase()}`}
-	 style:--padding-right={`var(--SPACE-${data.column_padding_right.toUpperCase()}`}
+	 style:--row-gap={`var(--SPACE-${data.column_item_spacing?.toUpperCase()}`}
+	 style:--padding-left={`var(--SPACE-${data.column_padding_left?.toUpperCase()}`}
+	 style:--padding-right={`var(--SPACE-${data.column_padding_right?.toUpperCase()}`}
 
 >
 	{#each data.column_items?.map((c) => c?.item) ?? [] as data}
 		{#if data?.__typename === "page_blocks_v3_molecule_accordion"}
 			<Accordion {data} {bleed} />
 		{:else if data?.__typename === "page_blocks_v3_molecule_card"}
-			<Card {data} {bleed} bind:offsetDimensions />
+			<Card {data} {bleed} />
 		{:else if data?.__typename === "page_blocks_v3_organism_card_carousel"}
-			Carousel
+			<CardCarousel {data} {bleed} />
 		{:else if data?.__typename === "page_blocks_v3_molecule_cta_list"}
 			<CtaList {data} {projectData} {bleed} {offsetDimensions} />
 		{:else if data?.__typename === "page_blocks_v3_atom_spacer"}

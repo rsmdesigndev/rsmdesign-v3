@@ -81,7 +81,7 @@
 					 (data.heading_type === "page" && data.heading_primary === "large" ? "h1" : 
 					 (data.heading_type === "page" || data.heading_primary === "large" ? "h2" : "h3"))}
 				class="heading-large"
-				style:--font-size={`var(--FONT-SIZE-${data.heading_size.toUpperCase()})`}
+				style:--font-size={`var(--FONT-SIZE-${data.heading_size?.toUpperCase()})`}
 				style:--font-weight={weightLarge}
 				style:--line-height={data.heading_size === "lg" ? "1.167" :
 												(data.heading_size === "xl" ? "1.133" : "1")}

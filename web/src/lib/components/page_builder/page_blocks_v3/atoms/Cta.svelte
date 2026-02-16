@@ -62,7 +62,7 @@
 					style:--grid-column-start={bleed.left ? "2" : "1"}
 					style:--grid-column-end={bleed.right ? "-2" : "-1"}
 					style:--flex-direction={data.cta_icon_position === "left" ? "row-reverse" : "row"}
-					style:--font-size={`var(--FONT-SIZE-${sizeOverride != "" ? sizeOverride.toUpperCase() : "MD"})`}
+					style:--font-size={`var(--FONT-SIZE-${sizeOverride != "" ? sizeOverride?.toUpperCase() : "MD"})`}
 					style:--line-height={sizeOverride === "lg" ? "1.167" : "1.333"}
 	>
 		<span>
