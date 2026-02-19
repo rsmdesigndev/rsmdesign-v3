@@ -44,6 +44,8 @@
 	>
 		{#each data.columns as data, i}
 			<CardColumn {data} 
+						row={rowNumber}
+						column={i}
 						{projectData} 
 						columns={{numCols: numCols, currCol: i+1}}
 						bind:offsetDimensions 
@@ -111,6 +113,7 @@
 			8: Menu button
 		*/
 		z-index: 2;
+		position: relative;
 
 		grid-column: viewport;
 		display: grid;

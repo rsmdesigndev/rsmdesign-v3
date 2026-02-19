@@ -7,7 +7,7 @@
 		feed_source?: string | null;
 		feed_grid_columns?: number | null;
 		feed_grid_style?: string | null;
-		feed_grid_dynamic_start_position?: string | null;
+		feed_grid_dynamic_start_position?: boolean | null;
 	};
 
 	export let data: dataFeedGridData;
@@ -43,19 +43,36 @@
 								 alt={item.hero_image?.title}
 							/>
 						{:else if data.feed_grid_columns === 4}
-							{#if (i % 10 === 0 || i % 10 === 6)}
-								<source media="(max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
+							{#if data.feed_grid_dynamic_start_position}
+								{#if (i % 10 === 1 || i % 10 === 5)}
+									<source media="(max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
+								{:else}
+									<source media="(max-width: 62.5em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
+								{/if}
+								{#if (i % 14 === 2 || i % 14 === 7)}
+									<img src={assetUrl(item.hero_image?.filename_disk)}
+										 alt={item.hero_image?.title}
+									/>
+								{:else}
+									<img src={assetUrl(item.grid_image?.filename_disk)}
+										 alt={item.grid_image?.title}
+									/>
+								{/if}
 							{:else}
-								<source media="(max-width: 62.5em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
-							{/if}
-							{#if (i % 14 === 2 || i % 14 === 7)}
-								<img src={assetUrl(item.hero_image?.filename_disk)}
-									 alt={item.hero_image?.title}
-								/>
-							{:else}
-								<img src={assetUrl(item.grid_image?.filename_disk)}
-									 alt={item.grid_image?.title}
-								/>
+								{#if (i % 10 === 0 || i % 10 === 6)}
+									<source media="(max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
+								{:else}
+									<source media="(max-width: 62.5em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
+								{/if}
+								{#if (i % 14 === 0 || i % 14 === 9)}
+									<img src={assetUrl(item.hero_image?.filename_disk)}
+										 alt={item.hero_image?.title}
+									/>
+								{:else}
+									<img src={assetUrl(item.grid_image?.filename_disk)}
+										 alt={item.grid_image?.title}
+									/>
+								{/if}
 							{/if}
 						{:else}
 							<img src={assetUrl(item.grid_image?.filename_disk)}

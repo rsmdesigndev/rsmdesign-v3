@@ -97,7 +97,7 @@
 		<div class="project-details">
 			{#if data.hero_media_type === "Video"}
 				<div class="project-hero-animate"
-					 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "iframe", animClass: "hero-media-animate" } }
+					 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: ".video-wrapper", animClass: "hero-media-animate" } }
 				/>
 			{:else}
 				<div class="project-hero-animate"

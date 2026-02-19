@@ -43,7 +43,7 @@
 		feed_grid_columns?: number;
 		feed_grid_rows_per_load?: number;
 		feed_grid_style?: string | null;
-		feed_grid_dynamic_start_position?: string | null;
+		feed_grid_dynamic_start_position?: boolean | null;
 		feed_cards?: CardData[] | null;
 	}
 
@@ -63,7 +63,7 @@
 			if (data.feed_grid_columns === 4) {
 				let quotient: number = Math.floor(data.feed_grid_rows_per_load / 2);
 				let remainder: number = data.feed_grid_rows_per_load % 2;
-				numItems = quotient + remainder;
+				numItems = (data.feed_grid_columns * data.feed_grid_rows_per_load) - (quotient + remainder);
 			} else {
 				// TODO: for 3-col dynamic: if rows == 1, subtract 1; if rows == 2, subtract 2; if rows = 3, subtract 2; 
 				numItems = 14;
@@ -167,7 +167,6 @@
 				});
 
 				if(response) {
-					console.log(response);
 					feedData.push(...response.projects);
 					feedData = feedData;
 					loaded = true;
@@ -227,7 +226,6 @@
 				});
 
 				if(response) {
-					console.log(response);
 					feedData.push(...response.news_posts);
 					feedData = feedData;
 					loaded = true;
@@ -250,13 +248,136 @@
 		}
 
 		loadOffset += numItems;
+		console.log("load more")
+	}
 
-		console.log(feedData);
+	/**
+	 * Svelte action for infinite scroll functionality.
+	 * Loads more projects when the bottom of the container is reached.
+	 */
+	function loadMoreOnIntersection(node: Element) {
+		const observer = new IntersectionObserver(([entry]) => {
+			if (entry.isIntersecting && loadOffset < loadTotalCount) {
+				console.log("load more on scroll");
+				loadMore();
+			}
+		});
+		observer.observe(node);
+		return {
+			destroy() {
+				observer.disconnect();
+			}
+		};
+	}
+
+	/**
+	 * Functions for carousel pagination functionality.
+	 * Set each grid as a slide.
+	 */
+
+	let autoplay: boolean = data.feed_grid_columns === "1";
+	let interval: number = 10000;
+
+	let current: number = 0;
+	let isAnimating: boolean = false;
+	let animationDir: -1 | 0 | 1 = 0; // -1 for left, 1 for right
+	let animationDuration: number = 200;
+	let intervalId: any = null;
+
+	$: currentDisplay = String(current+1);
+
+	function next() {
+		if (isAnimating) return;
+
+		current += 1;
+		if (loadOffset < loadTotalCount) {
+			loadMore();
+		} else {
+			current = 0;
+		}
+
+		isAnimating = true;
+		animationDir = 1;
+		setTimeout(() => isAnimating = false, animationDuration - 100);
+
+		if (autoplay) restartInterval();
+	}
+
+	function prev() {
+		if (isAnimating) return;
+
+		current -= 1;
+
+		isAnimating = true;
+		animationDir = -1;
+		setTimeout(() => isAnimating = false, animationDuration - 100);
+
+		if (autoplay) restartInterval();
+	}
+
+	$: isNextSlide = (i: number): boolean => {
+		if (cards?.length === 1) {
+			return false;
+		}
+
+		if (current === cards?.length - 1) {
+			// if on the last slide, "next slide" would be the first slide
+			return i === 0;
+		}
+		
+		return i === current + 1;
+	}
+
+	$: isPrevSlide = (i: number): boolean => {
+		if (cards?.length === 1) {
+			return false;
+		}
+		
+		if (current === 0) {
+			// if on the first slide, "prev slide" would be the last slide
+			return i === cards?.length - 1;
+		}
+
+		return i === current - 1;
+	}
+
+	// Calculates the correct Z index for each slide so that
+	// they dont overlap each other while animating.
+	$: calcZIndex = (i: number): number => {
+		if (i === current) {
+			return 2;
+		} else if (isNextSlide(i)) {
+			if (animationDir === 1) {
+				return 0;
+			} else {
+				return 1;
+			}
+		} else if (isPrevSlide(i)) {
+			if (animationDir === -1) {
+				return 0;
+			} else {
+				return 1;
+			}
+		} else {
+			return 0;
+		}
+	}
+
+	$: restartInterval = () => {
+		if (intervalId !== null) {
+			clearInterval(intervalId);
+		}
+		intervalId = setInterval(next, interval);
 	}
 
 	// Lifecycle
 	onMount(async () => {
 		loadMore();
+
+		if (autoplay) {
+			restartInterval();
+			return () => clearInterval(intervalId);
+		}
 	});
 </script>
 
@@ -269,13 +390,26 @@
 				<p>No projects match your query. Try another search or set of filters.</p>
 			{:else}
 				{#if data.feed_view === "Grid"}
-					<DataFeedGrid {feedData}
-						data={ { feed_source: data.feed_source,
-								 feed_grid_columns: data.feed_grid_columns,
-							     feed_grid_style: data.feed_grid_style,
-							     feed_grid_dynamic_start_position: data.feed_grid_dynamic_start_position
-							 } }
-					/>
+					{#each Array(loadOffset / numItems) as iter, i}
+						<DataFeedGrid feedData={ feedData.slice(i * numItems, i * numItems + numItems) }
+							data={ { feed_source: data.feed_source,
+									 feed_grid_columns: data.feed_grid_columns,
+								     feed_grid_style: data.feed_grid_style,
+								     feed_grid_dynamic_start_position: i % 2 ? !data.feed_grid_dynamic_start_position : data.feed_grid_dynamic_start_position
+								 } }
+						/>
+						<!--<div class="grid-container">
+							 class:carousel-slide={data.feed_load_functionality === "carousel"}
+							 class:slide-next={isNextSlide(i)}
+							 class:slide-prev={isPrevSlide(i)}
+							 class:slide-active={i === current}
+							 style:z-index={calcZIndex(i)}
+							 style={`transition: opacity ${animationDuration}ms ease`}
+						>
+							
+						</div>-->
+					{/each}
+
 				{:else}
 					<DataFeedTable {feedData} />
 				{/if}
@@ -291,9 +425,25 @@
 			</a>
 		{/if}
 		{#if loadOffset < loadTotalCount}
-			<button on:click={loadMore}>
-				View More
-			</button>
+			{#if data.feed_load_functionality === "scroll"}
+				<!-- When this div is reached in the DOM, more projects will be loaded. -->
+				<button class="infinite-scroll" on:click={loadMore} use:loadMoreOnIntersection>
+					View More
+				</button>
+			{:else if data.feed_load_functionality === "button"}
+				<button on:click={loadMore}>
+					View More
+				</button>
+			{/if}
+		{/if}
+		{#if data.feed_load_functionality === "carousel"}
+			<!-- show arrows -->
+			{#if current > 0}
+				<button aria-label="Previous group" on:click={prev}>←</button>
+			{/if}
+			<button aria-label="Next group" on:click={next}>→</button>
+		{:else if data.feed_load_functionality === "all"}
+			<!-- link to main index page w/ filter(s) applied -->
 		{/if}
 	</section>
 
@@ -301,6 +451,19 @@
 
 <style lang="scss">
 	section {
+		/* 
+			Z-Indexes
+			1: Background color
+			2: Content
+			3: Menu bar
+			4: Logo
+			5: Hero
+			6: Breadcrumbs
+			7: Menu overlay
+			8: Menu button
+		*/
+		z-index: 2;
+
 		grid-column: viewport;
 		display: grid;
 		grid-template-columns: subgrid;
@@ -309,6 +472,21 @@
 
 		button {
 			grid-column: main;
+		}
+
+		.grid-container {
+			display: contents;
+
+			&.carousel-slide {
+				display: subgrid;
+				grid-column: 1;
+				opacity: 0;
+				transform: 0;
+				&.slide-active {
+					opacity: 1;
+					z-index: 2;
+				}
+			}
 		}
 
 		row-gap: var(--SPACE-XL);
@@ -349,5 +527,14 @@
 		&.padding-bottom-xxxl {
 			padding-bottom: var(--SPACE-XXXL);
 		}
+	}
+
+	button.infinite-scroll {
+		height: 0;
+		border: none;
+		box-shadow: none;
+		background: transparent;
+		overflow: hidden;
+		margin-top: calc(-1 * var(--SPACE-XXXL));
 	}
 </style>

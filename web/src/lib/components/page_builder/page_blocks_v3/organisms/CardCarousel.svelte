@@ -12,10 +12,13 @@
 	import type { BleedData } from "./CardColumn.svelte";
 
 	export let data: CardCarouselData;
+	export let row: number;
+	export let column: number;
+	export let colItem: number;
 	export let bleed: BleedData;
 	
 	let cards: CardData[] = data.carousel_cards;
-	let animation: "fade" | "slide" = data.carousel_animation ?? "fade";
+	let animation: "fade" | "slide" = bleed.right ? "slide" : "fade";
 	let autoplay: boolean = data.carousel_autoplay ?? true;
 	let interval: number = data.carousel_autoplay_interval ?? 10000;
 
@@ -31,7 +34,7 @@
 		if (isAnimating) return;
 
 		current += 1;
-		if (current > (cards?.length ?? 0)) {
+		if (current > (cards?.length ?? 0) - 1) {
 			current = 0;
 		}
 
@@ -47,7 +50,7 @@
 
 		current -= 1;
 		if (current < 0) {
-			current = (cards?.length ?? 0);
+			current = (cards?.length ?? 0) - 1;
 		}
 
 		isAnimating = true;
@@ -112,6 +115,15 @@
 		intervalId = setInterval(next, interval);
 	}
 
+	let carouselWidth: number;
+
+	function updateCarouselWidth() {
+		let carousel = document.querySelector<HTMLElement>(`#carousel-${row}-${column}-${colItem}`);
+		if (carousel) {
+			let carouselWidth = carousel.getBoundingClientRect().width;
+		}
+	}
+
 	onMount(() => {
 		if (autoplay) {
 			restartInterval();
@@ -120,66 +132,81 @@
 	});
 </script>
 
+<svelte:window on:resize={() => setTimeout(updateCarouselWidth, 600)} />
+
 <template>
-	<div class="carousel"
-		 style:--grid-template-columns={animation === "fade" ? "1fr" : `repeat(${cards?.length ?? 1}, 100%)`}
-		 style:--slider-width={animation === "fade" ? "100%" : 
-		 	`calc(100% + (100% + var(--SPACE-MD)) * ${cards?.length - 1})`}
-		 style:transform={(animation === "slide")
-				? `translateX(calc(${current * -1 / 2} * (100% + var(--SPACE-MD)))`
-				: "none"
-			}
-		 style={`transition: transform ${animationDuration}ms ease`}
+	<div id={`carousel-${row}-${column}-${colItem}`}
+		 class="carousel-wrapper"
+		 style:--grid-column-start={bleed.left ? "2" : "1"}
+		 style:--grid-column-end={bleed.right ? "-2" : "-1"}
+		 bind:offsetWidth={carouselWidth}
+		 style:--carousel-card-width={carouselWidth + "px"}
 	>
-		{#each data.carousel_cards as data, i}
-			<div
-				class={`card-wrapper anim-${animation}`}
-				style={`transition: opacity ${animationDuration}ms ease`}
-				class:slide-next={isNextSlide(i)}
-				class:slide-prev={isPrevSlide(i)}
-				class:slide-active={i === current}
-				style:z-index={calcZIndex(i)}
-			>
-				<Card {data} />
-			</div>
-		{/each}
+		<div class="carousel-container"
+			 style:--grid-template-columns={animation === "fade" ? "1fr" : `repeat(${cards?.length ?? 1}, var(--carousel-card-width))`}
+			 style:--carousel-width={animation === "fade" ? "100%" : 
+			 	`calc(var(--carousel-card-width) + (var(--carousel-card-width) + var(--SPACE-MD)) * ${cards?.length - 1})`}
+			 style:transform={(animation === "slide")
+					? `translateX(calc(${current * -1} * (var(--carousel-card-width) + var(--SPACE-MD)))`
+					: "none"
+				}
+			 style={`transition: transform ${animationDuration}ms ease`}
+		>
+			{#each data.carousel_cards as data, i}
+				<div
+					class={`card-wrapper anim-${animation}`}
+					style={`transition: opacity ${animationDuration}ms ease`}
+					class:slide-next={isNextSlide(i)}
+					class:slide-prev={isPrevSlide(i)}
+					class:slide-active={i === current}
+					style:z-index={calcZIndex(i)}
+				>
+					<Card {data} 
+						  bleed={ { left: false, 
+									right: false 
+								} } 
+					/>
+				</div>
+			{/each}
+		</div>
 	</div>
 	<button aria-label="Previous slide" on:click={prev}></button>
 	<button aria-label="Next slide" on:click={next}></button>
 </template>
 
 <style lang="scss">
-	.carousel {
-		grid-column: 1 / -1;
+	.carousel-wrapper {
+		grid-column: var(--grid-column-start) / var(--grid-column-end);
 		grid-row: 1 / span 1;
-		width: var(--slider-width);
+		width: var(--carousel-card-width);
 
-		display: grid;
-		grid-template-columns: var(--grid-template-columns);
-		column-gap: var(--SPACE-MD);
-		position: relative;
-		overflow: hidden;
+		> .carousel-container {
+			width: var(--carousel-width);
+			display: grid;
+			grid-template-columns: var(--grid-template-columns);
+			column-gap: var(--SPACE-MD);
+			position: relative;
 
-		//min-height: 500px;
+			//min-height: 500px;
 
-		.card-wrapper {
-			grid-row: 1;
-			z-index: 0;
+			> .card-wrapper {
+				grid-row: 1;
+				z-index: 0;
 
-			height: 100%;
-			width: 100%;
-			object-fit: cover;
+				height: 100%;
+				width: var(--carousel-card-width);
 
-			margin: 0;
-			padding: 0;
+				margin: 0;
+				padding: 0;
 
-			&.anim-fade {
-				grid-column: 1;
-				opacity: 0;
-				transform: 0;
-				&.slide-active {
-					opacity: 1;
-					z-index: 2;
+				&.anim-fade {
+					grid-column: 1;
+					opacity: 0;
+					transform: 0;
+					&.slide-active {
+						opacity: 1;
+						z-index: 2;
+					}
 				}
 			}
 		}
@@ -201,17 +228,21 @@
 		
 		grid-row: 1 / span 1;
 
+		width: 50%;
+		//height: 100%;
+
 		background: none;
 		outline: none;
 		border: none;
 		box-shadow: none;
 
 		&:first-of-type {
-			grid-column: 1 / span 1;
+			grid-column: 1 / -1;
 			cursor: url(/img/arrow-left.png) 32 32, auto;
 		}
 		&:last-of-type {
-			grid-column: 2 / span 1;
+			grid-column: 1 / -1;
+			justify-self: end;
 			cursor: url(/img/arrow-right.png) 32 32, auto;
 		}
 
