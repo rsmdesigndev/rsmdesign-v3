@@ -43,7 +43,7 @@
 			const paragraphsInHeadline = headline.querySelectorAll('p');
 			headline.innerHTML = "";
 			paragraphsInHeadline.forEach((paragraph) => {
-				headline.append(paragraph.innerHTML);
+				headline.innerHTML += paragraph.innerHTML;
 			});
 		}
 	});
