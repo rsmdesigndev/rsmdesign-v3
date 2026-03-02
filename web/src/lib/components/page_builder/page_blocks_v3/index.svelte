@@ -68,12 +68,14 @@
 
 	export let blocks: ({ item?: PageBlockV3 | null } | null | undefined)[] | null | undefined;
 	export let projectData: ProjectData | null | undefined = undefined;
+
+	const sectionColorThemes: string[] = blocks?.map((c) => c?.item?.section_color_theme);
 </script>
 
 <template>
 	{#each blocks?.map((c) => c?.item) ?? [] as data, i}
 		{#if data?.__typename === "page_blocks_v3_organism_card_row"}
-			<CardRow {data} {projectData} rowNumber={i} />
+			<CardRow {data} {projectData} previousTheme={sectionColorThemes[i-1]} rowNumber={i} />
 		{:else if data?.__typename === "page_blocks_v3_organism_data_feed"}
 			<DataFeed {data} rowNumber={i} />
 		{:else if data?.__typename === "page_blocks_v3_organism_hero"}

@@ -104,6 +104,8 @@
 		font-weight: 300;
 		line-height: var(--line-height);
 
+		color: var(--color-primary);
+
 		strong {
 			font-weight: 700;
 
@@ -125,14 +127,14 @@
 	}
 
 	a.cta:hover {
-		color: var(--COLOR-ORANGE);
+		color: var(--color-accent);
 
 		&.hover-highlight-none {
 			color: inherit;
 		}
 		&.hover-highlight-bold {
 			strong {
-				color: var(--COLOR-ORANGE);
+				color: var(--color-accent);
 			}
 			span.light {
 				color: inherit;
@@ -143,14 +145,14 @@
 				color: inherit;
 			}
 			span.light {
-				color: var(--COLOR-ORANGE);
+				color: var(--color-accent);
 			}
 		}
 
 		span.icon[data-icon="arrow_left"]::after,
 		span.icon[data-icon="arrow_right"]::after {
-			background-color: var(--COLOR-ORANGE);
-			color: white;
+			background-color: var(--color-accent);
+			color: var(--color-background);
 		}
 	}
 
@@ -174,7 +176,7 @@
 		&[data-icon="arrow_right"]::after {
 			width: calc((var(--font-size) + var(--font-size) * var(--line-height)) / 2);
 			height: calc((var(--font-size) + var(--font-size) * var(--line-height)) / 2);
-			border: 1.5px solid var(--COLOR-ORANGE);
+			border: 1.5px solid var(--color-accent);
 			border-radius: 50%;
 
 			align-content: center;
@@ -182,7 +184,7 @@
 
 			font-size: calc(var(--font-size) * var(--line-height));
 			line-height: calc(var(--font-size) * var(--line-height) / 1.618);
-			color: var(--COLOR-ORANGE);
+			color: var(--color-accent);
 
 			transition: color 0.25s ease, background-color 0.25s ease;
 		}

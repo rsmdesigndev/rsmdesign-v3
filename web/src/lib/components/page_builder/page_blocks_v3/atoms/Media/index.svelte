@@ -77,6 +77,7 @@
 		margin: 0;
 		padding: 0;
 		overflow-x: hidden;
+		color: var(--color-primary);
 
 		> figcaption {
 			font-size: var(--FONT-SIZE-SM);

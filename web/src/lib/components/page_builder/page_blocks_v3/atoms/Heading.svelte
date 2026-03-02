@@ -52,7 +52,6 @@
 	}
 
 	export let headingHeight: number;
-	$: console.log(headingHeight);
 </script>
 
 <template>
@@ -99,6 +98,7 @@
 <style lang="scss">
 	.heading {
 		grid-column: var(--grid-column-start) / var(--grid-column-end);
+		color: var(--color-primary);
 		
 		.heading-large, 
 		.heading-small {

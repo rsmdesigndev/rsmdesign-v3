@@ -345,11 +345,11 @@ export const _query = gql`
 							grid_col_start
 							grid_col_end_units
 							grid_col_end
+							column_interaction_on_scroll
 							column_item_spacing
 							column_padding_left
 							column_padding_right
 							column_sticky
-							column_items_data_bound
 							column_items {
 								item {
 									__typename

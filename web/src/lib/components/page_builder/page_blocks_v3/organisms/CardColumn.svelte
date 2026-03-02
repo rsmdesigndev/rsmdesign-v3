@@ -149,7 +149,7 @@
 			--padding-right: 0;
 		}
 
-		overflow-x: hidden;
+		overflow: hidden;
 
 		&.is-sticky {
 			position: sticky;

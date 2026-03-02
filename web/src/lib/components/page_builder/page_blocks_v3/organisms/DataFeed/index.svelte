@@ -315,27 +315,20 @@
 		if (autoplay) restartInterval();
 	}
 
-	$: isNextSlide = (i: number): boolean => {
-		if (cards?.length === 1) {
-			return false;
-		}
+	$: pagesLoaded = loadOffset / numItems;
+	$: pagesTotal = Math.ceil(loadTotalCount / numItems);
 
-		if (current === cards?.length - 1) {
-			// if on the last slide, "next slide" would be the first slide
-			return i === 0;
+	$: isNextSlide = (i: number): boolean => {
+		if (pagesTotal === 1) {
+			return false;
 		}
 		
 		return i === current + 1;
 	}
 
 	$: isPrevSlide = (i: number): boolean => {
-		if (cards?.length === 1) {
+		if (pagesTotal === 1) {
 			return false;
-		}
-		
-		if (current === 0) {
-			// if on the first slide, "prev slide" would be the last slide
-			return i === cards?.length - 1;
 		}
 
 		return i === current - 1;
@@ -390,24 +383,28 @@
 				<p>No projects match your query. Try another search or set of filters.</p>
 			{:else}
 				{#if data.feed_view === "Grid"}
-					{#each Array(loadOffset / numItems) as iter, i}
-						<DataFeedGrid feedData={ feedData.slice(i * numItems, i * numItems + numItems) }
-							data={ { feed_source: data.feed_source,
-									 feed_grid_columns: data.feed_grid_columns,
-								     feed_grid_style: data.feed_grid_style,
-								     feed_grid_dynamic_start_position: i % 2 ? !data.feed_grid_dynamic_start_position : data.feed_grid_dynamic_start_position
-								 } }
-						/>
-						<!--<div class="grid-container">
+					{#each Array(pagesLoaded) as page, i}
+						<div class="grid-container"
 							 class:carousel-slide={data.feed_load_functionality === "carousel"}
 							 class:slide-next={isNextSlide(i)}
 							 class:slide-prev={isPrevSlide(i)}
 							 class:slide-active={i === current}
 							 style:z-index={calcZIndex(i)}
-							 style={`transition: opacity ${animationDuration}ms ease`}
+							 style:transition={data.feed_load_functionality === "carousel" ? `opacity ${animationDuration}ms ease` : ""}
 						>
-							
-						</div>-->
+							<DataFeedGrid feedData={ feedData.slice(i * numItems, i * numItems + numItems) }
+								data={ { feed_source: data.feed_source,
+										 feed_grid_columns: data.feed_grid_columns,
+									     feed_grid_style: data.feed_grid_style,
+									     feed_grid_dynamic_start_position: 
+									     	((data.feed_grid_columns === 4) && Boolean(data.feed_grid_rows_per_load % 4) && (i % 2))
+									     	? 
+									     		!data.feed_grid_dynamic_start_position 
+									     	: 
+									     		data.feed_grid_dynamic_start_position
+									 } }
+							/>
+						</div>
 					{/each}
 
 				{:else}
@@ -437,11 +434,14 @@
 			{/if}
 		{/if}
 		{#if data.feed_load_functionality === "carousel"}
-			<!-- show arrows -->
-			{#if current > 0}
-				<button aria-label="Previous group" on:click={prev}>←</button>
-			{/if}
-			<button aria-label="Next group" on:click={next}>→</button>
+			<div class="button-container">
+				{#if current > 0}
+					<button class="carousel-button" aria-label="Previous group" on:click={prev}>←</button>
+				{/if}
+				{#if current < pagesTotal}
+					<button class="carousel-button" aria-label="Next group" on:click={next}>→</button>
+				{/if}
+			</div>
 		{:else if data.feed_load_functionality === "all"}
 			<!-- link to main index page w/ filter(s) applied -->
 		{/if}
@@ -467,6 +467,7 @@
 		grid-column: viewport;
 		display: grid;
 		grid-template-columns: subgrid;
+		row-gap: var(--SPACE-XL);
 
 		align-items: start;
 
@@ -478,8 +479,13 @@
 			display: contents;
 
 			&.carousel-slide {
-				display: subgrid;
-				grid-column: 1;
+				grid-column: viewport;
+				display: grid;
+				grid-template-columns: subgrid;
+				row-gap: var(--SPACE-XL);
+
+				position: relative;
+				grid-row: 1;
 				opacity: 0;
 				transform: 0;
 				&.slide-active {
@@ -488,8 +494,6 @@
 				}
 			}
 		}
-
-		row-gap: var(--SPACE-XL);
 
 		&.padding-top-sm {
 			padding-top: var(--SPACE-SM);
@@ -529,12 +533,44 @@
 		}
 	}
 
-	button.infinite-scroll {
-		height: 0;
+	.button-container {
+		grid-row: 1;
+		grid-column: main;
+
+		margin-top: calc(-1 * var(--SPACE-LG));
+
+		display: flex;
+		justify-content: flex-end;
+		gap: var(--SPACE-MD);
+	}
+
+	button {
 		border: none;
 		box-shadow: none;
 		background: transparent;
-		overflow: hidden;
-		margin-top: calc(-1 * var(--SPACE-XXXL));
+
+		&.infinite-scroll {
+			height: 0;
+			overflow: hidden;
+			margin-top: calc(-1 * var(--SPACE-XXXL));
+		}
+		&.carousel-button {
+			padding: 0;
+			&:first-of-type:not(:last-of-type) {
+				padding-right: var(--SPACE-SM)
+			}
+			&:last-of-type {
+				padding-left: var(--SPACE-SM)
+			}
+
+			font-size: var(--FONT-SIZE-LG);
+			color: var(--COLOR-SECONDARY);
+			transition: color 0.3s ease;
+
+			&:hover {
+				color: var(--COLOR-ORANGE);
+				cursor: pointer;
+			}
+		}
 	}
 </style>

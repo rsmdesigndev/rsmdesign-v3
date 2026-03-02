@@ -68,6 +68,8 @@
 		flex-direction: column;
 		row-gap: var(--SPACE-MD);
 
+		color: var(--color-primary);
+
 		> summary {
 			cursor: pointer;
 			
@@ -131,13 +133,15 @@
 			transition: height 0.3s ease;
 			position: relative;
 
+			color: var(--color-primary);
+
 			&::after {
 				content: "";
 				position: absolute;
 				bottom: 0;
 				width: 100%;
 				height: var(--SPACE-XXL);
-				background: linear-gradient(transparent, white);
+				background: linear-gradient(transparent, var(--color-background));
 				transition: opacity 0.3s ease;
 			}
 

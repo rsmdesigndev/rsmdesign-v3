@@ -118,6 +118,7 @@ export const _query = gql`
 					... on page_blocks_v3_organism_card_row {
 						change_background_color
 						section_background_color
+						section_color_theme
 						change_breadcrumbs
 						section_anchor_text
 						section_anchor_link
@@ -129,11 +130,11 @@ export const _query = gql`
 							grid_col_start
 							grid_col_end_units
 							grid_col_end
+							column_interaction_on_scroll
 							column_item_spacing
 							column_padding_left
 							column_padding_right
 							column_sticky
-							column_items_data_bound
 							column_items {
 								item {
 									__typename
@@ -221,7 +222,6 @@ export const _query = gql`
 										}
 									}
 									... on page_blocks_v3_organism_card_carousel {
-										carousel_data_bound
 										carousel_autoplay
 										carousel_autoplay_interval
 										carousel_cards {

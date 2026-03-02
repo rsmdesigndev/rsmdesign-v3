@@ -45,6 +45,7 @@
 		:global {
 			p {
 				font-size: inherit;
+				color: var(--color-primary, inherit);
 
 				&:last-of-type {
 					margin-bottom: 0;
@@ -56,10 +57,12 @@
 				font-weight: 700;
 				text-transform: uppercase;
 				letter-spacing: 0.05em;
+				color: var(--color-primary, inherit);
 			}
 			h4 {
 				font-size: inherit;
 				font-weight: 700;
+				color: var(--color-primary, inherit);
 			}
 		}
 
