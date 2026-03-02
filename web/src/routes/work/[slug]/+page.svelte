@@ -11,8 +11,8 @@
 	const projectData: ProjectData = {
 		project_title?: data.project.project_title,
 		project_location_city?: data.project.project_location_city?.city_name,
-		project_location_state?: data.project.project_location_city?.state_province.state_province_name,
-		project_location_country?: data.project.project_location_city?.country.country_name,
+		project_location_state?: data.project.project_location_city?.state_province?.state_province_name,
+		project_location_country?: data.project.project_location_city?.country?.country_name,
 		project_markets?: data.project.markets,
 		project_services?: data.project.services,
 		project_client?: data.project.project_client,

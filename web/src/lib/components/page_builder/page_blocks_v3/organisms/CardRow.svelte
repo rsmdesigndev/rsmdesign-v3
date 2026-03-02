@@ -46,14 +46,19 @@
 				previous-color-theme-${previousTheme}`}
 		style:--columns-alignment={data.columns_alignment}
 		style:--color-background={data.section_background_color}
-		use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#bg-color-${rowNumber}`, animClass: "bg-color-animate" } }
 	>
+		<div class="bg-color-trigger"
+			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#bg-color-${rowNumber}`, animClass: "bg-color-animate" } }
+		/>
 		<div class="bg-color-trigger"
 			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#row-${rowNumber}`, animClass: "theme-switch-animate" } }
 		/>
 		<div class="bg-color-trigger"
 			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#menu-bar-${rowNumber}`, animClass: "bg-color-animate" } }
 		/>
+		<!--<div class="bg-color-trigger"
+			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: ``, animClass: `theme-switch-${previousTheme}-to-${data.section_color_theme}` } }
+		/>-->
 		{#each data.columns as data, i}
 			<CardColumn {data} 
 						row={rowNumber}
@@ -175,78 +180,8 @@
 			top: 0;
 			left: 0;
 			height: 100%;
-			width: 100%;
+			pointer-events: none;
 		}
-
-		&.color-theme-light {
-			--theme-color-primary: var(--COLOR-BLACK);
-			--theme-color-secondary: var(--COLOR-MID-GRAY);
-			--theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--theme-color-accent: var(--COLOR-ORANGE);
-		}
-		&.color-theme-dark {
-			--theme-color-primary: white;
-			--theme-color-secondary: var(--COLOR-MID-GRAY);
-			--theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--theme-color-accent: var(--COLOR-ORANGE);
-		}
-		&.color-theme-neutral {
-			--theme-color-primary: var(--COLOR-BLACK);
-			--theme-color-secondary: white;
-			--theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--theme-color-accent: var(--COLOR-ORANGE);
-		}
-		&.color-theme-color {
-			--theme-color-primary: white;
-			--theme-color-secondary: white;
-			--theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--theme-color-accent: var(--COLOR-BLACK);
-		}
-		&.previous-color-theme-light {
-			--previous-theme-color-primary: var(--COLOR-BLACK);
-			--previous-theme-color-secondary: var(--COLOR-MID-GRAY);
-			--previous-theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--previous-theme-color-accent: var(--COLOR-ORANGE);
-		}
-		&.previous-color-theme-dark {
-			--previous-theme-color-primary: white;
-			--previous-theme-color-secondary: var(--COLOR-MID-GRAY);
-			--previous-theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--previous-theme-color-accent: var(--COLOR-ORANGE);
-		}
-		&.previous-color-theme-neutral {
-			--previous-theme-color-primary: var(--COLOR-BLACK);
-			--previous-theme-color-secondary: white;
-			--previous-theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--previous-theme-color-accent: var(--COLOR-ORANGE);
-		}
-		&.previous-color-theme-color {
-			--previous-theme-color-primary: white;
-			--previous-theme-color-secondary: white;
-			--previous-theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--previous-theme-color-accent: var(--COLOR-BLACK);
-		}
-	}
-
-	@property --color-primary {
-		syntax: "<color>";
-		inherits: true;
-		initial-value: var(--COLOR-BLACK);
-	}
-	@property --color-secondary {
-		syntax: "<color>";
-		inherits: true;
-		initial-value: var(--COLOR-MID-GRAY);
-	}
-	@property --color-tertiary {
-		syntax: "<color>";
-		inherits: true;
-		initial-value: var(--COLOR-DIM-GRAY);
-	}
-	@property --color-accent {
-		syntax: "<color>";
-		inherits: true;
-		initial-value: var(--COLOR-ORANGE);
 	}
 
 	:global {
@@ -262,7 +197,7 @@
 			25% {
 				background: transparent;
 			}
-			50% {
+			33% {
 				background: var(--color-background);
 			}
 			100% {
@@ -290,7 +225,7 @@
 				--color-tertiary: var(--previous-theme-color-tertiary, var(--COLOR-DIM-GRAY));
 				--color-accent: var(--previous-theme-color-accent, var(--COLOR-ORANGE));
 			}
-			50% {
+			33% {
 				--color-primary: var(--theme-color-primary, var(--COLOR-BLACK));
 				--color-secondary: var(--theme-color-secondary, var(--COLOR-MID-GRAY));
 				--color-tertiary: var(--theme-color-tertiary, var(--COLOR-DIM-GRAY));
