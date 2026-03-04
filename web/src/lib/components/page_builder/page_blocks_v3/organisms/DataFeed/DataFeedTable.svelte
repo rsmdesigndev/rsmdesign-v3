@@ -50,7 +50,7 @@
 							 heading_has_small_text: false,
 							 heading_has_large_text: true,
 							 heading_has_superscript: false, 
-							 heading_large: `All ${data.feed_source}`
+							 heading_large: `Recent ${data.feed_source}`
 						 } }
 				/>
 			{/if}
