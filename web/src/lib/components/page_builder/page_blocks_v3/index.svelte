@@ -77,7 +77,7 @@
 		{#if data?.__typename === "page_blocks_v3_organism_card_row"}
 			<CardRow {data} {projectData} previousTheme={sectionColorThemes[i-1]} rowNumber={i} />
 		{:else if data?.__typename === "page_blocks_v3_organism_data_feed"}
-			<DataFeed {data} rowNumber={i} />
+			<DataFeed {data} previousTheme={sectionColorThemes[i-1]} rowNumber={i} />
 		{:else if data?.__typename === "page_blocks_v3_organism_hero"}
 			<Hero {data} {projectData} project />
 		{:else}

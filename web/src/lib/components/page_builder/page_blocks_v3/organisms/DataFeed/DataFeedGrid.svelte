@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { assetUrl } from "$lib/cms/assets";
+	import { animate, AnimateTrigger } from "$lib/animate";
 	import Card, { type CardData } from "../../molecules/Card.svelte";
 	import Heading from "../../atoms/Heading.svelte";
+	import Cta, { type CtaData } from "../../atoms/Cta.svelte";
 	
 	export type dataFeedGridData = {
 		feed_source?: string | null;
@@ -12,13 +14,15 @@
 
 	export let data: dataFeedGridData;
 	export let feedData: any[];
+	export let rowNumber: number;
+	export let gridNumber: number;
 
-	const cardHeading = {
-		heading_type: "gridItem",
+	const itemHeading = {
+		heading_type: "feedItem",
 		heading_primary: "large",
-		heading_size: "lg",
+		heading_size: data.feed_grid_columns === 1 ? "xxl" : "lg",
 		heading_weight: "regular",
-		heading_has_small_text: true,
+		heading_has_small_text: data.feed_grid_columns === 1 ? false : true,
 		heading_has_large_text: true,
 		heading_has_superscript: false
 	}
@@ -27,15 +31,24 @@
 <template>
 	{#each feedData as item, i}
 		<a href="/work/{item.slug}"
+		   id={`row-${rowNumber}-grid-${gridNumber}-item-${i}`}
 		   class={`grid-item 
-		   		   ${data.feed_grid_columns === 3 ? "third" : "fourth"}
-		   		   ${data.feed_grid_style === "dynamic" ? "dynamic" : ""}
+		   		   ${data.feed_grid_columns === 3 ? "third" : 
+		   		    (data.feed_grid_columns === 4 ? "fourth" : "single-card")}
+		   		   ${data.feed_grid_style}
 		   		   ${data.feed_grid_dynamic_start_position ? "start-right" : "start-left"}
-		   		`}
+		   		 `}
 		   style:--grid-column-units={data.feed_grid_columns === 3 ? "sixth" : "eighth"}
+		   style:--grid-item={i}
+		   style:--grid-columns={data.feed_grid_columns}
 		>
+			{#if data.feed_grid_style === "parallax"}
+				<div class="parallax-animation-trigger"
+					 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#row-${rowNumber}-grid-${gridNumber}-item-${i}`, animClass: "feed-grid-parallax-animate" } }
+				/>
+			{/if}
 			<figure>
-				<picture class="image-container">
+				<picture>
 					{#if data.feed_grid_style === "dynamic"}
 						<source media="(max-width: 31.25em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
 						{#if data.feed_grid_columns === 3 && (i % 14 === 0 || i % 14 === 10)}
@@ -87,11 +100,20 @@
 				</picture>
 				<figcaption>
 					<Heading 
-						data={ {...cardHeading, 
+						data={ {...itemHeading, 
 								heading_small: item.location,
-								heading_large: item.project_title} 
-							 }
+								heading_large: item.project_title
+							 } }
 					/>
+					{#if data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
+						<p class="headline">[Insert hero headline here lorem ipsum dolor sit amet.]</p>
+						<Cta data={ { cta_icon: "arrow_right", 
+									  cta_style: "bold",
+									  cta_text_bold: "View project",
+									  cta_text_align: "right"
+								  } }
+						/>
+					{/if}
 				</figcaption>
 			</figure>
 		</a>
@@ -109,6 +131,8 @@
 		grid-template-columns: subgrid;
 		align-self: start;
 
+		position: relative;
+
 		> figure {
 			grid-column: 1 / -1;
 			padding: 0;
@@ -117,7 +141,7 @@
 			display: grid;
 			grid-template-columns: subgrid;
 
-			> picture.image-container {
+			> picture {
 				grid-column: 1 / -1;
 				margin: 0 0 var(--SPACE-SM);
 				aspect-ratio: 1 / 1;
@@ -139,13 +163,54 @@
 
 		&:hover {
 			> figure {
-				> picture.image-container {
+				> picture {
 					> img {
 						transform: scale(1.05);
 
 						@media (max-width: 46.875em) {
 							transform: scale(1);
 						}
+					}
+				}
+			}
+		}
+
+		&.single-card {
+			grid-column: main;
+			display: grid;
+			grid-template-columns: subgrid;
+
+			> figure {
+				grid-column: main;
+				display: grid;
+				grid-template-columns: subgrid;
+				align-items: start;
+
+				> picture {
+					margin: 0;
+					grid-column: eighth-start 4 / eighth-end 7;
+
+					@media (max-width: 62.5em) {
+						grid-column: half-start 2 / half-end 2;
+					}
+				}
+
+				> figcaption {
+					grid-row: 1;
+					grid-column: eighth-start 1 / eighth-end 3;
+
+					@media (max-width: 62.5em) {
+						grid-column: half-start 1 / half-end 1;
+					}
+
+					align-self: center;
+					margin-bottom: var(--SPACE-LG);
+
+					text-align: right;
+
+					> p.headline {
+						text-wrap: balance;
+						margin-top: var(--SPACE-SM);
 					}
 				}
 			}
@@ -167,7 +232,7 @@
 					&:nth-of-type(14n+1) {
 						grid-column: viewport-start / sixth-end 4;
 
-						picture.image-container {
+						picture {
 							aspect-ratio: 3 / 2;
 						}
 
@@ -199,7 +264,7 @@
 					&:nth-of-type(14n+11) {
 						grid-column: sixth-start 3 / viewport-end;
 
-						picture.image-container {
+						picture {
 							aspect-ratio: 3 / 2;
 						}
 
@@ -240,7 +305,7 @@
 						&:nth-of-type(14n+1) {
 							grid-column: viewport-start / eighth-end 4;
 
-							picture.image-container {
+							picture {
 								aspect-ratio: 16 / 9;
 							}
 
@@ -263,7 +328,7 @@
 						&:nth-of-type(14n+10) {
 							grid-column: eighth-start 5 / viewport-end;
 
-							picture.image-container {
+							picture {
 								aspect-ratio: 16 / 9;
 							}
 
@@ -282,7 +347,7 @@
 						&:nth-of-type(14n+3) {
 							grid-column: eighth-start 5 / viewport-end;
 
-							picture.image-container {
+							picture {
 								aspect-ratio: 16 / 9;
 							}
 
@@ -293,7 +358,7 @@
 						&:nth-of-type(14n+8) {
 							grid-column: viewport-start / eighth-end 4;
 
-							picture.image-container {
+							picture {
 								aspect-ratio: 16 / 9;
 							}
 
@@ -369,6 +434,36 @@
 			&:nth-of-type(n),
 			&.dynamic:nth-of-type(n) {
 				grid-column: main;
+			}
+		}
+
+		&.parallax {
+			> .parallax-animation-trigger {
+				position: absolute;
+				top: 0;
+				left: 0;
+				height: 100%;
+			}
+		}
+	}
+
+	:global {
+		.feed-grid-parallax-animate {
+			--position-in-grid-row: calc(mod(var(--grid-item), var(--grid-columns)));
+			@media (max-width: 62.5em) {
+				--position-in-grid-row: calc(mod(var(--grid-item), 3));
+			}
+			@media (min-width: 31.25em) {
+				animation: feed-grid-parallax-animate 1s linear forwards;
+			}
+		}
+
+		@keyframes feed-grid-parallax-animate {
+			0% {
+				transform: translate(calc(var(--SPACE-XL) * (1 + var(--position-in-grid-row))), 0rem);
+			}
+			100% {
+				transform: translate(calc(-1 * var(--SPACE-LG) * (var(--grid-columns) - var(--position-in-grid-row))), 0rem);
 			}
 		}
 	}

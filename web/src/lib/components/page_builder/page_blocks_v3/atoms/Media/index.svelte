@@ -5,6 +5,8 @@
 		media_video_source?: string | null;
 		media_video_vimeo?: string | null;
 		media_video_youtube?: string | null;
+		media_video_native?: any | null;
+		media_video_fallback_image?: ImageAssetRelation | null;
 		media_slider?: ImageAssetRelation[] | null;
 		media_slider_autoplay?: boolean | null;
 		media_slider_autoplay_interval?: number | null;
@@ -32,11 +34,13 @@
 			Media type “image” selected, but no image was uploaded
 		{/if}
 	{:else if data.media_type === "video"}
-		{#if data.media_video_vimeo || data.media_video_youtube}
+		{#if data.media_video_vimeo || data.media_video_youtube || data.media_video_native || data.media_video_fallback_image}
 			<Video 
 				source={data.media_video_source}
 				vimeo={data.media_video_vimeo} 
 				youtube={data.media_video_youtube}
+				native={data.media_video_native}
+				fallback={data.media_video_fallback_image}
 			/>
 		{:else}
 			Media type “video” selected, but no video link was provided
@@ -77,7 +81,7 @@
 		margin: 0;
 		padding: 0;
 		overflow-x: hidden;
-		color: var(--color-primary);
+		color: var(--color-primary, inherit);
 
 		> figcaption {
 			font-size: var(--FONT-SIZE-SM);

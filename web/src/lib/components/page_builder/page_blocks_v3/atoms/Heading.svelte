@@ -42,11 +42,11 @@
 			}
 			break;
 		case "lg":
+			weightSmall = 400;
 			if (data.heading_weight === "bold") {
 				weightLarge = 700;
 			} else {
 				weightLarge = 500;
-				weightSmall = 500;
 			}
 			break;
 	}
@@ -62,7 +62,7 @@
 	>
 		{#if data.heading_has_small_text && data.heading_small}
 			<svelte:element 
-				this={data.heading_type === "gridItem" ? "h4" :
+				this={data.heading_type === "feedItem" ? "h4" :
 					 (data.heading_type === "page" && data.heading_primary === "small" ? "h1" : 
 					 (data.heading_type === "page" || data.heading_primary === "small" ? "h2" : "h3"))}
 				class="heading-small"
@@ -76,14 +76,14 @@
 		{/if}
 		{#if data.heading_has_large_text && data.heading_large}
 			<svelte:element 
-				this={data.heading_type === "gridItem" ? "h3" :
+				this={data.heading_type === "feedItem" ? "h3" :
 					 (data.heading_type === "page" && data.heading_primary === "large" ? "h1" : 
 					 (data.heading_type === "page" || data.heading_primary === "large" ? "h2" : "h3"))}
 				class="heading-large"
 				style:--font-size={`var(--FONT-SIZE-${data.heading_size?.toUpperCase()})`}
 				style:--font-weight={weightLarge}
 				style:--line-height={data.heading_size === "lg" ? "1.167" :
-												(data.heading_size === "xl" ? "1.133" : "1")}
+									(data.heading_size === "xl" ? "1.133" : "1")}
 
 			>
 				{data.heading_large}
@@ -98,7 +98,7 @@
 <style lang="scss">
 	.heading {
 		grid-column: var(--grid-column-start) / var(--grid-column-end);
-		color: var(--color-primary);
+		color: var(--color-primary, var(--COLOR-BLACK));
 		
 		.heading-large, 
 		.heading-small {

@@ -197,6 +197,8 @@
 			display: grid;
 			grid-template-columns: var(--GRID-WRAPPER);
 
+			pointer-events: none;
+
 			/*	BACKGROUND
 				Z-Indexes
 				1: Background color
@@ -239,6 +241,8 @@
 			justify-self: start;
 			align-self: center;
 
+			pointer-events: auto;
+
 			height: 1.25rem;
 			width: 5rem;
 			> svg {
@@ -262,6 +266,8 @@
 		grid-row: 1;
 		justify-self: end;
 		align-self: center;
+
+		pointer-events: auto;
 
 		display: flex;
 		column-gap: var(--SPACE-MD);

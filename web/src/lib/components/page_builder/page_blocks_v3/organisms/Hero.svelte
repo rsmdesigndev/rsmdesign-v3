@@ -5,6 +5,8 @@
 		hero_video_source?: string | null;
 		hero_video_vimeo?: string | null;
 		hero_video_youtube?: string | null;
+		hero_video_native?: any | null;
+		hero_video_native_mobile?: any | null;
 		hero_headline?: string | null;
 	}
 </script>
@@ -19,7 +21,7 @@
 
 	export let data: HeroData;
 	export let project: boolean = false;
-	export let projectData: ProjectData;
+	export let projectData: ProjectData | null;
 
 	$: h1Height = 0;
 	$: h3Height = 0;
@@ -36,6 +38,9 @@
 		cta_hover_highlight: "light"
 	}
 
+	let heroVideoNative: HTMLVideoElement;
+	let heroVideoNativeMobile: HTMLVideoElement;
+
 	// Remove <p> tags from hero headline
 	let headline: HTMLElement;
 	onMount(() => {
@@ -45,6 +50,14 @@
 			paragraphsInHeadline.forEach((paragraph) => {
 				headline.innerHTML += paragraph.innerHTML;
 			});
+		}
+
+		if (data.hero_video_native?.filename_disk) {
+			heroVideoNative.play();
+		}
+
+		if (data.hero_video_native_mobile?.filename_disk) {
+			heroVideoNativeMobile.play();
 		}
 	});
 </script>
@@ -70,16 +83,25 @@
 						allowfullscreen
 						loading="lazy"
 					/>
-				{:else}
+				{:else if data.hero_video_source === "youtube"}
 					<iframe
 						title="Video"
-						src={`https://www.youtube.com/embed/${data.hero_video_youtube}?controls=0&autoplay=1&mute=1&playsinline=1&loop=1`}
+						src={`https://www.youtube.com/embed/${data.hero_video_youtube}?controls=0&autoplay=1&mute=1&playsinline=1&loop=1&playlist=${data.hero_video_youtube}`}
 						height="100%"
 						frameborder="0"
 						allow="autoplay; fullscreen"
 						allowfullscreen
 						loading="lazy"
 					/>
+				{:else}
+					{#if data.hero_video_native?.filename_disk}
+						<video bind:this={heroVideoNative} loop autoplay muted playsinline>
+							<source src={assetUrl(data.hero_video_native?.filename_disk)} type={data.hero_video_native?.type} />
+							<track kind="captions" />
+						</video>
+					{:else}
+						Video selected, but no video attached.
+					{/if}
 				{/if}
 			</div>
 		</div>
@@ -119,14 +141,14 @@
 					id="project-hero-h3" 
 					class="lg lowercase"
 				>
-					{projectData.project_location_city},
-					{#if projectData.project_location_state && (projectData.project_location_country === "United States of America")}
-						{projectData.project_location_state}
-					{:else if projectData.project_location_state}
-						{projectData.project_location_state},
+					{projectData?.project_location_city},
+					{#if projectData?.project_location_state && (projectData?.project_location_country === "United States of America")}
+						{projectData?.project_location_state}
+					{:else if projectData?.project_location_state}
+						{projectData?.project_location_state},
 					{/if}
-					{#if projectData.project_location_country != "United States of America"}
-						{projectData.project_location_country}
+					{#if projectData?.project_location_country != "United States of America"}
+						{projectData?.project_location_country}
 					{/if}
 				</h3>
 				<div bind:offsetHeight={h1ContainerHeight}
@@ -136,7 +158,7 @@
 						class="xxxl" 
 						bind:offsetHeight={h1Height}
 					>
-						{projectData.project_title}
+						{projectData?.project_title}
 					</h1>
 				</div>
 				<h2 bind:offsetHeight={h2Height}
@@ -151,12 +173,12 @@
 			<div bind:offsetHeight={expertiseHeight}
 				 class="project-expertise"
 			>
-				{#if projectData.project_services.length > 0}
+				{#if projectData?.project_services.length > 0}
 					<div class="project-type">
 						<h3 class="lg lowercase">
 							Project type
 						</h3>
-						{#each projectData.project_services.slice(0, 2) as service}
+						{#each projectData?.project_services.slice(0, 2) as service}
 							<Cta data={ {...expertiseCta, 
 										 cta_text_light: service.services_id.name,
 										 cta_link: `/${service.services_id.slug}` 
@@ -165,12 +187,12 @@
 						{/each}
 					</div>
 				{/if}
-				{#if projectData.project_markets.length > 0}
+				{#if projectData?.project_markets.length > 0}
 					<div class="project-sector">
 						<h3 class="lg lowercase">
 							Project sector
 						</h3>
-						{#each projectData.project_markets.slice(0, 2) as market}
+						{#each projectData?.project_markets.slice(0, 2) as market}
 							<Cta data={ {...expertiseCta, 
 										 cta_text_light: market.markets_id.name,
 										 cta_link: `/${market.markets_id.slug}` 
@@ -226,7 +248,8 @@
 					flex-basis: 100vw;
 				}
 
-				> iframe {
+				> iframe,
+				> video {
 					height: 100%;
 					width: 100%;
 				}

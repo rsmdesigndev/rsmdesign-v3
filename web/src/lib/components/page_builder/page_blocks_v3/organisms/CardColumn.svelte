@@ -91,8 +91,8 @@
 		 id={data.column_sticky === "top" ? `column-sticky-${row}-${column}` : ""}
 		 class:is-sticky={data.column_sticky != "false"}
 		 style:--top={data.column_sticky === "top" ? "var(--SPACE-LG)" :
-		 			 (data.column_sticky === "center" ? "calc(50vh - 1px * columnHeight / 2)" :
-		 			  "calc(100vh - 1px * columnHeight - var(--SPACE-MD))"
+		 			 (data.column_sticky === "center" ? `calc(50vh - 1px * ${columnHeight} / 2)` :
+		 			  `calc(100vh - 1px * ${columnHeight} - var(--SPACE-MD))`
 		 			 )}
 		 class="column-container"
 		 style:--grid-column={`${data.grid_col_start_units}-start ${data.grid_col_start_units != "viewport" ? data.grid_col_start : ""} / ${data.grid_col_end_units}-end ${data.grid_col_end_units != "viewport" ? data.grid_col_end : ""}`}

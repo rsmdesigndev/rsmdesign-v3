@@ -8,6 +8,7 @@
 		cta_text_bold?: string | null;
 		cta_text_light?: string | null;
 		cta_link?: string | null;
+		cta_text_align?: string | null;
 	};
 </script>
 
@@ -59,6 +60,7 @@
 							? "_blank" : "_self"}
 					class={`cta ${!button && data.cta_type === "button" ? "button" : "link"}
 							hover-highlight-${hoverOverride != "" ? hoverOverride : data.cta_hover_highlight}`}
+					style:justify-content={data.cta_text_align === "right" ? "flex-end" : ""}
 					style:--grid-column-start={bleed.left ? "2" : "1"}
 					style:--grid-column-end={bleed.right ? "-2" : "-1"}
 					style:--flex-direction={data.cta_icon_position === "left" ? "row-reverse" : "row"}
@@ -104,7 +106,7 @@
 		font-weight: 300;
 		line-height: var(--line-height);
 
-		color: var(--color-primary);
+		color: var(--color-primary, inherit);
 
 		strong {
 			font-weight: 700;
@@ -134,7 +136,7 @@
 		}
 		&.hover-highlight-bold {
 			strong {
-				color: var(--color-accent);
+				color: var(--color-accent, var(--COLOR-ORANGE));
 			}
 			span.light {
 				color: inherit;
@@ -145,14 +147,14 @@
 				color: inherit;
 			}
 			span.light {
-				color: var(--color-accent);
+				color: var(--color-accent, var(--COLOR-ORANGE));
 			}
 		}
 
 		span.icon[data-icon="arrow_left"]::after,
 		span.icon[data-icon="arrow_right"]::after {
-			background-color: var(--color-accent);
-			color: var(--color-background);
+			background-color: var(--color-accent, var(--COLOR-ORANGE));
+			color: var(--color-background, white);
 		}
 	}
 
@@ -176,7 +178,7 @@
 		&[data-icon="arrow_right"]::after {
 			width: calc((var(--font-size) + var(--font-size) * var(--line-height)) / 2);
 			height: calc((var(--font-size) + var(--font-size) * var(--line-height)) / 2);
-			border: 1.5px solid var(--color-accent);
+			border: 1.5px solid var(--color-accent, var(--COLOR-ORANGE));
 			border-radius: 50%;
 
 			align-content: center;
@@ -184,7 +186,7 @@
 
 			font-size: calc(var(--font-size) * var(--line-height));
 			line-height: calc(var(--font-size) * var(--line-height) / 1.618);
-			color: var(--color-accent);
+			color: var(--color-accent, var(--COLOR-ORANGE));
 
 			transition: color 0.25s ease, background-color 0.25s ease;
 		}

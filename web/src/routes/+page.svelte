@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from "./$types";
 	import PageBlocks from "$lib/components/page_builder/page_blocks/index.svelte";
+	import PageBlocksV3, { type ProjectData } from "$lib/components/page_builder/page_blocks_v3/index.svelte";
 	import { setProjectGridContext } from "$lib/components/ProjectsGrid.svelte";
 	import { assetUrl } from "$lib/cms/assets";
 	import Section from "$lib/components/Section.svelte";
@@ -63,110 +64,118 @@
 </svelte:head>
 
 <template>
-	{#if data.homepage?.native_video?.filename_disk}
-		<figure class="hero">
-			{#if data.homepage?.native_video_mobile?.filename_disk}
-				<div class="hero-video hero-video--desktop">
-					<video bind:this={nativeVideo} loop autoplay muted playsinline>
-						<source src={assetUrl(data.homepage?.native_video?.filename_disk)} type="{data.homepage?.native_video?.type}" />
-						<track kind="captions" />
-					</video>
-				</div>
-			{:else}
-				<div class="hero-video">
-					<video bind:this={nativeVideo} loop autoplay muted playsinline>
-						<source src={assetUrl(data.homepage?.native_video?.filename_disk)} type="{data.homepage?.native_video?.type}" />
-						<track kind="captions" />
-					</video>
-				</div>
-			{/if}
-			{#if data.homepage?.native_video_mobile?.filename_disk}
-				<div class="hero-video hero-video--mobile">
-					<video bind:this={nativeMobileVideo} loop autoplay muted playsinline>
-						<source src={assetUrl(data.homepage?.native_video_mobile?.filename_disk)} type="{data.homepage?.native_video_mobile?.type}" />
-						<track kind="captions" />
-					</video>
-				</div>
-			{/if}
-		</figure>
-	{:else if data.homepage?.hero_video_id}
-		<figure class="hero">
-			{#if !vimeoStatus}
-				<img src={assetUrl(data.homepage?.video_fallback?.filename_disk)} alt={`RSM Design ${data.homepage?.seo_title}`} />
-			{:else}
-				<div class="hero-video">
-					<iframe
-						title="Video"
-						src="https://player.vimeo.com/video/{data.homepage?.hero_video_id}?background=1"
-						width="100%"
-						height="100%"
-						frameborder="0"
-						allow="autoplay; fullscreen"
-						allowfullscreen
-						loading="lazy"
-						bind:this={vimeoPlayer}
-					/>
-				</div>
-			{/if}
-		</figure>
+	{#if data.homepage?.home_use_page_blocks_v3}
+		{#if data.homepage.home_page_blocks_v3}
+			<PageBlocksV3 blocks={data.homepage.home_page_blocks_v3} />
+		{:else}
+			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
+		{/if}
 	{:else}
-		<section class="slideshow-section">
-			<Slideshow fullBleed interval={5000} items={data.sliderProjects} let:item>
-				<a href="/work/{item.slug}">
-					<figure in:fade={{ delay: 300 }} out:fade={{ delay: 600 }}>
-						<img
-							src={assetUrl(item.hero_image?.filename_disk)}
-							alt={item.hero_image?.description}
-							class={item.hero_image_crop_attachment === "left"
-								? "position-left"
-								: item.hero_image_crop_attachment === "center_left"
-								? "position-center-left"
-								: item.hero_image_crop_attachment === "center"
-								? ""
-								: item.hero_image_crop_attachment === "center_right"
-								? "position-center-right"
-								: item.hero_image_crop_attachment === "right"
-								? "position-right"
-								: ""}
+		{#if data.homepage?.native_video?.filename_disk}
+			<figure class="hero">
+				{#if data.homepage?.native_video_mobile?.filename_disk}
+					<div class="hero-video hero-video--desktop">
+						<video bind:this={nativeVideo} loop autoplay muted playsinline>
+							<source src={assetUrl(data.homepage?.native_video?.filename_disk)} type="{data.homepage?.native_video?.type}" />
+							<track kind="captions" />
+						</video>
+					</div>
+				{:else}
+					<div class="hero-video">
+						<video bind:this={nativeVideo} loop autoplay muted playsinline>
+							<source src={assetUrl(data.homepage?.native_video?.filename_disk)} type="{data.homepage?.native_video?.type}" />
+							<track kind="captions" />
+						</video>
+					</div>
+				{/if}
+				{#if data.homepage?.native_video_mobile?.filename_disk}
+					<div class="hero-video hero-video--mobile">
+						<video bind:this={nativeMobileVideo} loop autoplay muted playsinline>
+							<source src={assetUrl(data.homepage?.native_video_mobile?.filename_disk)} type="{data.homepage?.native_video_mobile?.type}" />
+							<track kind="captions" />
+						</video>
+					</div>
+				{/if}
+			</figure>
+		{:else if data.homepage?.hero_video_id}
+			<figure class="hero">
+				{#if !vimeoStatus}
+					<img src={assetUrl(data.homepage?.video_fallback?.filename_disk)} alt={`RSM Design ${data.homepage?.seo_title}`} />
+				{:else}
+					<div class="hero-video">
+						<iframe
+							title="Video"
+							src="https://player.vimeo.com/video/{data.homepage?.hero_video_id}?background=1"
+							width="100%"
+							height="100%"
+							frameborder="0"
+							allow="autoplay; fullscreen"
+							allowfullscreen
+							loading="lazy"
+							bind:this={vimeoPlayer}
 						/>
-						<figcaption>
-							<h3>{item.project_title}</h3>
-							<p>{item.location}</p>
-						</figcaption>
-					</figure>
-				</a>
-			</Slideshow>
-		</section>
-	{/if}
-
-	<PageBlocks content={data.homepage?.page_content} />
-
-	{#if data.projectsInProgress.length}
-		<section class="in-progress-section">
-			<h2 class="xxxl">In progress.</h2>
-			<div class="grid-col-3">
-				{#each data.projectsInProgress as project}
-					<a href="/work/{project.slug}">
-						<figure>
+					</div>
+				{/if}
+			</figure>
+		{:else}
+			<section class="slideshow-section">
+				<Slideshow fullBleed interval={5000} items={data.sliderProjects} let:item>
+					<a href="/work/{item.slug}">
+						<figure in:fade={{ delay: 300 }} out:fade={{ delay: 600 }}>
 							<img
-								src={assetUrl(project.grid_image?.filename_disk)}
-								alt={project.grid_image?.description}
+								src={assetUrl(item.hero_image?.filename_disk)}
+								alt={item.hero_image?.description}
+								class={item.hero_image_crop_attachment === "left"
+									? "position-left"
+									: item.hero_image_crop_attachment === "center_left"
+									? "position-center-left"
+									: item.hero_image_crop_attachment === "center"
+									? ""
+									: item.hero_image_crop_attachment === "center_right"
+									? "position-center-right"
+									: item.hero_image_crop_attachment === "right"
+									? "position-right"
+									: ""}
 							/>
 							<figcaption>
-								<h3 class="lg">{project.project_title}</h3>
-								<p>{project.location}</p>
+								<h3>{item.project_title}</h3>
+								<p>{item.location}</p>
 							</figcaption>
 						</figure>
 					</a>
-				{/each}
-			</div>
-		</section>
+				</Slideshow>
+			</section>
+		{/if}
 
-		<section class="in-progress-cta">
-			<DottedArrowHover text_alignment="right" href="/services/in-progress">
-				<p>View Work in Progress <DottedArrow /></p>
-			</DottedArrowHover>
-		</section>
+		<PageBlocks content={data.homepage?.page_content} />
+
+		{#if data.projectsInProgress.length}
+			<section class="in-progress-section">
+				<h2 class="xxxl">In progress.</h2>
+				<div class="grid-col-3">
+					{#each data.projectsInProgress as project}
+						<a href="/work/{project.slug}">
+							<figure>
+								<img
+									src={assetUrl(project.grid_image?.filename_disk)}
+									alt={project.grid_image?.description}
+								/>
+								<figcaption>
+									<h3 class="lg">{project.project_title}</h3>
+									<p>{project.location}</p>
+								</figcaption>
+							</figure>
+						</a>
+					{/each}
+				</div>
+			</section>
+
+			<section class="in-progress-cta">
+				<DottedArrowHover text_alignment="right" href="/services/in-progress">
+					<p>View Work in Progress <DottedArrow /></p>
+				</DottedArrowHover>
+			</section>
+		{/if}
 	{/if}
 </template>
 

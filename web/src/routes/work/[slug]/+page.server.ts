@@ -186,6 +186,17 @@ export const _query = gql`
 														title
 														description
 													}
+													media_video_fallback_image {
+														filename_disk
+														title
+														description
+													}
+													media_video_native {
+														id
+														title
+														type
+														filename_disk
+													}
 													media_video_source
 													media_video_vimeo
 													media_video_youtube
@@ -347,6 +358,9 @@ export const _query = gql`
 						feed_grid_rows_per_load
 						feed_grid_style
 						feed_grid_dynamic_start_position
+						feed_table_style
+						feed_table_image_position
+						feed_table_items_per_load
 						feed_cards {
 							card_item_spacing
 							card_atoms {
@@ -431,6 +445,18 @@ export const _query = gql`
 							description
 						}
 						hero_video_source
+						hero_video_native {
+							id
+							title
+							type
+							filename_disk
+						}
+						hero_video_native_mobile {
+							id
+							title
+							type
+							filename_disk
+						}
 						hero_video_vimeo
 						hero_video_youtube
 						hero_headline
