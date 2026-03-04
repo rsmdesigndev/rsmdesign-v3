@@ -53,6 +53,7 @@
 		{:else}
 			<h3 class={`heading heading-caps`}
 				style:--font-size="var(--FONT-SIZE-MD)"
+				style:--font-weight="700"
 				style:--line-height="1.333"
 			>
 				Project info
