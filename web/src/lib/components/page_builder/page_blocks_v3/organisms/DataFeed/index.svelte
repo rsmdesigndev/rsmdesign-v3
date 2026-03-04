@@ -229,6 +229,11 @@
 								filename_disk
 								description
 							}
+							hero_image {
+								filename_disk
+								title
+								description
+							}
 							topics {
 								news_topics_id {
 									name
@@ -409,6 +414,11 @@
 		 style:--color-background={data.section_background_color}
 	/>
 
+	<div id={`menu-bar-${rowNumber}`}
+		 class="menu-bar" 
+		 style:--color-background={data.section_background_color}
+	/>
+
 	<section id={`row-${rowNumber}`}
 			 class={`padding-top-xl padding-bottom-none
 					 ${data.feed_view}
@@ -507,11 +517,6 @@
 			<!-- link to main index page w/ filter(s) applied -->
 		{/if}
 	</section>
-
-	<div id={`menu-bar-${rowNumber}`}
-		 class="menu-bar" 
-		 style:--color-background={data.section_background_color}
-	/>
 </template>
 
 <style lang="scss">
@@ -555,7 +560,7 @@
 		height: calc(var(--GRID-CELL) * 1.75);
 		margin-bottom: calc(-1 * var(--SPACE-LG));
 	}
-	
+
 	section {
 		/* 
 			Z-Indexes
