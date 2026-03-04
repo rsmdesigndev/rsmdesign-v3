@@ -74,7 +74,7 @@
 					{:else if data.feed_source === "Articles"}
 						<Heading 
 							data={ {...itemHeading, 
-									heading_small: item.topics[0].name,
+									heading_small: item.topics?.[0]?.news_topics_id?.name,
 									heading_large: item.post_title
 								 } }
 						/>
