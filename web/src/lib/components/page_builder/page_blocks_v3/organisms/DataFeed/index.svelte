@@ -682,6 +682,7 @@
 		}
 		&.carousel-button {
 			padding: 0;
+			align-self: start;
 			&:first-of-type:not(:last-of-type) {
 				padding-right: var(--SPACE-SM)
 			}
