@@ -45,13 +45,7 @@
 	{/each}
 </svelte:head>
 
-{#if data.about.about_use_page_blocks_v3}
-	{#if data.about.about_page_blocks_v3}
-		<PageBlocksV3 blocks={data.about.about_page_blocks_v3} />
-	{:else}
-		<div class="container">Page Blocks v3 selected, but no blocks added.</div>
-	{/if}
-{:else if data.about.use_page_blocks}
+{#if if data.about.use_page_blocks}
 	<PageBlocks content={data.about.page_content} />
 {:else}
 	<template>
@@ -75,7 +69,7 @@
 					<p>Design Principles <DottedArrow /></p>
 				</DottedArrowHover>
 			</Section>
-			<Section images order={6} span_columns={1} col_units="third" col_start={3} span_rows={2}>
+			<!--<Section images order={6} span_columns={1} col_units="third" col_start={3} span_rows={2}>
 				<figure class="about-image-container">
 					<img
 						src="/img/about/About-Img-SC-Studio.jpg"
@@ -83,7 +77,7 @@
 					/>
 					<figcaption>San Clemente Studio</figcaption>
 				</figure>
-			</Section>
+			</Section>-->
 			<Section header order={8} span_columns={2} col_units="third" col_start={1} span_rows={1}>
 				<h2 class="xxxl">Meet Our Team.</h2>
 			</Section>

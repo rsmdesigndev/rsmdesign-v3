@@ -56,4 +56,8 @@
 </template>
 
 <style lang="scss">
+	iframe,
+	video {
+		width: 100%;
+	}
 </style>
