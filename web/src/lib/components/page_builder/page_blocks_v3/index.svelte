@@ -67,6 +67,7 @@
 
 
 	export let blocks: ({ item?: PageBlockV3 | null } | null | undefined)[] | null | undefined;
+	export let project: boolean = false;
 	export let projectData: ProjectData | null | undefined = undefined;
 
 	const sectionColorThemes: string[] = blocks?.map((c) => c?.item?.section_color_theme);
@@ -79,7 +80,7 @@
 		{:else if data?.__typename === "page_blocks_v3_organism_data_feed"}
 			<DataFeed {data} previousTheme={sectionColorThemes[i-1]} rowNumber={i} />
 		{:else if data?.__typename === "page_blocks_v3_organism_hero"}
-			<Hero {data} {projectData} project />
+			<Hero {data} {projectData} />
 		{:else}
 			No page content
 		{/if}

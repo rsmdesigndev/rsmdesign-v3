@@ -438,6 +438,7 @@ export const _query = gql`
 						}
 					}
 					... on page_blocks_v3_organism_hero {
+						hero_style
 						hero_media_type
 						hero_image {
 							filename_disk

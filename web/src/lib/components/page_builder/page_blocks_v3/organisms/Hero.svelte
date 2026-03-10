@@ -20,7 +20,6 @@
 	import Cta from "../atoms/Cta.svelte";
 
 	export let data: HeroData;
-	export let project: boolean = false;
 	export let projectData: ProjectData | null;
 
 	$: h1Height = 0;
@@ -71,7 +70,7 @@
 		 style:--h3-height={h3Height}
 >
 	{#if data.hero_media_type === "Video"}
-		<div class="video-wrapper">
+		<div id="hero-video-wrapper" class="video-wrapper">
 			<div class="video-container">
 				{#if data.hero_video_source === "vimeo"}
 					<iframe
@@ -111,28 +110,26 @@
 			alt={data.hero_image?.description}
 		/>
 	{/if}
-	{#if data.hero_headline}
-		<div class="hero-scrim-top" />
-	{/if}
+	<div class="hero-scrim-top" />
 	<div class="hero-scrim-bottom" />
-	{#if project}
+	{#if data.hero_style === "project"}
 		<div class="project-details">
 			{#if data.hero_media_type === "Video"}
-				<div class="project-hero-animate"
-					 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: ".video-wrapper", animClass: "hero-media-animate" } }
+				<div class="hero-animation-trigger"
+					 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#hero-video-wrapper", animClass: "hero-media-animate" } }
 				/>
 			{:else}
-				<div class="project-hero-animate"
+				<div class="hero-animation-trigger"
 					 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "img", animClass: "hero-media-animate" } }
 				/>
 			{/if}
-			<div class="project-hero-animate"
+			<div class="hero-animation-trigger"
 				 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#project-hero-h3", animClass: "project-hero-h3" } }
 			/>
-			<div class="project-hero-animate"
+			<div class="hero-animation-trigger"
 				 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#project-hero-h1", animClass: "project-hero-h1" } }
 			/>
-			<div class="project-hero-animate"
+			<div class="hero-animation-trigger"
 				 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#project-hero-h2", animClass: "project-hero-h2" } }
 			/>
 
@@ -207,7 +204,19 @@
 				{/if}
 			</div>
 		</div>
-	{:else}
+	{:else if data.hero_style === "above"}
+		<div class="hero-headline-below">
+			<div class="hero-animation-trigger"
+				 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#hero-h1", animClass: `hero-h1-${data.hero_style}` } }
+			/>
+			<h1 bind:this={headline}
+				id="hero-h1" 
+				class="xxxl"
+			>
+				{@html data.hero_headline}
+			</h1>
+		</div>
+	{:else if data.hero_style === "below"}
 	{/if}
 </section>
 
@@ -318,6 +327,14 @@
 			);
 		}
 
+		.hero-animation-trigger {
+			position: absolute;
+			top: 0;
+			left: 0;
+			height: 100%;
+			pointer-events: none;
+		}
+
 		.project-details {
 			//z-index: 5; // stack this on top of the header background
 			position: absolute;
@@ -328,14 +345,6 @@
 
 			display: grid;
 			grid-template-columns: var(--GRID-WRAPPER);
-
-			> .project-hero-animate {
-				position: absolute;
-				top: 0;
-				left: 0;
-				height: 100%;
-				pointer-events: none;
-			}
 
 			> .project-headings {
 				grid-column: sixth-start 1 / sixth-end 4;
@@ -414,6 +423,40 @@
 						grid-column: third-start 2 / third-end 2;
 					}
 				}
+			}
+		}
+		.hero-headline-below {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+
+			display: grid;
+			grid-template-columns: var(--GRID-WRAPPER);
+
+			> .project-hero-animate {
+				position: absolute;
+				top: 0;
+				left: 0;
+				height: 100%;
+				pointer-events: none;
+			}
+
+			> .project-headings {
+				grid-column: sixth-start 1 / sixth-end 4;
+				@media (max-width: 62.5em) {
+					grid-column: third-start 1 / third-end 2;
+				}
+				@media (max-width: 31.25em) {
+					grid-column: main;
+				}
+
+				height: 100vh;
+				box-sizing: border-box;
+				padding-top: calc(var(--GRID-CELL) * 2);
+				position: sticky;
+				top: 0;
 			}
 		}
 	}
