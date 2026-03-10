@@ -45,7 +45,7 @@
 	{/each}
 </svelte:head>
 
-{#if if data.about.use_page_blocks}
+{#if data.about.use_page_blocks}
 	<PageBlocks content={data.about.page_content} />
 {:else}
 	<template>
