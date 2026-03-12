@@ -50,19 +50,16 @@
 			}
 			break;
 	}
-
-	export let headingHeight: number;
 </script>
 
 <template>
-	<div bind:offsetHeight={headingHeight}
-		 class="heading"
+	<div class="heading"
 		 style:--grid-column-start={bleed.left ? "2" : "1"}
 		 style:--grid-column-end={bleed.right ? "-2" : "-1"}
 	>
 		{#if data.heading_has_small_text && data.heading_small}
 			<svelte:element 
-				this={data.heading_type === "feedItem" ? "h4" :
+				this={data.heading_type === "feed-item" ? "h4" :
 					 (data.heading_type === "page" && data.heading_primary === "small" ? "h1" : 
 					 (data.heading_type === "page" || data.heading_primary === "small" ? "h2" : "h3"))}
 				class="heading-small"
@@ -76,7 +73,7 @@
 		{/if}
 		{#if data.heading_has_large_text && data.heading_large}
 			<svelte:element 
-				this={data.heading_type === "feedItem" ? "h3" :
+				this={data.heading_type === "feed-item" ? "h3" :
 					 (data.heading_type === "page" && data.heading_primary === "large" ? "h1" : 
 					 (data.heading_type === "page" || data.heading_primary === "large" ? "h2" : "h3"))}
 				class="heading-large"
@@ -98,7 +95,7 @@
 <style lang="scss">
 	.heading {
 		grid-column: var(--grid-column-start) / var(--grid-column-end);
-		color: var(--color-primary, var(--COLOR-BLACK));
+		color: var(--color-heading, var(--color-primary, var(--COLOR-BLACK)));
 		
 		.heading-large, 
 		.heading-small {

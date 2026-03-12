@@ -81,7 +81,7 @@
 		margin: 0;
 		padding: 0;
 		overflow-x: hidden;
-		color: var(--color-primary, inherit);
+		color: var(--color-media, var(--color-primary, inherit));
 
 		> figcaption {
 			font-size: var(--FONT-SIZE-SM);

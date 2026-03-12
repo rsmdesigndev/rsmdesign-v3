@@ -15,6 +15,8 @@
 </script>
 
 <script lang="ts">
+	import { createEventDispatcher } from 'svelte';
+	import { goto } from '$app/navigation';
 	import type { BleedData } from "../organisms/CardColumn.svelte";
 	import Blockquote, { type BlockquoteData } from "../atoms/Blockquote.svelte";
 	import Cta, { type CtaData } from "../atoms/Cta.svelte";
@@ -25,13 +27,50 @@
 	
 	export let data: CardData;
 	export let bleed: BleedData;
+	export let isScrollItem: boolean;
+	export let isActive: boolean;
 
-	let headingHeight: number;
+	let card: HTMLElement;
+
+	function handleClick(_e: any) {
+		if (isActive && data.card_link) {
+			goto(data.card_link);
+		}
+		else if (isScrollItem) {
+			card.scrollIntoView({ block: "center", behavior: "smooth" });
+		}
+	}
+
+	const dispatch = createEventDispatcher();
+
+	function selectItemOnIntersection(node: Element) {
+		const observer = new IntersectionObserver(([entry]) => {
+			if (entry.isIntersecting) {
+				dispatch('selectItem');
+			}
+		}, { rootMargin: '-50% 0% -50% 0%' });
+		observer.observe(node);
+		return {
+			destroy() {
+				observer.disconnect();
+			}
+		};
+	}
+
+	const conditionalSelectItemOnIntersection = isScrollItem ? selectItemOnIntersection : ()=>{};
 </script>
 
 <template>
-	<div class="card"
-		 style:--row-gap={`var(--SPACE-${data.card_item_spacing?.toUpperCase()}`}
+	<svelte:element 
+		this={data.card_link ? "a" : "div"} 
+		href={data.card_link ?? ""}
+		target={data.card_link?.includes("https://") && !data.cta_link?.includes("rsmdesign.com")
+				? "_blank" : "_self"}
+		use:conditionalSelectItemOnIntersection
+		bind:this={card}
+		on:click|preventDefault={handleClick}
+		class={`card ${isActive ? "active" : ""}`}
+		style:--row-gap={`var(--SPACE-${data.card_item_spacing?.toUpperCase()}`}
 	>
 		{#each data.card_atoms?.map((c) => c?.item) ?? [] as data}
 			{#if data?.__typename === "page_blocks_v3_atom_blockquote"}
@@ -39,7 +78,7 @@
 			{:else if data?.__typename === "page_blocks_v3_atom_cta"}
 				<Cta {data} {bleed} />
 			{:else if data?.__typename === "page_blocks_v3_atom_heading"}
-				<Heading {data} {bleed} bind:headingHeight />
+				<Heading {data} {bleed} />
 			{:else if data?.__typename === "page_blocks_v3_atom_media"}
 				<Media {data} />
 			{:else if data?.__typename === "page_blocks_v3_atom_rich_text"}
@@ -50,14 +89,42 @@
 				No card atoms
 			{/if}
 		{/each}
-	</div>
+	</svelte:element>
 </template>
 
 <style lang="scss">
-	div.card {
+	.card {
 		grid-column: 1 / -1;
 		display: grid;
 		grid-template-columns: subgrid;
 		row-gap: var(--row-gap);
+	}
+
+	@property --column-scroll-transition-opacity {
+		syntax: '<number>';
+		inherits: false;
+		initial-value: 0;
+	}
+
+	a.card {
+		text-decoration: none;
+		color: inherit;
+		transition: all 0.3s ease;
+
+		--color-blockquote: "transparent";
+		--color-cta: "transparent";
+		--color-details: "transparent";
+		--color-heading: "transparent";
+		--color-media: "transparent";
+		--color-rich-text: "transparent";
+
+		&.active {
+			--color-blockquote: var(--color-primary, var(--COLOR-BLACK));
+			--color-cta: var(--color-primary, var(--COLOR-BLACK));
+			--color-details: var(--color-primary, var(--COLOR-BLACK));
+			--color-heading: var(--color-primary, var(--COLOR-BLACK));
+			--color-media: var(--color-primary, var(--COLOR-BLACK));
+			--color-rich-text: var(--color-primary, var(--COLOR-BLACK));
+		}
 	}
 </style>

@@ -60,7 +60,9 @@
 							? "_blank" : "_self"}
 					class={`cta ${!button && data.cta_type === "button" ? "button" : "link"}
 							hover-highlight-${hoverOverride != "" ? hoverOverride : data.cta_hover_highlight}`}
-					style:justify-content={data.cta_text_align === "right" ? "flex-end" : ""}
+					style:justify-content={data.cta_text_align === "right" || 
+										   data.cta_icon_position === "left" ? 
+										   "flex-end" : ""}
 					style:--grid-column-start={bleed.left ? "2" : "1"}
 					style:--grid-column-end={bleed.right ? "-2" : "-1"}
 					style:--flex-direction={data.cta_icon_position === "left" ? "row-reverse" : "row"}
@@ -100,13 +102,13 @@
 		flex-direction: var(--flex-direction);
 		align-items: baseline;
 
-		margin-bottom: var(--FONT-SIZE-XS);
+		//margin-bottom: var(--FONT-SIZE-XS);
 
 		font-size: var(--font-size);
 		font-weight: 300;
 		line-height: var(--line-height);
 
-		color: var(--color-primary, inherit);
+		color: var(--color-cta, var(--color-primary, inherit));
 
 		strong {
 			font-weight: 700;

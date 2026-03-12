@@ -16,7 +16,7 @@
 	console.log("table style: " + data.feed_table_style);
 
 	const itemHeading = {
-		heading_type: "feedItem",
+		heading_type: "feed-item",
 		heading_primary: "large",
 		heading_size: "lg",
 		heading_weight: "bold",

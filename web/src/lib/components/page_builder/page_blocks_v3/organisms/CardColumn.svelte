@@ -8,7 +8,8 @@
 		column_padding_left?: string | null;
 		column_padding_right?: string | null;
 		column_sticky?: string | null;
-		column_items_data_bound?: boolean | null;
+		column_interaction_on_scroll?: boolean | null;
+		column_interaction_exclude_first_item?: boolean | null;
 		column_items?: ({ item?: ColumnItem | null } | null | undefined)[] | null | undefined;
 	}
 
@@ -78,17 +79,27 @@
 	}
 
 	let columnHeight: number;
+
+	// Trigger interaction on scroll
+	let selectedItem: number = 0;
+
+	function selectItem(i: number) {
+		selectedItem = i;
+		console.log("selected: " + i);
+	}
+
+	let isScrollItem: boolean = data.column_interaction_on_scroll;
 </script>
 
 <template>
 	{#if data.column_sticky === "top"}
 		<div class="sticky-animation-trigger" 
 			 style:--column-height={columnHeight}
-			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#column-sticky-${row}-${column}`, animClass: "column-sticky-animate" } }
+			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#sticky-row-${row}-col-${column}`, animClass: "column-sticky-animate" } }
 		/>
 	{/if}
 	<div bind:offsetHeight={columnHeight}
-		 id={data.column_sticky === "top" ? `column-sticky-${row}-${column}` : ""}
+		 id={data.column_sticky === "top" ? `sticky-row-${row}-col-${column}` : ""}
 		 class:is-sticky={data.column_sticky != "false"}
 		 style:--top={data.column_sticky === "top" ? "var(--SPACE-LG)" :
 		 			 (data.column_sticky === "center" ? `calc(50vh - 1px * ${columnHeight} / 2)` :
@@ -106,7 +117,13 @@
 			{#if data?.__typename === "page_blocks_v3_molecule_accordion"}
 				<Accordion {data} {bleed} />
 			{:else if data?.__typename === "page_blocks_v3_molecule_card"}
-				<Card {data} {bleed} />
+				<Card 
+					{data}
+					{bleed}
+					{isScrollItem}
+					isActive={selectedItem === i} 
+					on:selectItem={() => selectItem(i)} 
+				/>
 			{:else if data?.__typename === "page_blocks_v3_organism_card_carousel"}
 				<CardCarousel {data} {row} {column} colItem={i} {bleed} />
 			{:else if data?.__typename === "page_blocks_v3_molecule_cta_list"}

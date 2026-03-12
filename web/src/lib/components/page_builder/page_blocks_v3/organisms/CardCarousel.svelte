@@ -118,7 +118,7 @@
 	let carouselWidth: number;
 
 	function updateCarouselWidth() {
-		let carousel = document.querySelector<HTMLElement>(`#carousel-${row}-${column}-${colItem}`);
+		let carousel = document.querySelector<HTMLElement>(`#colItem-row-${row}-col-${column}-item-${colItem}`);
 		if (carousel) {
 			let carouselWidth = carousel.getBoundingClientRect().width;
 		}
@@ -135,7 +135,7 @@
 <svelte:window on:resize={() => setTimeout(updateCarouselWidth, 600)} />
 
 <template>
-	<div id={`carousel-${row}-${column}-${colItem}`}
+	<div id={`colItem-row-${row}-col-${column}-item-${colItem}`}
 		 class="carousel-wrapper"
 		 style:--grid-column-start={bleed.left ? "2" : "1"}
 		 style:--grid-column-end={bleed.right ? "-2" : "-1"}
@@ -165,6 +165,8 @@
 						  bleed={ { left: false, 
 									right: false 
 								} } 
+						  isScrollItem={false}
+						  isActive={false}
 					/>
 				</div>
 			{/each}

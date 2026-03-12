@@ -17,6 +17,8 @@
 		change_breadcrumbs?: boolean | null;
 		section_anchor_text?: string | null;
 		section_anchor_link?: string | null;
+		section_padding_top?: string | null;
+		section_padding_bottom?: string | null;
 		feed_source?: string;
 		feed_show_filter_menu?: boolean | null;
 		feed_filter_logic?: string | null;
@@ -420,7 +422,8 @@
 	/>
 
 	<section id={`row-${rowNumber}`}
-			 class={`padding-top-xl padding-bottom-none
+			 class={`padding-top-${data.section_padding_top}
+					 padding-bottom-${data.section_padding_bottom}
 					 ${data.feed_view}
 					 color-theme-${data.section_color_theme}
 					 previous-color-theme-${previousTheme}
@@ -587,6 +590,43 @@
 		&.Table {
 			row-gap: 0;
 			min-height: 100vh;
+		}
+
+		&.padding-top-sm {
+			padding-top: var(--SPACE-SM);
+		}
+		&.padding-bottom-sm {
+			padding-bottom: var(--SPACE-SM);
+		}
+		&.padding-top-md {
+			padding-top: var(--SPACE-MD);
+		}
+		&.padding-bottom-md {
+			padding-bottom: var(--SPACE-MD);
+		}
+		&.padding-top-lg {
+			padding-top: var(--SPACE-LG);
+		}
+		&.padding-bottom-lg {
+			padding-bottom: var(--SPACE-LG);
+		}
+		&.padding-top-xl {
+			padding-top: var(--SPACE-XL);
+		}
+		&.padding-bottom-xl {
+			padding-bottom: var(--SPACE-XL);
+		}
+		&.padding-top-xxl {
+			padding-top: var(--SPACE-XXL);
+		}
+		&.padding-bottom-xxl {
+			padding-bottom: var(--SPACE-XXL);
+		}
+		&.padding-top-xxxl {
+			padding-top: var(--SPACE-XXXL);
+		}
+		&.padding-bottom-xxxl {
+			padding-bottom: var(--SPACE-XXXL);
 		}
 
 		button {

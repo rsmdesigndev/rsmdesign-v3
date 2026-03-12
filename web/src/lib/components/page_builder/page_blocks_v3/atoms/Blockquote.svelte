@@ -60,7 +60,7 @@
 		grid-column: var(--grid-column-start) / var(--grid-column-end);
 		margin: 0;
 		padding: 0;
-		color: var(--color-primary, inherit);
+		color: var(--color-blockquote, var(--color-primary, inherit));
 
 		> blockquote {
 			margin: 0;

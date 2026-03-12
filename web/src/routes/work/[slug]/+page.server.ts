@@ -131,6 +131,7 @@ export const _query = gql`
 							grid_col_end_units
 							grid_col_end
 							column_interaction_on_scroll
+							column_interaction_exclude_first_item
 							column_item_spacing
 							column_padding_left
 							column_padding_right
@@ -145,6 +146,7 @@ export const _query = gql`
 									}
 									... on page_blocks_v3_molecule_card {
 										card_item_spacing
+										card_link
 										card_atoms {
 											item {
 												__typename
@@ -237,6 +239,7 @@ export const _query = gql`
 										carousel_autoplay_interval
 										carousel_cards {
 											card_item_spacing
+											card_link
 											card_atoms {
 												item {
 													__typename
@@ -329,6 +332,8 @@ export const _query = gql`
 						change_breadcrumbs
 						section_anchor_text
 						section_anchor_link
+						section_padding_top
+						section_padding_bottom
 						feed_source
 						feed_show_filter_menu
 						feed_filter_logic

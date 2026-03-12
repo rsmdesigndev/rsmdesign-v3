@@ -18,7 +18,7 @@
 	export let gridNumber: number;
 
 	const itemHeading = {
-		heading_type: "feedItem",
+		heading_type: "feed-item",
 		heading_primary: "large",
 		heading_size: data.feed_grid_columns === 1 ? "xxl" : "lg",
 		heading_weight: "regular",

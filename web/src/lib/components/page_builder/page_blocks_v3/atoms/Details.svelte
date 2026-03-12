@@ -68,7 +68,7 @@
 		flex-direction: column;
 		row-gap: var(--SPACE-MD);
 
-		color: var(--color-primary, inherit);
+		color: var(--color-details, var(--color-primary, inherit));
 
 		> summary {
 			cursor: pointer;
@@ -133,7 +133,7 @@
 			transition: height 0.3s ease;
 			position: relative;
 
-			color: var(--color-primary, inherit);
+			color: var(--color-details, var(--color-primary, inherit));
 
 			&::after {
 				content: "";
