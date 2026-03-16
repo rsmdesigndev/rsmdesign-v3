@@ -28,7 +28,8 @@
 	export let data: CardData;
 	export let bleed: BleedData;
 	export let isScrollItem: boolean;
-	export let isActive: boolean;
+	export let excludeFirstItem: boolean;
+	export let isActive: boolean = true;
 
 	let card: HTMLElement;
 
@@ -46,7 +47,7 @@
 	function selectItemOnIntersection(node: Element) {
 		const observer = new IntersectionObserver(([entry]) => {
 			if (entry.isIntersecting) {
-				dispatch('selectItem');
+				dispatch('selectItem', {subtrahend: excludeFirstItem ? 1 : 0});
 			}
 		}, { rootMargin: '-50% 0% -50% 0%' });
 		observer.observe(node);
@@ -74,15 +75,15 @@
 	>
 		{#each data.card_atoms?.map((c) => c?.item) ?? [] as data}
 			{#if data?.__typename === "page_blocks_v3_atom_blockquote"}
-				<Blockquote {data} {bleed} />
+				<Blockquote {data} {bleed} {isActive} />
 			{:else if data?.__typename === "page_blocks_v3_atom_cta"}
-				<Cta {data} {bleed} />
+				<Cta {data} {bleed} {isActive} />
 			{:else if data?.__typename === "page_blocks_v3_atom_heading"}
-				<Heading {data} {bleed} />
+				<Heading {data} {bleed} {isActive} {isScrollItem} />
 			{:else if data?.__typename === "page_blocks_v3_atom_media"}
-				<Media {data} />
+				<Media {data} {isActive} />
 			{:else if data?.__typename === "page_blocks_v3_atom_rich_text"}
-				<RichText {data} {bleed} />
+				<RichText {data} {bleed} {isActive} />
 			{:else if data?.__typename === "page_blocks_v3_atom_spacer"}
 				<Spacer {data} />
 			{:else}
@@ -109,22 +110,5 @@
 	a.card {
 		text-decoration: none;
 		color: inherit;
-		transition: all 0.3s ease;
-
-		--color-blockquote: "transparent";
-		--color-cta: "transparent";
-		--color-details: "transparent";
-		--color-heading: "transparent";
-		--color-media: "transparent";
-		--color-rich-text: "transparent";
-
-		&.active {
-			--color-blockquote: var(--color-primary, var(--COLOR-BLACK));
-			--color-cta: var(--color-primary, var(--COLOR-BLACK));
-			--color-details: var(--color-primary, var(--COLOR-BLACK));
-			--color-heading: var(--color-primary, var(--COLOR-BLACK));
-			--color-media: var(--color-primary, var(--COLOR-BLACK));
-			--color-rich-text: var(--color-primary, var(--COLOR-BLACK));
-		}
 	}
 </style>

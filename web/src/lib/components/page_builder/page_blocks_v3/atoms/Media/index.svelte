@@ -24,9 +24,13 @@
 	import Video from "./Video.svelte";
 
 	export let data: MediaData;
+	export let isActive: boolean = true;
 </script>
 
-<figure class:grid={data.media_type === "slider"}>
+<figure 
+	class:grid={data.media_type === "slider"}
+	class:active={isActive}
+>
 	{#if data.media_type === "image"}
 		{#if data.media_image}
 			<Image source={data.media_image} />
@@ -82,6 +86,12 @@
 		padding: 0;
 		overflow-x: hidden;
 		color: var(--color-media, var(--color-primary, inherit));
+
+		opacity: 0;
+		transition: opacity 0.3s ease;
+		&.active {
+			opacity: 1;
+		}
 
 		> figcaption {
 			font-size: var(--FONT-SIZE-SM);

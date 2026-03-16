@@ -172,6 +172,9 @@
 						}
 					}
 				}
+				> figcaption {
+					--color-heading: var(--color-accent, var(--COLOR-ORANGE));
+				}
 			}
 		}
 

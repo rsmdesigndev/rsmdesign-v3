@@ -15,10 +15,12 @@
 	import type { BleedData } from "../organisms/CardColumn.svelte";
 	export let data: BlockquoteData;
 	export let bleed: BleedData;
+	export let isActive: boolean = true;
 </script>
 
 <template>
-	<figure style:--grid-column-start={bleed.left ? "2" : "1"}
+	<figure class:active={isActive}
+			style:--grid-column-start={bleed.left ? "2" : "1"}
 			style:--grid-column-end={bleed.right ? "-2" : "-1"}
 	>
 		<blockquote style:--font-size={`var(--FONT-SIZE-${data.blockquote_size?.toUpperCase()})`}
@@ -61,6 +63,12 @@
 		margin: 0;
 		padding: 0;
 		color: var(--color-blockquote, var(--color-primary, inherit));
+
+		opacity: 0;
+		transition: opacity 0.3s ease;
+		&.active {
+			opacity: 1;
+		}
 
 		> blockquote {
 			margin: 0;

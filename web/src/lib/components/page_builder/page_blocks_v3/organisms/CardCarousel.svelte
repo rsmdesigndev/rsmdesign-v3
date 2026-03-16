@@ -2,6 +2,7 @@
 	export type CardCarouselData = {
 		carousel_autoplay?: boolean | null;
 		carousel_autoplay_interval?: number | null;
+		carousel_show_arrows?: boolean | null;
 		carousel_cards?: CardData[] | null;
 	}
 </script>
@@ -22,20 +23,18 @@
 	let autoplay: boolean = data.carousel_autoplay ?? true;
 	let interval: number = data.carousel_autoplay_interval ?? 10000;
 
-	let current: number = 0;
+	export let selectedItem: number;
 	let isAnimating: boolean = false;
 	let animationDir: -1 | 0 | 1 = 0; // -1 for left, 1 for right
 	let animationDuration: number = 200;
 	let intervalId: any = null;
 
-	$: currentDisplay = String(current+1);
-
 	function next() {
 		if (isAnimating) return;
 
-		current += 1;
-		if (current > (cards?.length ?? 0) - 1) {
-			current = 0;
+		selectedItem += 1;
+		if (selectedItem > (cards?.length ?? 0) - 1) {
+			selectedItem = 0;
 		}
 
 		isAnimating = true;
@@ -48,9 +47,9 @@
 	function prev() {
 		if (isAnimating) return;
 
-		current -= 1;
-		if (current < 0) {
-			current = (cards?.length ?? 0) - 1;
+		selectedItem -= 1;
+		if (selectedItem < 0) {
+			selectedItem = (cards?.length ?? 0) - 1;
 		}
 
 		isAnimating = true;
@@ -65,12 +64,12 @@
 			return false;
 		}
 
-		if (current === cards?.length - 1) {
+		if (selectedItem === cards?.length - 1) {
 			// if on the last slide, "next slide" would be the first slide
 			return i === 0;
 		}
 		
-		return i === current + 1;
+		return i === selectedItem + 1;
 	}
 
 	$: isPrevSlide = (i: number): boolean => {
@@ -78,18 +77,18 @@
 			return false;
 		}
 		
-		if (current === 0) {
+		if (selectedItem === 0) {
 			// if on the first slide, "prev slide" would be the last slide
 			return i === cards?.length - 1;
 		}
 
-		return i === current - 1;
+		return i === selectedItem - 1;
 	}
 
 	// Calculates the correct Z index for each slide so that
 	// they dont overlap each other while animating.
 	$: calcZIndex = (i: number): number => {
-		if (i === current) {
+		if (i === selectedItem) {
 			return 2;
 		} else if (isNextSlide(i)) {
 			if (animationDir === 1) {
@@ -147,7 +146,7 @@
 			 style:--carousel-width={animation === "fade" ? "100%" : 
 			 	`calc(var(--carousel-card-width) + (var(--carousel-card-width) + var(--SPACE-MD)) * ${cards?.length - 1})`}
 			 style:transform={(animation === "slide")
-					? `translateX(calc(${current * -1} * (var(--carousel-card-width) + var(--SPACE-MD)))`
+					? `translateX(calc(${selectedItem * -1} * (var(--carousel-card-width) + var(--SPACE-MD)))`
 					: "none"
 				}
 			 style={`transition: transform ${animationDuration}ms ease`}
@@ -158,7 +157,7 @@
 					style={`transition: opacity ${animationDuration}ms ease`}
 					class:slide-next={isNextSlide(i)}
 					class:slide-prev={isPrevSlide(i)}
-					class:slide-active={i === current}
+					class:slide-active={i === selectedItem}
 					style:z-index={calcZIndex(i)}
 				>
 					<Card {data} 
@@ -166,14 +165,16 @@
 									right: false 
 								} } 
 						  isScrollItem={false}
-						  isActive={false}
+						  isActive={true}
 					/>
 				</div>
 			{/each}
 		</div>
 	</div>
-	<button aria-label="Previous slide" on:click={prev}></button>
-	<button aria-label="Next slide" on:click={next}></button>
+	{#if data.carousel_show_arrows}
+		<button aria-label="Previous slide" on:click={prev}></button>
+		<button aria-label="Next slide" on:click={next}></button>
+	{/if}
 </template>
 
 <style lang="scss">

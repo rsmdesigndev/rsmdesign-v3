@@ -25,8 +25,6 @@
 		left: boolean;
 		right: boolean;
 	} | null;
-
-	export let offsetDimensions: (number | string)[];
 </script>
 
 <script lang="ts">
@@ -81,14 +79,15 @@
 	let columnHeight: number;
 
 	// Trigger interaction on scroll
-	let selectedItem: number = 0;
+	export let selectedItem: number;
 
 	function selectItem(i: number) {
 		selectedItem = i;
-		console.log("selected: " + i);
+		//console.log("selected: " + i);
 	}
 
 	let isScrollItem: boolean = data.column_interaction_on_scroll;
+	let excludeFirstItem: boolean = data.column_interaction_exclude_first_item;
 </script>
 
 <template>
@@ -115,19 +114,36 @@
 	>
 		{#each data.column_items?.map((c) => c?.item) ?? [] as data, i}
 			{#if data?.__typename === "page_blocks_v3_molecule_accordion"}
-				<Accordion {data} {bleed} />
+				<Accordion 
+					{data}
+					{bleed}
+					bind:selectedItem
+				/>
 			{:else if data?.__typename === "page_blocks_v3_molecule_card"}
 				<Card 
 					{data}
 					{bleed}
-					{isScrollItem}
-					isActive={selectedItem === i} 
-					on:selectItem={() => selectItem(i)} 
+					isScrollItem={isScrollItem && !(excludeFirstItem && i === 0)}
+					{excludeFirstItem}
+					isActive={!isScrollItem || (excludeFirstItem && i === 0) || (selectedItem === (excludeFirstItem ? i - 1 : i))}
+					on:selectItem={(e) => selectItem(i - e.detail.subtrahend)}
 				/>
 			{:else if data?.__typename === "page_blocks_v3_organism_card_carousel"}
-				<CardCarousel {data} {row} {column} colItem={i} {bleed} />
+				<CardCarousel 
+					{data}
+					{row}
+					{column}
+					colItem={i}
+					{bleed}
+					bind:selectedItem
+				/>
 			{:else if data?.__typename === "page_blocks_v3_molecule_cta_list"}
-				<CtaList {data} {projectData} {bleed} {offsetDimensions} />
+				<CtaList 
+					{data}
+					{projectData}
+					{bleed}
+					bind:selectedItem
+				/>
 			{:else if data?.__typename === "page_blocks_v3_atom_spacer"}
 				<Spacer {data} />
 			{:else}

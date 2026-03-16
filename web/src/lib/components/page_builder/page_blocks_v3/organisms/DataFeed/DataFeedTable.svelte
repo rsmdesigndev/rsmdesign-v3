@@ -110,6 +110,7 @@
 
 <style lang="scss">
 	.table-heading {
+		margin-top: var(--SPACE-XXXL);
 		margin-bottom: var(--SPACE-MD);
 		&.image-position-left,
 		&.image-position-center {
@@ -134,6 +135,10 @@
 	a {
 		color: var(--color-primary, var(--COLOR-BLACK));
 
+		&:hover {
+			--color-heading: var(--color-accent, var(--COLOR-ORANGE));
+		}
+
 		@media (min-width: 31.25em) {
 			&:hover {
 				color: var(--color-accent, var(--COLOR-ORANGE));
@@ -150,6 +155,10 @@
 		grid-column: viewport;
 		display: grid;
 		grid-template-columns: subgrid;
+
+		&:last-of-type {
+			margin-bottom: var(--SPACE-XXXL);
+		}
 
 		&.table-style-simple {
 			padding: var(--SPACE-SM) 0;

@@ -23,9 +23,9 @@
 	export let previousTheme: string | null;
 	export let rowNumber: number;
 
-	let offsetDimensions: (number | string)[];
-
 	let numCols: number = data.columns.length;
+
+	let selectedItem: number = 0;
 </script>
 
 <svelte:head>
@@ -65,7 +65,7 @@
 						column={i}
 						{projectData} 
 						columns={{numCols: numCols, currCol: i+1}}
-						bind:offsetDimensions 
+						bind:selectedItem
 			/>
 		{/each}
 	</section>

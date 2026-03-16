@@ -137,6 +137,7 @@ export const _query = gql`
 									... on page_blocks_v3_organism_card_carousel {
 										carousel_autoplay
 										carousel_autoplay_interval
+										carousel_show_arrows
 										carousel_cards {
 											card_item_spacing
 											card_link

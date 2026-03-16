@@ -17,6 +17,19 @@
 
 	export let data: AccordionData;
 	export let bleed: BleedData;
+
+	// Trigger interaction on scroll
+	export let selectedItem: number;
+
+	if (!data.accordion_first_item_open) {
+		selectedItem = -1;
+	}
+
+	function selectItem(i: number, isOpen: boolean) {
+		if (isOpen) {
+			selectedItem = i;
+		}
+	}
 </script>
 
 <template>
@@ -27,6 +40,8 @@
 		{#each data.accordion_items as item, i}
 			<Details summaryText={item.item_heading}
 					 summaryIcon="plus"
+					 isOpen={selectedItem === i}
+					 on:toggle={(e) => selectItem(i, e.detail.isOpen)}
 			>
 				{@html item.item_rich_text}
 			</Details>

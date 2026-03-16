@@ -7,9 +7,8 @@
 	export let summaryText: string = "Open";
 	export let summaryTextOpen: string = summaryText;
 	export let summaryIcon: string = "arrow_down";
-	export let defaultOpen = false;
+	export let isOpen: boolean = false;
 
-	let isOpen: boolean = defaultOpen;
 	let anchor: HTMLElement;
 	let height: number;
 

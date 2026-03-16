@@ -13,34 +13,40 @@
 
 	export let data: RichTextData;
 	export let bleed: BleedData;
+	export let isActive: boolean = true;
 </script>
 
-<template>
-	<div class={`rich-text-v3 rich-text-${data.rich_text_size}`}
-		 class:read-more={data.rich_text_has_read_more}
-		 style:--grid-column-start={bleed.left ? "2" : "1"}
-		 style:--grid-column-end={bleed.right ? "-2" : "-1"}
-	>
-		{@html data.rich_text_content}
-		{#if data.rich_text_has_read_more}
-			<Details summaryText="Read more"
-					 summaryTextOpen="Read less"
-					 summaryIcon="plus"
-			>
-				{#if data.rich_text_content_read_more}
-					{@html data.rich_text_content_read_more}
-				{:else}
-					<p>“Read more” enabled, but no content provided.</p>
-				{/if}
-			</Details>
-		{/if}
-	</div>
-</template>
+<div class={`rich-text-v3 rich-text-${data.rich_text_size}`}
+	 class:read-more={data.rich_text_has_read_more}
+	 class:active={isActive}
+	 style:--grid-column-start={bleed.left ? "2" : "1"}
+	 style:--grid-column-end={bleed.right ? "-2" : "-1"}
+>
+	{@html data.rich_text_content}
+	{#if data.rich_text_has_read_more}
+		<Details summaryText="Read more"
+				 summaryTextOpen="Read less"
+				 summaryIcon="plus"
+		>
+			{#if data.rich_text_content_read_more}
+				{@html data.rich_text_content_read_more}
+			{:else}
+				<p>“Read more” enabled, but no content provided.</p>
+			{/if}
+		</Details>
+	{/if}
+</div>
 
 <style lang="scss">
 	.rich-text-v3 {
 		grid-column: var(--grid-column-start) / var(--grid-column-end);
 		font-weight: 300;
+
+		opacity: 0;
+		transition: opacity 0.3s ease;
+		&.active {
+			opacity: 1;
+		}
 
 		:global {
 			p {

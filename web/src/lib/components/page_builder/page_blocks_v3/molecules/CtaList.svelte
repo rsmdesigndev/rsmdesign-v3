@@ -20,6 +20,9 @@
 	export let projectData: ProjectData;
 	export let bleed: BleedData;
 
+	export let selectedItem: number;
+	// TODO: implement item selection data binding
+
 	const sizeOverride: string = data.cta_list_size;
 	const hoverOverride: string = data.cta_list_hover_highlight;
 	const iconOverride: string = data.cta_list_icon;
@@ -48,7 +51,12 @@
 				</h3>
 			{/if}
 			{#each data.cta_list_items as data}
-				<Cta {data} {sizeOverride} {hoverOverride} {iconOverride} />
+				<Cta 
+					{data} 
+					{sizeOverride} 
+					{hoverOverride} 
+					{iconOverride} 
+				/>
 			{/each}
 		{:else}
 			<h3 class={`heading heading-caps`}

@@ -21,6 +21,7 @@
 		left: false,
 		right: false
 	};
+	export let isActive: boolean = true;
 
 	export let button: boolean = false;
 	export let sizeOverride: string = "";
@@ -52,48 +53,47 @@
 	});
 </script>
 
-<template>
-	<svelte:element this={button ? "button" : 
-						 (data.cta_link ? "a" : "p")}
-					href={data.cta_link ?? ""}
-					target={data.cta_link?.includes("https://") && !data.cta_link?.includes("rsmdesign.com")
-							? "_blank" : "_self"}
-					class={`cta ${!button && data.cta_type === "button" ? "button" : "link"}
-							hover-highlight-${hoverOverride != "" ? hoverOverride : data.cta_hover_highlight}`}
-					style:justify-content={data.cta_text_align === "right" || 
-										   data.cta_icon_position === "left" ? 
-										   "flex-end" : ""}
-					style:--grid-column-start={bleed.left ? "2" : "1"}
-					style:--grid-column-end={bleed.right ? "-2" : "-1"}
-					style:--flex-direction={data.cta_icon_position === "left" ? "row-reverse" : "row"}
-					style:--font-size={`var(--FONT-SIZE-${sizeOverride != "" ? sizeOverride?.toUpperCase() : "MD"})`}
-					style:--line-height={sizeOverride === "lg" ? "1.167" : "1.333"}
-	>
-		<span>
-			{#if data.cta_style != "light" && data.cta_text_bold}
-				<strong bind:this={boldText}
-						class:colon={data.cta_style === "colon"}
-						class:interpunct={data.cta_style === "interpunct"}
-				>
-					{@html data.cta_text_bold}
-				</strong>
-			{/if}
-			{#if data.cta_style != "bold" && data.cta_text_light}
-				<span bind:this={lightText}
-					  class="light"
-				>
-					{@html data.cta_text_light}
-				</span>
-			{/if}
-		</span>
-		{#if data.cta_icon != "none"}
-			<span data-icon={iconOverride != "" ? iconOverride : data.cta_icon}
-				  class={`icon ${data.cta_icon_position === "left" ? "margin-right" : "margin-left"}`}
-				  aria-hidden="true"
-			/>
+<svelte:element this={button ? "button" : 
+					 (data.cta_link ? "a" : "p")}
+				href={data.cta_link ?? ""}
+				target={data.cta_link?.includes("https://") && !data.cta_link?.includes("rsmdesign.com")
+						? "_blank" : "_self"}
+				class={`cta ${!button && data.cta_type === "button" ? "button" : "link"}
+						hover-highlight-${hoverOverride != "" ? hoverOverride : data.cta_hover_highlight}`}
+				class:active={isActive}
+				style:justify-content={data.cta_text_align === "right" || 
+									   data.cta_icon_position === "left" ? 
+									   "flex-end" : ""}
+				style:--grid-column-start={bleed.left ? "2" : "1"}
+				style:--grid-column-end={bleed.right ? "-2" : "-1"}
+				style:--flex-direction={data.cta_icon_position === "left" ? "row-reverse" : "row"}
+				style:--font-size={`var(--FONT-SIZE-${sizeOverride != "" ? sizeOverride?.toUpperCase() : "MD"})`}
+				style:--line-height={sizeOverride === "lg" ? "1.167" : "1.333"}
+>
+	<span>
+		{#if data.cta_style != "light" && data.cta_text_bold}
+			<strong bind:this={boldText}
+					class:colon={data.cta_style === "colon"}
+					class:interpunct={data.cta_style === "interpunct"}
+			>
+				{@html data.cta_text_bold}
+			</strong>
 		{/if}
-	</svelte:element>
-</template>
+		{#if data.cta_style != "bold" && data.cta_text_light}
+			<span bind:this={lightText}
+				  class="light"
+			>
+				{@html data.cta_text_light}
+			</span>
+		{/if}
+	</span>
+	{#if data.cta_icon != "none"}
+		<span data-icon={iconOverride != "" ? iconOverride : data.cta_icon}
+			  class={`icon ${data.cta_icon_position === "left" ? "margin-right" : "margin-left"}`}
+			  aria-hidden="true"
+		/>
+	{/if}
+</svelte:element>
 
 <style lang="scss">
 	.cta {
@@ -102,13 +102,19 @@
 		flex-direction: var(--flex-direction);
 		align-items: baseline;
 
-		//margin-bottom: var(--FONT-SIZE-XS);
+		margin-bottom: 0;
 
 		font-size: var(--font-size);
 		font-weight: 300;
 		line-height: var(--line-height);
 
 		color: var(--color-cta, var(--color-primary, inherit));
+
+		opacity: 0;
+		transition: opacity 0.3s ease;
+		&.active {
+			opacity: 1;
+		}
 
 		strong {
 			font-weight: 700;
