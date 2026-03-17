@@ -58,12 +58,13 @@
 	{/if}
 	{#each feedData as item, i}
 		<a href="/work/{item.slug}"
-		   class={`table-style-${data.feed_table_style}
+		   class={`table-item
+		   		   table-style-${data.feed_table_style}
 		   		   image-position-${data.feed_table_image_position}
 		   		 `}
 		>
 			{#if data.feed_table_style === "simple"}
-				<div class="item-heading-container">
+				<div class="table-item-heading-container">
 					{#if data.feed_source === "Projects"}
 						<Heading 
 							data={ {...itemHeading, 
@@ -81,12 +82,21 @@
 					{/if}
 				</div>
 			{:else}
-				<div>
+				<div class="table-item-heading-container">
 					{#if data.feed_source === "Projects"}
-						<h3>{item.project_title}</h3>
-						<h4>{item.project_location}</h4>
+						<Heading 
+							data={ {...itemHeading, 
+									heading_small: item.location,
+									heading_large: item.project_title
+								 } }
+						/>
 					{:else if data.feed_source === "Articles"}
-						<h3>{item.post_title}</h3>
+						<Heading 
+							data={ {...itemHeading, 
+									heading_small: item.topics?.[0]?.news_topics_id?.name,
+									heading_large: item.post_title
+								 } }
+						/>
 					{/if}
 				</div>
 			{/if}
@@ -132,7 +142,7 @@
 			}
 		}
 	}
-	a {
+	a.table-item {
 		color: var(--color-primary, var(--COLOR-BLACK));
 
 		&:hover {
@@ -165,7 +175,7 @@
 
 			&.image-position-left,
 			&.image-position-center {
-				> .item-heading-container {
+				> .table-item-heading-container {
 					grid-column: eighth-start 6 / eighth-end 8;
 					@media (max-width: 62.5em) {
 						grid-column: half-start 2 / half-end 2;
@@ -176,7 +186,7 @@
 				}
 			}
 			&.image-position-right {
-				> .item-heading-container {
+				> .table-item-heading-container {
 					grid-column: eighth-start 1 / eighth-end 4;
 					@media (max-width: 62.5em) {
 						grid-column: half-start 1 / half-end 1;
@@ -189,7 +199,32 @@
 		}
 
 		&.table-style-detailed {
-			
+			grid-column: main;
+			padding: 0 var(--SPACE-LG);
+			border-bottom: 1px solid var(--color-tertiary, var(--COLOR-DIM-GRAY));
+			&.image-position-left,
+			&.image-position-center {
+				> .table-item-heading-container {
+					grid-column: eighth-start 6 / eighth-end 8;
+					@media (max-width: 62.5em) {
+						grid-column: half-start 2 / half-end 2;
+					}
+					@media (max-width: 31.25em) {
+						grid-column: main;
+					}
+				}
+			}
+			&.image-position-right {
+				> .table-item-heading-container {
+					grid-column: eighth-start 1 / eighth-end 4;
+					@media (max-width: 62.5em) {
+						grid-column: half-start 1 / half-end 1;
+					}
+					@media (max-width: 31.25em) {
+						grid-column: main;
+					}
+				}
+			}
 		}
 	}
 	figure {
