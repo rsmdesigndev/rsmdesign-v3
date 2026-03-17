@@ -40,7 +40,7 @@
 					${data.feed_grid_columns === 3 ? "third" : 
 					 (data.feed_grid_columns === 4 ? "fourth" : "single-card")}
 					grid-style-${data.feed_grid_style}
-					${data.feed_grid_dynamic_start_position ? "start-right" : "start-left"}
+					${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
 				  `}
 			style:--grid-column-units={data.feed_grid_columns === 3 ? "sixth" : "eighth"}
 			style:--grid-item={i}
