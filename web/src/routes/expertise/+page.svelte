@@ -2,6 +2,7 @@
 	import type { PageData } from "./$types";
 	import { assetUrl } from "$lib/cms/assets";
 	import SeoHead from "$lib/components/SeoHead.svelte";
+	import PageBlocksV3, { type ProjectData } from "$lib/components/page_builder/page_blocks_v3/index.svelte";
 	import Section from "$lib/components/Section.svelte";
 	import DottedArrow from "$lib/components/DottedArrow.svelte";
 	import DottedArrowHover from "$lib/components/DottedArrowHover.svelte";
@@ -15,76 +16,84 @@
 />
 
 <template>
-	<div class="container">
-		<Section
-			header
-			order=2
-			span_columns=1
-			col_units="whole"
-			col_start=1
-			span_rows=1
-			anchor_id="services"
-		>
-			<h1 class="md gray">Expertise</h1>
-			<h2 class="xxxl">Services.</h2>
-		</Section>
-		<section class="services-section grid-col-3" style="order: 4;">
-			{#each data.services as service}
-				<a href="/services/{service.slug}">
-					<h3 class="xxl">{service.medium_name ?? service.slug}</h3>
-					<ul>
-						{#each service?.sub_services_truncated ?? [] as sub_service}
-							<li>{sub_service.name}</li>
-						{/each}
-					</ul>
-					<p class="arrow">·&hairsp;·&hairsp;·&hairsp;›</p>
-				</a>
-			{/each}
-		</section>
-
-		<Section
-			header
-			order=6
-			span_columns=1
-			col_units="whole"
-			col_start=1
-			span_rows=1
-			anchor_id="markets"
-		>
-			<h2 class="xxxl">Markets.</h2>
-		</Section>
-		<section class="markets-section grid-col-3" style="order: 8;">
-			{#each data.markets as market}
-				<a href="/markets/{market.slug}">
-					<figure>
-						<img 
-							src={assetUrl(market.grid_image?.filename_disk)} 
-							alt={market.grid_image?.description}
-						/>
-						<figcaption>
-							<h3>{market.medium_name ?? market.slug}</h3>
-							<p class="arrow"><span>·&hairsp;·&hairsp;·&hairsp;</span>›</p>
-						</figcaption>
-					</figure>
-				</a>
-			{/each}
-		</section>
-		<Section
-			cta
-			order=12
-			span_columns=1
-			col_units="whole"
-			col_start=1
-			span_rows=1
-		>
-			<DottedArrowHover
-				href="/work"
+	{#if data.expertise_page.expertise_use_page_blocks_v3}
+		{#if data.expertise_page.expertise_page_blocks_v3}
+			<PageBlocksV3 blocks={data.expertise_page.expertise_page_blocks_v3} />
+		{:else}
+			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
+		{/if}
+	{:else}
+		<div class="container">
+			<Section
+				header
+				order=2
+				span_columns=1
+				col_units="whole"
+				col_start=1
+				span_rows=1
+				anchor_id="services"
 			>
-				<h4 class="xxxl">Latest projects.</h4>
-				<p>View Our Work <DottedArrow /></p>
-			</DottedArrowHover>
-		</Section>
-	</div>
+				<h1 class="md gray">Expertise</h1>
+				<h2 class="xxxl">Services.</h2>
+			</Section>
+			<section class="services-section grid-col-3" style="order: 4;">
+				{#each data.services as service}
+					<a href="/services/{service.slug}">
+						<h3 class="xxl">{service.medium_name ?? service.slug}</h3>
+						<ul>
+							{#each service?.sub_services_truncated ?? [] as sub_service}
+								<li>{sub_service.name}</li>
+							{/each}
+						</ul>
+						<p class="arrow">·&hairsp;·&hairsp;·&hairsp;›</p>
+					</a>
+				{/each}
+			</section>
+
+			<Section
+				header
+				order=6
+				span_columns=1
+				col_units="whole"
+				col_start=1
+				span_rows=1
+				anchor_id="markets"
+			>
+				<h2 class="xxxl">Markets.</h2>
+			</Section>
+			<section class="markets-section grid-col-3" style="order: 8;">
+				{#each data.markets as market}
+					<a href="/markets/{market.slug}">
+						<figure>
+							<img 
+								src={assetUrl(market.grid_image?.filename_disk)} 
+								alt={market.grid_image?.description}
+							/>
+							<figcaption>
+								<h3>{market.medium_name ?? market.slug}</h3>
+								<p class="arrow"><span>·&hairsp;·&hairsp;·&hairsp;</span>›</p>
+							</figcaption>
+						</figure>
+					</a>
+				{/each}
+			</section>
+			<Section
+				cta
+				order=12
+				span_columns=1
+				col_units="whole"
+				col_start=1
+				span_rows=1
+			>
+				<DottedArrowHover
+					href="/work"
+				>
+					<h4 class="xxxl">Latest projects.</h4>
+					<p>View Our Work <DottedArrow /></p>
+				</DottedArrowHover>
+			</Section>
+		</div>
+	{/if}
 </template>
 
 <style lang="scss">

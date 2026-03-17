@@ -299,6 +299,11 @@
 
 			&.grid-style-banner:hover {
 				> figure {
+					> picture {
+						> img {
+							transform: scale(1);
+						}
+					}
 					> figcaption {
 						--color-heading: var(--color-accent, var(--COLOR-ORANGE));
 					}
