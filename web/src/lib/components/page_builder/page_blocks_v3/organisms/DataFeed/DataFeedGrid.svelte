@@ -20,8 +20,8 @@
 	const itemHeading = {
 		heading_type: "feed-item",
 		heading_primary: "large",
-		heading_size: data.feed_grid_columns === 1 ? "xxl" : "lg",
-		heading_weight: "regular",
+		heading_size: data.feed_grid_columns === 1 ? (data.feed_grid_style === "banner" ? "xxxl" : "xxl") : "lg",
+		heading_weight: data.feed_grid_style === "banner" ? "bold" : "regular",
 		heading_has_small_text: data.feed_grid_columns === 1 ? false : true,
 		heading_has_large_text: true,
 		heading_has_superscript: false
@@ -30,17 +30,21 @@
 
 <template>
 	{#each feedData as item, i}
-		<a href="/work/{item.slug}"
-		   id={`row-${rowNumber}-grid-${gridNumber}-item-${i}`}
-		   class={`grid-item 
-		   		   ${data.feed_grid_columns === 3 ? "third" : 
-		   		    (data.feed_grid_columns === 4 ? "fourth" : "single-card")}
-		   		   ${data.feed_grid_style}
-		   		   ${data.feed_grid_dynamic_start_position ? "start-right" : "start-left"}
-		   		 `}
-		   style:--grid-column-units={data.feed_grid_columns === 3 ? "sixth" : "eighth"}
-		   style:--grid-item={i}
-		   style:--grid-columns={data.feed_grid_columns}
+		<svelte:element 
+			this={data.feed_source === "Projects" ? "a" :
+				 (data.feed_source === "Articles" ? "a" :
+				 (data.feed_source === "Team" && item.has_profile_page ? "a" : "div"))}
+			href={`/${data.feed_source === "Projects" ? "work" : (data.feed_source === "Articles" ? "news" : (data.feed_source === "Team" ? "team" : ""))}/${item.slug}`}
+			id={`row-${rowNumber}-grid-${gridNumber}-item-${i}`}
+			class={`grid-item 
+					${data.feed_grid_columns === 3 ? "third" : 
+					 (data.feed_grid_columns === 4 ? "fourth" : "single-card")}
+					grid-style-${data.feed_grid_style}
+					${data.feed_grid_dynamic_start_position ? "start-right" : "start-left"}
+				  `}
+			style:--grid-column-units={data.feed_grid_columns === 3 ? "sixth" : "eighth"}
+			style:--grid-item={i}
+			style:--grid-columns={data.feed_grid_columns}
 		>
 			{#if data.feed_grid_style === "parallax"}
 				<div class="parallax-animation-trigger"
@@ -92,6 +96,10 @@
 								 alt={item.grid_image?.title}
 							/>
 						{/if}
+					{:else if data.feed_grid_style === "banner"}
+						<img src={assetUrl(item.hero_image?.filename_disk)}
+							 alt={item.hero_image?.title}
+						/>
 					{:else}
 						<img src={assetUrl(item.grid_image?.filename_disk)}
 							 alt={item.grid_image?.title}
@@ -99,14 +107,23 @@
 					{/if}
 				</picture>
 				<figcaption>
-					<Heading 
-						data={ {...itemHeading, 
-								heading_small: item.location,
-								heading_large: item.project_title
-							 } }
-					/>
+					{#if data.feed_source === "Projects"}
+						<Heading 
+							data={ {...itemHeading, 
+									heading_small: item.location,
+									heading_large: item.project_title
+								 } }
+						/>
+					{:else if data.feed_source === "Articles"}
+						<Heading 
+							data={ {...itemHeading, 
+									heading_small: item.topics?.[0]?.news_topics_id?.name,
+									heading_large: item.post_title
+								 } }
+						/>
+					{/if}
 					{#if data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
-						<p class="headline">[Insert hero headline here lorem ipsum dolor sit amet.]</p>
+						<!--<p class="headline">[Insert hero headline here lorem ipsum dolor sit amet.]</p>-->
 						<Cta data={ { cta_icon: "arrow_right", 
 									  cta_style: "bold",
 									  cta_text_bold: "View project",
@@ -116,7 +133,7 @@
 					{/if}
 				</figcaption>
 			</figure>
-		</a>
+		</svelte:element>
 		<!--<div class="column-container "
 			 style:--grid-column-units={`${data.feed_grid_columns === 3 ? "sixth" : "eighth"}`}
 		>
@@ -150,6 +167,7 @@
 				> img {
 					object-fit: cover;
 					height: 100%;
+					width: 100%;
 					max-width: 100%;
 					transform: scale(1);
 					transition: transform 0.75s ease;
@@ -179,41 +197,110 @@
 		}
 
 		&.single-card {
-			grid-column: main;
-			display: grid;
-			grid-template-columns: subgrid;
+			> figure > picture {
+				margin-bottom: 0;
+			}
 
-			> figure {
+			&:not(.grid-style-banner) {
 				grid-column: main;
 				display: grid;
 				grid-template-columns: subgrid;
-				align-items: start;
 
-				> picture {
-					margin: 0;
-					grid-column: eighth-start 4 / eighth-end 7;
+				> figure {
+					grid-column: main;
+					display: grid;
+					grid-template-columns: subgrid;
+					align-items: start;
 
-					@media (max-width: 62.5em) {
-						grid-column: half-start 2 / half-end 2;
+					> picture {
+						margin: 0;
+						grid-column: eighth-start 4 / eighth-end 7;
+
+						@media (max-width: 62.5em) {
+							grid-column: half-start 2 / half-end 2;
+						}
+					}
+
+					> figcaption {
+						grid-row: 1;
+						grid-column: eighth-start 1 / eighth-end 3;
+
+						@media (max-width: 62.5em) {
+							grid-column: half-start 1 / half-end 1;
+						}
+
+						align-self: center;
+						margin-bottom: var(--SPACE-LG);
+
+						text-align: right;
+
+						> p.headline {
+							text-wrap: balance;
+							margin-top: var(--SPACE-SM);
+						}
+					}
+				}
+			}
+
+			&.grid-style-banner {
+				grid-column: viewport;
+				display: grid;
+				grid-template-columns: subgrid;
+
+				> figure {
+					grid-column: viewport;
+					display: grid;
+					grid-template-columns: subgrid;
+
+					> picture {
+						grid-row: 1;
+						grid-column: viewport;
+						aspect-ratio: 2 / 1;
+					}
+
+					> figcaption {
+						z-index: 2;
+						grid-row: 1;
+						grid-column: sixth-start 1 / sixth-end 4;
+						align-self: end;
+						margin-bottom: var(--SPACE-LG);
+						--color-heading: var(--color-background, var(--COLOR-WHITE));
+
+						@media (max-width: 62.5em) {
+							grid-column: half-start 1 / half-end 1;
+						}
 					}
 				}
 
-				> figcaption {
-					grid-row: 1;
-					grid-column: eighth-start 1 / eighth-end 3;
+				&::before {
+					content: "";
+					position: absolute;
+					z-index: 2;
+					top: 0;
+					left: 0;
+					width: 100%;
+					height: 100%;
+					background: linear-gradient(
+						rgba(26,24,24,0) 0%,
+						rgba(26,24,24,0.005) 10%,
+						rgba(26,24,24,0.02) 20%,
+						rgba(26,24,24,0.045) 30%,
+						rgba(26,24,24,0.08) 40%,
+						rgba(26,24,24,0.125) 50%,
+						rgba(26,24,24,0.18) 60%,
+						rgba(26,24,24,0.245) 70%,
+						rgba(26,24,24,0.32) 80%,
+						rgba(26,24,24,0.405) 90%,
+						rgba(26,24,24,0.5) 100%
+					);
+					mix-blend-mode: hard-light;
+				}
+			}
 
-					@media (max-width: 62.5em) {
-						grid-column: half-start 1 / half-end 1;
-					}
-
-					align-self: center;
-					margin-bottom: var(--SPACE-LG);
-
-					text-align: right;
-
-					> p.headline {
-						text-wrap: balance;
-						margin-top: var(--SPACE-SM);
+			&.grid-style-banner:hover {
+				> figure {
+					> figcaption {
+						--color-heading: var(--color-accent, var(--COLOR-ORANGE));
 					}
 				}
 			}
@@ -231,7 +318,7 @@
 					grid-column: sixth-start 5 / sixth-end 6;
 				}
 
-				&.dynamic {
+				&.grid-style-dynamic {
 					&:nth-of-type(14n+1) {
 						grid-column: viewport-start / sixth-end 4;
 
@@ -291,7 +378,7 @@
 				&:nth-of-type(4n) {
 					grid-column: eighth-start 7 / eighth-end 8;
 				}
-				&.dynamic {
+				&.grid-style-dynamic {
 					&:nth-of-type(7n+4) {
 						grid-column: eighth-start 1 / eighth-end 2;
 					}
@@ -391,7 +478,7 @@
 				grid-column: third-start 3 / third-end 3;
 			}
 
-			&.dynamic {
+			&.grid-style-dynamic {
 				&:nth-of-type(10n+1) {
 					grid-column: viewport-start / third-end 2;
 
@@ -435,12 +522,12 @@
 
 		@media (max-width: 31.25em) {
 			&:nth-of-type(n),
-			&.dynamic:nth-of-type(n) {
+			&.grid-style-dynamic:nth-of-type(n) {
 				grid-column: main;
 			}
 		}
 
-		&.parallax {
+		&.grid-style-parallax {
 			> .parallax-animation-trigger {
 				position: absolute;
 				top: 0;

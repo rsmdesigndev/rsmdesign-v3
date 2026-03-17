@@ -219,8 +219,13 @@
 							offset: $offset
 							sort: [ "-published_date" ]
 							filter: {
-								_${data.feed_filter_logic}: [
-									${filters.join(",\n")}
+								_and: [
+									{ visibility: { _nin: ["draft", "archived"] } },
+									{
+										_${data.feed_filter_logic}: [
+											${filters.join(",\n")}
+										]
+									}
 								]
 							}
 						) {
@@ -244,8 +249,13 @@
 						}
 						news_posts_aggregated(
 							filter: {
-								_${data.feed_filter_logic}: [
-									${filters.join(",\n")}
+								_and: [
+									{ visibility: { _nin: ["draft", "archived"] } },
+									{
+										_${data.feed_filter_logic}: [
+											${filters.join(",\n")}
+										]
+									}
 								]
 							})
 						{
@@ -284,7 +294,7 @@
 		}
 
 		loadOffset += numItems;
-		console.log("load more")
+		//console.log("load more")
 	}
 
 	/**

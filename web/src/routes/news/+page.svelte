@@ -17,6 +17,7 @@
 	import { fade } from "svelte/transition";
 	import SeoHead from "$lib/components/SeoHead.svelte";
 	import { formatDate } from "$lib/format";
+	import PageBlocksV3, { type ProjectData } from "$lib/components/page_builder/page_blocks_v3/index.svelte";
 	import PageBlocks from "$lib/components/page_builder/page_blocks/index.svelte";
 
 	export let data: PageData;
@@ -81,127 +82,135 @@
 />
 
 <template>
-	<div class="container">
-		{#if data?.news_page?.use_page_blocks}
-			<h1 class="xxxl">News & Ideas</h1>
-			<section class="slideshow-section">
-				<Slideshow interval={5000} items={data.slider_articles} let:item>
-					<a href="/news/{item.slug}">
-						<figure class="featured-article" in:fade out:fade>
-							<img
-								src={assetUrl(item.hero_image?.filename_disk)}
-								alt={item.hero_image?.description}
-								class={item.hero_image_crop_attachment === "left"
-									? "position-left"
-									: item.hero_image_crop_attachment === "center_left"
-									? "position-center-left"
-									: item.hero_image_crop_attachment === "center"
-									? ""
-									: item.hero_image_crop_attachment === "center_right"
-									? "position-center-right"
-									: item.hero_image_crop_attachment === "right"
-									? "position-right"
-									: ""}
-							/>
-							<figcaption>
-								<h2 class="xl">{item.post_title}</h2>
-							</figcaption>
-						</figure>
-					</a>
-				</Slideshow>
-			</section>
-			<section class="news-page-blocks">
-				<PageBlocks content={data?.news_page?.page_content} />
-			</section>
+	{#if data.news_page.news_use_page_blocks_v3}
+		{#if data.news_page.news_page_blocks_v3}
+			<PageBlocksV3 blocks={data.news_page.news_page_blocks_v3} />
 		{:else}
-			<h1 class="xxxl">News.</h1>
-			<section class="slideshow-section">
-				<Slideshow interval={5000} items={data.slider_articles} let:item>
-					<a href="/news/{item.slug}">
-						<figure class="featured-article" in:fade out:fade>
-							<img
-								src={assetUrl(item.hero_image?.filename_disk)}
-								alt={item.hero_image?.description}
-								class={item.hero_image_crop_attachment === "left"
-									? "position-left"
-									: item.hero_image_crop_attachment === "center_left"
-									? "position-center-left"
-									: item.hero_image_crop_attachment === "center"
-									? ""
-									: item.hero_image_crop_attachment === "center_right"
-									? "position-center-right"
-									: item.hero_image_crop_attachment === "right"
-									? "position-right"
-									: ""}
-							/>
-							<figcaption>
-								<h2 class="xxxl">{item.post_title}</h2>
-							</figcaption>
-						</figure>
-					</a>
-				</Slideshow>
-			</section>
+			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
 		{/if}
-		<section class={`topics ${data?.news_page?.use_page_blocks ? "topics--whole" : ""}`}>
-			<button class="reset" class:topicsExpanded on:click={toggleExpandTopics}>Topics</button>
-			{#if topicsExpanded}
-				<div transition:slide={{ duration: 400 }}>
-					<ul class="filters">
-						{#each data.news_topics as topic}
-							<li
-								class="filter-item"
-								class:active={topic.slug && topicFilterSlugs.has(topic.slug)}
-								on:click={() => toggleTopicFilter(topic.slug)}
-								on:keydown={null}
-								role="button"
-							>
-								{topic.name}
-							</li>
-						{/each}
-					</ul>
-				</div>
-			{/if}
-		</section>
-		<section class="news-posts">
-			{#if !loading}
-				{#each posts as post}
-					<DottedArrowHover
-						href="/news/{post.slug}{makeNewsFilterUrlParams(
-							topicFilterSlugs,
-							$page.url.searchParams
-						)}"
-					>
-						
-						{#if post.grid_image}
-							<figure class="post-grid-image">
-								<img 
-									src={assetUrl(post.grid_image.filename_disk)}
-									alt={post.grid_image.description} 
+	{:else}
+		<div class="container">
+			{#if data?.news_page?.use_page_blocks}
+				<h1 class="xxxl">News & Ideas</h1>
+				<section class="slideshow-section">
+					<Slideshow interval={5000} items={data.slider_articles} let:item>
+						<a href="/news/{item.slug}">
+							<figure class="featured-article" in:fade out:fade>
+								<img
+									src={assetUrl(item.hero_image?.filename_disk)}
+									alt={item.hero_image?.description}
+									class={item.hero_image_crop_attachment === "left"
+										? "position-left"
+										: item.hero_image_crop_attachment === "center_left"
+										? "position-center-left"
+										: item.hero_image_crop_attachment === "center"
+										? ""
+										: item.hero_image_crop_attachment === "center_right"
+										? "position-center-right"
+										: item.hero_image_crop_attachment === "right"
+										? "position-right"
+										: ""}
 								/>
+								<figcaption>
+									<h2 class="xl">{item.post_title}</h2>
+								</figcaption>
 							</figure>
-						{/if}
-						<article class="post-text">
-							<p class="kicker">
-								<strong>{post.topics?.[0]?.news_topics_id?.name ?? ""}</strong> {post.published_date ? formatDate(post.published_date, { fullMonth: true }) : ""}
-							</p>
-							<h3 class="xxl">{post.post_title}</h3>
-							{#if post.article_preview}
-								<p class="article-preview">{post.article_preview}</p>
-							{:else}
-								{@const pageContent = post?.page_content?.[0]?.item}
-								<div class="article-preview">
-									{#if pageContent?.__typename == "page_block_rich_text"}
-										{@html pageContent.content?.replace(/<\/?[^>]+(>|$)/g, "")}
-									{/if}
-								</div>
-							{/if}
-							<p>Read more <DottedArrow /></p>
-						</article>
-					</DottedArrowHover>
-				{/each}
+						</a>
+					</Slideshow>
+				</section>
+				<section class="news-page-blocks">
+					<PageBlocks content={data?.news_page?.page_content} />
+				</section>
+			{:else}
+				<h1 class="xxxl">News.</h1>
+				<section class="slideshow-section">
+					<Slideshow interval={5000} items={data.slider_articles} let:item>
+						<a href="/news/{item.slug}">
+							<figure class="featured-article" in:fade out:fade>
+								<img
+									src={assetUrl(item.hero_image?.filename_disk)}
+									alt={item.hero_image?.description}
+									class={item.hero_image_crop_attachment === "left"
+										? "position-left"
+										: item.hero_image_crop_attachment === "center_left"
+										? "position-center-left"
+										: item.hero_image_crop_attachment === "center"
+										? ""
+										: item.hero_image_crop_attachment === "center_right"
+										? "position-center-right"
+										: item.hero_image_crop_attachment === "right"
+										? "position-right"
+										: ""}
+								/>
+								<figcaption>
+									<h2 class="xxxl">{item.post_title}</h2>
+								</figcaption>
+							</figure>
+						</a>
+					</Slideshow>
+				</section>
 			{/if}
-		</section>
-	</div>
+			<section class={`topics ${data?.news_page?.use_page_blocks ? "topics--whole" : ""}`}>
+				<button class="reset" class:topicsExpanded on:click={toggleExpandTopics}>Topics</button>
+				{#if topicsExpanded}
+					<div transition:slide={{ duration: 400 }}>
+						<ul class="filters">
+							{#each data.news_topics as topic}
+								<li
+									class="filter-item"
+									class:active={topic.slug && topicFilterSlugs.has(topic.slug)}
+									on:click={() => toggleTopicFilter(topic.slug)}
+									on:keydown={null}
+									role="button"
+								>
+									{topic.name}
+								</li>
+							{/each}
+						</ul>
+					</div>
+				{/if}
+			</section>
+			<section class="news-posts">
+				{#if !loading}
+					{#each posts as post}
+						<DottedArrowHover
+							href="/news/{post.slug}{makeNewsFilterUrlParams(
+								topicFilterSlugs,
+								$page.url.searchParams
+							)}"
+						>
+							
+							{#if post.grid_image}
+								<figure class="post-grid-image">
+									<img 
+										src={assetUrl(post.grid_image.filename_disk)}
+										alt={post.grid_image.description} 
+									/>
+								</figure>
+							{/if}
+							<article class="post-text">
+								<p class="kicker">
+									<strong>{post.topics?.[0]?.news_topics_id?.name ?? ""}</strong> {post.published_date ? formatDate(post.published_date, { fullMonth: true }) : ""}
+								</p>
+								<h3 class="xxl">{post.post_title}</h3>
+								{#if post.article_preview}
+									<p class="article-preview">{post.article_preview}</p>
+								{:else}
+									{@const pageContent = post?.page_content?.[0]?.item}
+									<div class="article-preview">
+										{#if pageContent?.__typename == "page_block_rich_text"}
+											{@html pageContent.content?.replace(/<\/?[^>]+(>|$)/g, "")}
+										{/if}
+									</div>
+								{/if}
+								<p>Read more <DottedArrow /></p>
+							</article>
+						</DottedArrowHover>
+					{/each}
+				{/if}
+			</section>
+		</div>
+	{/if}
 </template>
 
 <style lang="scss">
