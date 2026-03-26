@@ -30,7 +30,7 @@
 		cta_type: "link",
 		cta_size: "md",
 		cta_icon: "none",
-		cta_style: "space",
+		cta_style: "both",
 		cta_hover_highlight: "light"
 	}
 </script>

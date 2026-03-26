@@ -11,7 +11,7 @@
 
 	export let data: PageData;
 
-	$: console.log("layout data", data);
+	//$: console.log("layout data", data);
 
 	let headerHeight = "75px";
 	let navigationTimeout: NodeJS.Timeout | null = null;
@@ -38,7 +38,7 @@
 				clearTimeout(navigationTimeout);
 			}
 			navigationTimeout = setTimeout(() => {
-				console.log("min load time surpassed", $navigating);
+				//console.log("min load time surpassed", $navigating);
 				if (!$navigating) {
 					console.log("stopping navigation");
 					loading.stopAnimation();
@@ -49,7 +49,7 @@
 
 	afterNavigate(() => {
 		setTimeout(updateHeaderSize, 600);
-		console.log("afterNavigation");
+		//console.log("afterNavigation");
 		loading.stopNavigation();
 
 		// TODO: Try to get this working to give the animation script a navigation hook
@@ -87,7 +87,7 @@
 	<main style:--header-height={headerHeight}>
 		<slot />
 	</main>
-	<Footer />
+	<Footer navMenu={data.nav_menu} />
 </template>
 
 <style lang="scss">
