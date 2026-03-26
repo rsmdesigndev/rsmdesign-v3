@@ -39,7 +39,7 @@
 		<div class="footer-col1">
 			<article>
 				<a href="/project-inquiry">Project inquiries</a>
-				<p>Stephanie Wills · Principal</p>
+				<p>Stephanie Wills</p>
 				<!--HubSpot Call-to-Action Code -->
 				<span class="hs-cta-wrapper" id="hs-cta-wrapper-83a3f126-b26c-4061-81d0-9079a980aa15">
 					<span class="hs-cta-node hs-cta-83a3f126-b26c-4061-81d0-9079a980aa15" id="hs-cta-83a3f126-b26c-4061-81d0-9079a980aa15">
@@ -115,7 +115,7 @@
 					</svg>
 				</a>
 			</div>
-			<p class="footer-copyright">Copyright © 1997–{new Date().getFullYear()} RSM Design</p>
+			<p class="footer-copyright">Copyright © 1997–{new Date().getFullYear()} RSM&nbsp;Design</p>
 		</div>
 	</footer>
 
@@ -218,6 +218,7 @@
 			grid-column: eighth-start 1 / eighth-end 4;
 			display: grid;
 			grid-template-columns: subgrid;
+			row-gap: var(--SPACE-MD);
 
 			@media (max-width: 62.5em) {
 				grid-column: third-start 1 / third-start 2;
@@ -238,6 +239,9 @@
 				> p, > a {
 					margin-bottom: 0;
 				}
+				> p:first-of-type {
+					margin: 0.75em 0 0.333em;
+				}
 			}
 
 			> nav {
@@ -248,7 +252,7 @@
 				row-gap: 1em;
 
 				@media (max-width: 31.25em) {
-					margin-top: var(--SPACE-LG);
+					margin-top: var(--SPACE-MD);
 				}
 
 				:global {
@@ -269,9 +273,9 @@
 						a {
 							width: calc(50% - var(--GRID-CELL));
 
-							@media (max-width: 46.875em) and (min-width: 31.25em) {
+							/*@media (max-width: 46.875em) and (min-width: 31.25em) {
 								width: 100%;
-							}
+							}*/
 						}
 					}
 				}
@@ -281,6 +285,7 @@
 			grid-column: eighth-start 5 / eighth-end 8;
 			display: grid;
 			grid-template-columns: subgrid;
+			grid-template-rows: min-content 1fr;
 			row-gap: var(--SPACE-LG);
 			color: var(--color-primary, var(--COLOR-WHITE));
 
@@ -289,15 +294,32 @@
 			}
 			@media (max-width: 46.875em) {
 				grid-column: half-start 2 / half-end 2;
+				row-gap: var(--SPACE-MD);
 			}
 			@media (max-width: 31.25em) {
 				grid-column: main;
-				row-gap: var(--SPACE-MD);
+				display: flex;
+				flex-wrap: wrap;
+				column-gap: var(--GRID-CELL);
+
+				> article {
+					width: calc(50% - var(--GRID-CELL));
+				}
+
 			}
 
 			> article {
 				> p {
 					margin-bottom: 0.5em;
+
+					@media (max-width: 46.875em) {
+						display: none;
+					}
+				}
+				> a:first-child {
+					@media (max-width: 46.875em) {
+						margin-bottom: 0;
+					}
 				}
 				&:nth-of-type(2n+1) {
 					grid-column: eighth-start 1 / eighth-end 2;
@@ -331,7 +353,7 @@
 			}
 
 			> a:first-child {
-				font-weight: 500;
+				font-weight: 600;
 				font-size: var(--FONT-SIZE-LG);
 				margin-bottom: 0.5em;
 			}
@@ -344,7 +366,15 @@
 
 			@media (max-width: 31.25em) {
 				display: flex;
-				justify-content: space-between;
+				flex-wrap: wrap;
+				column-gap: var(--GRID-CELL);
+
+				> .social-icons {
+					width: calc(50% - var(--GRID-CELL));
+				}
+				> p.footer-copyright {
+					width: 50%;
+				}
 			}
 
 			border-top: 1px solid var(--color-primary);
@@ -372,9 +402,10 @@
 						width: calc(var(--GRID-CELL) / 2);
 					}
 
-					transition: opacity 0.3s ease;
 					&:hover {
-						opacity: 0.4;
+						> svg > g.social-icon {
+							fill: var(--color-accent, var(--COLOR-ORANGE));
+						}
 					}
 
 					> svg {
@@ -382,6 +413,7 @@
 						max-width: 100%;
 
 						> g.social-icon {
+							transition: fill 0.3s ease;
 							fill: var(--color-primary, var(--COLOR-WHITE));
 						}
 					}
@@ -394,7 +426,7 @@
 				}
 
 				margin: 1em 0 0;
-				min-width: 16.5em;
+				//min-width: 16.5em;
 				font-size: var(--FONT-SIZE-SM);
 				color: var(--color-primary, var(--COLOR-WHITE));
 
