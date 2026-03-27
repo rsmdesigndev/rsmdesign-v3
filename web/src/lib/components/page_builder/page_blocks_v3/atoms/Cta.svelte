@@ -188,6 +188,7 @@
 			height: calc((var(--font-size) + var(--font-size) * var(--line-height)) / 2);
 			border: 1.5px solid var(--color-accent, var(--COLOR-ORANGE));
 			border-radius: 50%;
+			// TODO: fix centering
 
 			align-content: center;
 			justify-content: center;

@@ -21,20 +21,21 @@
 		right: false
 	};
 	export let isActive: boolean = true;
+	export let activeHighlight: string = "accent";
 	export let isScrollItem: boolean = false;
 
 	let weightLarge: number = 300;
-	let weightSmall: number = 600;
+	let weightSmall: number = 700;
 	switch (data.heading_size) {
 		case "xxxl":
 			if (data.heading_weight === "bold") {
 				weightLarge = 400;
-				weightSmall = 700;
+				//weightSmall = 700;
 			}
 			break;
 		case "xxl":
 			weightLarge = 400;
-			weightSmall = 700;
+			//weightSmall = 700;
 			break;
 		case "xl":
 			if (data.heading_weight === "bold") {
@@ -44,7 +45,7 @@
 			}
 			break;
 		case "lg":
-			weightSmall = 400;
+			weightSmall = 500;
 			if (data.heading_weight === "bold") {
 				weightLarge = 700;
 			} else {
@@ -59,6 +60,8 @@
 	 class:scroll-item={isScrollItem}
 	 style:--grid-column-start={bleed.left ? "2" : "1"}
 	 style:--grid-column-end={bleed.right ? "-2" : "-1"}
+	 style:--active-highlight={`var(--color-${activeHighlight}, var(--COLOR-ORANGE))`}
+	 style:--color-heading-small={activeHighlight === "primary" ? "var(--color-secondary)" : "var(--color-primary)"}
 >
 	{#if data.heading_has_small_text && data.heading_small}
 		<svelte:element 
@@ -107,10 +110,10 @@
 
 			&.scroll-item {
 				.heading-large {
-					color: var(--color-accent, var(--COLOR-ORANGE));
+					color: var(--active-highlight);
 				}
 				.heading-small {
-					color: var(--color-primary, var(--COLOR-BLACK));
+					color: var(--color-heading-small);
 				}
 			}
 		}

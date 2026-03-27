@@ -272,7 +272,7 @@
 					}
 				}
 
-				&::before {
+				&::before, &::after {
 					content: "";
 					position: absolute;
 					z-index: 2;
@@ -295,6 +295,11 @@
 					);
 					mix-blend-mode: hard-light;
 				}
+				&::after {
+					z-index: 1;
+					opacity: 0;
+					transition: opacity 0.3s ease;
+				}
 			}
 
 			&.grid-style-banner:hover {
@@ -305,8 +310,11 @@
 						}
 					}
 					> figcaption {
-						--color-heading: var(--color-accent, var(--COLOR-ORANGE));
+						//--color-heading: var(--color-secondary, var(--COLOR-MID-GRAY));
 					}
+				}
+				&::after {
+					opacity: 1;
 				}
 			}
 		}

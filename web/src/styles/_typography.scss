@@ -58,7 +58,7 @@ $BREAKPOINT-LG: 125em;
 }
 
 @mixin fonts {
-	--FONT-FAMILY-PROXIMA-NOVA: 'Proxima Nova', var(--font-stack-sans);
+	--FONT-FAMILY-PROXIMA-NOVA: 'proxima-nova', var(--font-stack-sans);
 	--font-stack-sans: Avenir, 'Avenir Next', Verdana, -apple-system, BlinkMacSystemFont, Tahoma, 'Helvetica Neue', Helvetica, Roboto, Noto, Arial, sans-serif;
 }
 

@@ -30,6 +30,7 @@
 	export let isScrollItem: boolean;
 	export let excludeFirstItem: boolean;
 	export let isActive: boolean = true;
+	export let activeHighlight: string = "accent";
 
 	let card: HTMLElement;
 
@@ -79,7 +80,7 @@
 			{:else if data?.__typename === "page_blocks_v3_atom_cta"}
 				<Cta {data} {bleed} {isActive} />
 			{:else if data?.__typename === "page_blocks_v3_atom_heading"}
-				<Heading {data} {bleed} {isActive} {isScrollItem} />
+				<Heading {data} {bleed} {isActive} {activeHighlight} {isScrollItem} />
 			{:else if data?.__typename === "page_blocks_v3_atom_media"}
 				<Media {data} {isActive} />
 			{:else if data?.__typename === "page_blocks_v3_atom_rich_text"}

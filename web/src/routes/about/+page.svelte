@@ -45,10 +45,16 @@
 	{/each}
 </svelte:head>
 
-{#if data.about.use_page_blocks}
-	<PageBlocks content={data.about.page_content} />
-{:else}
-	<template>
+<template>
+	{#if data.about?.about_use_page_blocks_v3}
+		{#if data.about.about_page_blocks_v3}
+			<PageBlocksV3 blocks={data.about.about_page_blocks_v3} />
+		{:else}
+			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
+		{/if}
+	{:else if data.about.use_page_blocks}
+		<PageBlocks content={data.about.page_content} />
+	{:else}
 		<div class="container">
 			<Section header order={2} span_columns={2} col_units="third" col_start={1} span_rows={1}>
 				<h1 class="md gray">About us</h1>
@@ -427,8 +433,8 @@
 				{/key}
 			</section>
 		</div>
-	</template>
-{/if}
+	{/if}
+</template>
 
 <style lang="scss">
 	.container {

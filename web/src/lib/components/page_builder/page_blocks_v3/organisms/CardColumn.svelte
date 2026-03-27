@@ -10,6 +10,7 @@
 		column_sticky?: string | null;
 		column_interaction_on_scroll?: boolean | null;
 		column_interaction_exclude_first_item?: boolean | null;
+		column_interaction_active_highlight?: string | null;
 		column_items?: ({ item?: ColumnItem | null } | null | undefined)[] | null | undefined;
 	}
 
@@ -88,6 +89,7 @@
 
 	let isScrollItem: boolean = data.column_interaction_on_scroll;
 	let excludeFirstItem: boolean = data.column_interaction_exclude_first_item;
+	let activeHighlight: string = data.column_interaction_active_highlight;
 </script>
 
 <template>
@@ -126,6 +128,7 @@
 					isScrollItem={isScrollItem && !(excludeFirstItem && i === 0)}
 					{excludeFirstItem}
 					isActive={!isScrollItem || (excludeFirstItem && i === 0) || (selectedItem === (excludeFirstItem ? i - 1 : i))}
+					{activeHighlight}
 					on:selectItem={(e) => selectItem(i - e.detail.subtrahend)}
 				/>
 			{:else if data?.__typename === "page_blocks_v3_organism_card_carousel"}

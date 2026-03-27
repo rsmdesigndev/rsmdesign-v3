@@ -334,6 +334,7 @@ export const _query = gql`
 					... on page_blocks_v3_organism_card_row {
 						change_background_color
 						section_background_color
+						section_color_theme
 						change_breadcrumbs
 						section_anchor_text
 						section_anchor_link
@@ -346,6 +347,8 @@ export const _query = gql`
 							grid_col_end_units
 							grid_col_end
 							column_interaction_on_scroll
+							column_interaction_exclude_first_item
+							column_interaction_active_highlight
 							column_item_spacing
 							column_padding_left
 							column_padding_right
@@ -360,6 +363,7 @@ export const _query = gql`
 									}
 									... on page_blocks_v3_molecule_card {
 										card_item_spacing
+										card_link
 										card_atoms {
 											item {
 												__typename
@@ -401,6 +405,17 @@ export const _query = gql`
 														title
 														description
 													}
+													media_video_fallback_image {
+														filename_disk
+														title
+														description
+													}
+													media_video_native {
+														id
+														title
+														type
+														filename_disk
+													}
 													media_video_source
 													media_video_vimeo
 													media_video_youtube
@@ -411,6 +426,8 @@ export const _query = gql`
 															description
 														}
 													}
+													media_slider_autoplay
+													media_slider_autoplay_interval
 													media_slider_images_per_slide
 													media_swiper {
 														directus_files_id {
@@ -419,6 +436,7 @@ export const _query = gql`
 															description
 														}
 													}
+													media_swiper_start_position
 													media_caption
 												}
 												... on page_blocks_v3_atom_rich_text {
@@ -434,8 +452,12 @@ export const _query = gql`
 										}
 									}
 									... on page_blocks_v3_organism_card_carousel {
+										carousel_autoplay
+										carousel_autoplay_interval
+										carousel_show_arrows
 										carousel_cards {
 											card_item_spacing
+											card_link
 											card_atoms {
 												item {
 													__typename
@@ -480,21 +502,10 @@ export const _query = gql`
 														media_video_source
 														media_video_vimeo
 														media_video_youtube
-														media_slider {
-															directus_files_id {
-																filename_disk
-																title
-																description
-															}
-														}
+														media_slider_autoplay
+														media_slider_autoplay_interval
 														media_slider_images_per_slide
-														media_swiper {
-															directus_files_id {
-																filename_disk
-																title
-																description
-															}
-														}
+														media_swiper_start_position
 														media_caption
 													}
 													... on page_blocks_v3_atom_rich_text {
@@ -536,9 +547,12 @@ export const _query = gql`
 					... on page_blocks_v3_organism_data_feed {
 						change_background_color
 						section_background_color
+						section_color_theme
 						change_breadcrumbs
 						section_anchor_text
 						section_anchor_link
+						section_padding_top
+						section_padding_bottom
 						feed_source
 						feed_show_filter_menu
 						feed_filter_logic
@@ -565,8 +579,12 @@ export const _query = gql`
 						feed_view
 						feed_load_functionality
 						feed_grid_columns
-						feed_grid_style
 						feed_grid_rows_per_load
+						feed_grid_style
+						feed_grid_dynamic_start_position
+						feed_table_style
+						feed_table_image_position
+						feed_table_items_per_load
 						feed_cards {
 							card_item_spacing
 							card_atoms {
@@ -644,6 +662,7 @@ export const _query = gql`
 						}
 					}
 					... on page_blocks_v3_organism_hero {
+						hero_style
 						hero_media_type
 						hero_image {
 							filename_disk
@@ -651,6 +670,18 @@ export const _query = gql`
 							description
 						}
 						hero_video_source
+						hero_video_native {
+							id
+							title
+							type
+							filename_disk
+						}
+						hero_video_native_mobile {
+							id
+							title
+							type
+							filename_disk
+						}
 						hero_video_vimeo
 						hero_video_youtube
 						hero_headline
