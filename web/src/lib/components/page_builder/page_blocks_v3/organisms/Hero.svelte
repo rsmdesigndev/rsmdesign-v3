@@ -205,16 +205,18 @@
 			</div>
 		</div>
 	{:else if data.hero_style === "above"}
-		<div class="hero-headline-below">
+		<div class="hero-headline-above">
 			<div class="hero-animation-trigger"
 				 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#hero-h1", animClass: `hero-h1-${data.hero_style}` } }
 			/>
-			<h1 bind:this={headline}
-				id="hero-h1" 
-				class="xxxl"
-			>
-				{@html data.hero_headline}
-			</h1>
+			<div class="hero-headline">
+				<h1 bind:this={headline}
+					id="hero-h1" 
+					class="xxxl"
+				>
+					{@html data.hero_headline}
+				</h1>
+			</div>
 		</div>
 	{:else if data.hero_style === "below"}
 	{/if}
@@ -425,7 +427,7 @@
 				}
 			}
 		}
-		.hero-headline-below {
+		.hero-headline-above {
 			position: absolute;
 			top: 0;
 			left: 0;
@@ -435,15 +437,7 @@
 			display: grid;
 			grid-template-columns: var(--GRID-WRAPPER);
 
-			> .project-hero-animate {
-				position: absolute;
-				top: 0;
-				left: 0;
-				height: 100%;
-				pointer-events: none;
-			}
-
-			> .project-headings {
+			> .hero-headline {
 				grid-column: sixth-start 1 / sixth-end 4;
 				@media (max-width: 62.5em) {
 					grid-column: third-start 1 / third-end 2;
@@ -457,6 +451,11 @@
 				padding-top: calc(var(--GRID-CELL) * 2);
 				position: sticky;
 				top: 0;
+
+				> h1 {
+					color: white;
+					margin-bottom: 0.15em;
+				}
 			}
 		}
 	}
@@ -474,6 +473,25 @@
 				opacity: 1;
 			}
 			83.3% {
+				opacity: 0;
+			}
+			100% {
+				opacity: 0;
+			}
+		}
+
+		h1.hero-h1-above {
+			animation: hero-h1-above 1s ease forwards;
+		}
+
+		@keyframes hero-h1-above {
+			0% {
+				opacity: 1;
+			}
+			33.3% {
+				opacity: 1;
+			}
+			50% {
 				opacity: 0;
 			}
 			100% {
