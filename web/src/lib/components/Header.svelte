@@ -168,6 +168,7 @@
 
 	function clearSearch() {
 		searchResults = [];
+		query = "";
 	}
 
 	async function search() {
