@@ -146,7 +146,6 @@
 						) {
 							slug
 							project_title
-							location
 							grid_image {
 								filename_disk
 								title
@@ -156,6 +155,30 @@
 								filename_disk
 								title
 								description
+							}
+							location
+							markets {
+								markets_id {
+									name
+									short_name
+								}
+							}
+							project_location_city {
+								city_name
+								state_province {
+									state_province_name
+									state_province_abbreviation
+								}
+								country {
+									country_name
+									country_abbreviation
+								}
+							}
+							studio_locations {
+								studio_locations_id {
+									slug
+									location
+								}
 							}
 						}
 						projects_aggregated(
@@ -283,6 +306,83 @@
 				break;
 			}
 			case "Awards": {
+				/*
+					Projects
+						Col1: Project Title / Project Location
+						Col2: Studio Location
+						Col3: First Market + #
+					Articles
+						Col1: Post Title
+						Col2: Date
+						Col3: First Tag + #
+					Awards
+						Col1: Designation / Category (if applicable)
+						Col2: Project Title / Project Location
+						Col3: Year
+				*/
+				let query = `
+					query Awards($limit: Int, $offset: Int) {
+						awards(
+							limit: $limit
+							offset: $offset
+							sort: ["-year", "-awards_page_sort"]
+							filter: { 
+								visibility: { _nin: ["draft", "archived"] } 
+							}
+						) {
+							award_body_designation
+							award_category
+							year
+							awards_page_sort
+							project_name
+							project_location
+							project {
+								slug
+								project_title
+								location
+								grid_image {
+									filename_disk
+									title
+									description
+								}
+								project_location_city {
+									city_name
+									state_province {
+										state_province_name
+										state_province_abbreviation
+									}
+									country {
+										country_name
+										country_abbreviation
+									}
+								}
+							}
+						}
+						awards_aggregated(
+							filter: {
+								_and: [
+									{ visibility: { _nin: ["draft", "archived"] } }
+								]
+							})
+						{
+							count {
+								id
+							}
+						}
+					}
+				`
+				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
+					limit: numItems,
+					offset: loadOffset,
+				});
+
+				if(response) {
+					feedData.push(...response.awards);
+					feedData = feedData;
+					loaded = true;
+					loadTotalCount = response.awards_aggregated?.[0]?.count?.id ?? 0;
+				}
+
 				break;
 			}
 			case "Testimonials": {
@@ -438,6 +538,7 @@
 					 color-theme-${data.section_color_theme}
 					 previous-color-theme-${previousTheme}
 				   `}
+			 style:--z-index={data.feed_view === "Table" && data.feed_table_style === "simple" ? "3" : "2"}
 			 style:--color-background={data.section_background_color}
 	>
 		<div class="bg-color-trigger"
@@ -540,6 +641,7 @@
 		left: 0;
 		width: 100vw;
 		height: 100vh;
+		pointer-events: none;
 	}
 	div.bg-color {
 		/* 
@@ -586,7 +688,7 @@
 			7: Menu overlay
 			8: Menu button
 		*/
-		z-index: 3;
+		z-index: var(--z-index);
 		position: relative;
 
 		grid-column: viewport;

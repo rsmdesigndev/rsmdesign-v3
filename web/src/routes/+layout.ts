@@ -15,6 +15,11 @@ export const load: LayoutLoad = async () => {
                 link_text
                 link_shows_in_footer
                 link_shows_in_menu
+                link_media_image {
+                  title
+                  filename_disk
+                  description
+                }
                 link_children {
                   nav_menu_links_child_id {
                     link_level
@@ -22,6 +27,11 @@ export const load: LayoutLoad = async () => {
                     link_text
                     link_shows_in_footer
                     link_shows_in_menu
+                    link_media_image {
+                      title
+                      filename_disk
+                      description
+                    }
                   }
                 }
               }

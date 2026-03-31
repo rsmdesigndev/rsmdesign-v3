@@ -42,7 +42,6 @@
 					grid-style-${data.feed_grid_style}
 					${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
 				  `}
-			style:--grid-column-units={data.feed_grid_columns === 3 ? "sixth" : "eighth"}
 			style:--grid-item={i}
 			style:--grid-columns={data.feed_grid_columns}
 		>
@@ -134,11 +133,6 @@
 				</figcaption>
 			</figure>
 		</svelte:element>
-		<!--<div class="column-container "
-			 style:--grid-column-units={`${data.feed_grid_columns === 3 ? "sixth" : "eighth"}`}
-		>
-			Column
-		</div>-->
 	{/each}
 </template>
 

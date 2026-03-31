@@ -11,7 +11,9 @@
 	import { request } from "graphql-request";
 	import { setContext, afterUpdate, onMount, tick } from 'svelte';
 	import { env } from "$env/dynamic/public";
-	import { afterNavigate, beforeNavigate } from "$app/navigation";
+	import { afterNavigate, beforeNavigate, goto } from "$app/navigation";
+	import { cmsClient, type ImageAsset } from "$lib/cms";
+	import { assetUrl } from "$lib/cms/assets";
 
 	export let headerHeight;
 	export let navMenu;
@@ -33,6 +35,8 @@
 			toggleMenu();
 		}
 	}
+
+	// Breadcrumbs
 
 	$: checkActiveRoute = (path: string): boolean => {
 		return path == $page.url.pathname;
@@ -128,13 +132,150 @@
 			navParentText = "Markets";
 		}
 	});
+
+	// Menu item selection
+	let innerWidth: number;
+	let selectedItem: number = 0;
+
+	function selectItemOnMouseover(i: number) {
+		if (innerWidth > 1000) {
+			selectedItem = i; // only fire on screen width > 62.5em
+		}
+	}
+	function selectItemOnClick(i: number, link: string, linkDirectly: boolean) {
+		if (selectedItem === i || linkDirectly) {
+			goto(link);
+		} else {
+			selectedItem = i;
+		}
+	}
+
+
+	// Search
+
+	type SearchResult = {
+		title: string;
+		subtitle: string;
+		image: ImageAsset;
+		link: string;
+		class?: string;
+	};
+
+	let query = "";
+	let searching = false;
+	let error = "";
+	let searchResults: SearchResult[] = [];
+
+	function clearSearch() {
+		searchResults = [];
+	}
+
+	async function search() {
+		searching = true;
+		try {
+			const url = new URL($page.url);
+			url.searchParams.set("query", query);
+			history.replaceState(history.state, "", url);
+
+			const res = await cmsClient.Search({ query });
+
+			const results = [];
+
+			// Projects
+			for (const project of res.projects) {
+				results.push({
+					title: project.project_title ?? "",
+					subtitle: `Project`,
+					image: project.grid_image as ImageAsset,
+					link: `/work/${project.slug}`
+				});
+			}
+
+			// Markets
+			for (const market of res.markets) {
+				results.push({
+					title: market.name ?? "",
+					subtitle: `Market Overview`,
+					image: market.grid_image as ImageAsset,
+					link: `/markets/${market.slug}`
+				});
+			}
+
+			// Services
+			for (const service of res.services) {
+				results.push({
+					title: service.name ?? "",
+					subtitle: `Service Overview`,
+					image: service.grid_image as ImageAsset,
+					link: `/services/${service.slug}`
+				});
+			}
+
+			// Studio Locations
+			for (const studioLocation of res.studio_locations) {
+				results.push({
+					title: studioLocation.search_name ?? "",
+					subtitle: `Studio Location`,
+					image: studioLocation.grid_image as ImageAsset,
+					link: `/offices/${studioLocation.slug}`
+				});
+			}
+
+			// Geographical Regions
+			for (const geographicalRegion of res.geographical_regions) {
+				results.push({
+					title: geographicalRegion.search_name ?? "",
+					subtitle: `Geographical Region`,
+					image: geographicalRegion.grid_image as ImageAsset,
+					link: `/regions/${geographicalRegion.slug}`
+				});
+			}
+
+			// News Posts
+			for (const newsPost of res.news_posts) {
+				results.push({
+					title: newsPost.post_title ?? "",
+					subtitle: `News Post`,
+					image: newsPost.grid_image as ImageAsset,
+					link: `/news/${newsPost.slug}`
+				});
+			}
+
+			// Team Members
+			for (const teamMember of res.team) {
+				results.push({
+					title: teamMember.name ?? "",
+					subtitle: `Team Member`,
+					image: teamMember.headshot as ImageAsset,
+					link: `/team/${teamMember.slug}`
+				});
+			}
+
+			searchResults = results;
+		} catch (err) {
+			console.error(err);
+			error = "An error occurred while searching. Please try again later.";
+			searchResults = [];
+		} finally {
+			searching = false;
+		}
+	}
+
+	onMount(() => {
+		if ($page.url.searchParams.has("query")) {
+			query = $page.url.searchParams.get("query") ?? "";
+			if (query) {
+				search();
+			}
+		}
+	});
 </script>
 
 <template>
 	<header style:--logo-height={logoHeight}>
 		<div class="menu-bar" />
 
-		<div class="logo-container" bind:offsetHeight={logoHeight}>
+		<div class="logo-container" bind:offsetHeight={logoHeight} bind:offsetWidth={innerWidth}>
 			<a class="logo" href="/" aria-label="Navigate to homepage">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 22.572">
 					<g class="logotype" fill-rule="nonzero">
@@ -169,14 +310,81 @@
 			</div>
 		</div>
 
-		<nav class="menu-wrapper" class:active={menuOpen}>
-			<ul>
-				{#each navMenu.nav_menu_links as item}
-					{@const link = item.nav_menu_links_id}
-					<li><a class:active={checkActiveRoute(link.link_path)} href={link.link_path} on:click={toggleMenu}>{link.link_text}</a></li>
+		<div class="menu-wrapper" class:active={menuOpen}>
+			<form on:submit|preventDefault={search}>
+				{#if searchResults.length}
+					<button aria-label="Clear search" on:click={clearSearch}>
+						‹
+					</button>
+				{:else}
+					<button type="submit" aria-label="Search button">
+						<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<rect width="10" height="2.25" transform="matrix(-0.707107 -0.707107 -0.707107 0.707107 20.6621 19.0703)" />
+							<circle cx="6.875" cy="6.875" r="6.875" transform="matrix(-1 0 0 1 14.8125 1.0625)" stroke-width="2.125"/>
+						</svg>
+					</button>
+				{/if}
+				<input class:active={searchResults.length} placeholder="Search" aria-label="Search bar" bind:value={query} />
+			</form>
+			{#if searching}
+				<div>Searching...</div>
+			{:else if searchResults.length}
+				<h2>Search results for “{query}”</h2>
+				{#each searchResults as result}
+					<a href={result.link} class="result">
+						<figure>
+							{#if result.image}
+								<picture>
+									<img src={assetUrl(result.image.filename_disk)} alt={result.image.description} />
+								</picture>
+							{/if}
+							<figcaption>
+								<span>{result.subtitle}</span>
+								{result.title}
+							</figcaption>
+						</figure>
+					</a>
 				{/each}
-			</ul>
-		</nav>
+			{:else}
+				<nav style:--num-rows={navMenu.nav_menu_links.length}>
+					{#each navMenu.nav_menu_links.map((c) => c?.nav_menu_links_id).filter(item => !!item.link_shows_in_menu) as item, i}
+						<a
+							href={item.link_path}
+							class:active={selectedItem === i}
+							on:mouseover|preventDefault={() => selectItemOnMouseover(i)}
+							on:click|preventDefault={() => selectItemOnClick(i, item.link_path, !item.link_children.length)}
+						>
+							{item.link_text}
+						</a>
+						{#if item.link_children.length}
+							<aside>
+								{#each item.link_children.map((c) => c?.nav_menu_links_child_id) as child}
+									<a href={child.link_path}>
+										{child.link_text}
+									</a>
+									{#if child.link_media_image}
+										<figure>
+											<img 
+												src={assetUrl(child.link_media_image.filename_disk)}
+												alt={child.link_media_image.description}
+											/>
+										</figure>
+									{/if}
+								{/each}
+							</aside>
+						{/if}
+						{#if item.link_media_image}
+							<figure>
+								<img 
+									src={assetUrl(item.link_media_image.filename_disk)}
+									alt={item.link_media_image.description}
+								/>
+							</figure>
+						{/if}
+					{/each}
+				</nav>
+			{/if}
+		</div>
 	</header>
 </template>
 
@@ -211,22 +419,23 @@
 				8: Menu button
 			*/
 			// MENU BAR
-			&:first-of-type {
+			&.menu-bar {
 				z-index: 3;
 			}
 			// LOGO
-			&:nth-of-type(2) {
+			&.logo-container {
 				z-index: 4;
 				//margin-top: calc(-1 * var(--SPACE-LG));
 				margin-bottom: calc(-1px * var(--logo-height));
 			}
 			// BREADCRUMBS + MENU BUTTON
-			&:last-of-type {
+			&.nav-wrapper {
 				z-index: 8;
 			}
-		}
-		> nav.menu-wrapper {
-			z-index: 7;
+			// MENU WRAPPER
+			&.menu-wrapper {
+				z-index: 7;
+			}
 		}
 	}
 
@@ -338,26 +547,13 @@
 		}
 	}
 
-	nav.menu-wrapper {
-		position: absolute;
+	div.menu-wrapper {
+		position: fixed;
 		top: 0;
 		width: 100vw;
 		height: 0;
 		opacity: 0;
 		transition: height 0.3s ease, opacity 0.3s ease;
-
-		/* 
-			Z-Indexes
-			1: Background color
-			2: Content
-			3: Menu bar
-			4: Logo
-			5: Hero
-			6: Breadcrumbs
-			7: Menu overlay
-			8: Menu button
-		*/
-		z-index: 7;
 
 		&.active {
 			visibility: visible;
@@ -366,71 +562,273 @@
 		}
 
 		background-color: var(--COLOR-BLACK);
+		color: white;
 		overflow-y: scroll;
-		display: flex;
-		justify-content: flex-start;
-		align-items: center;
+		display: grid;
+		grid-template-columns: var(--GRID-WRAPPER);
+		row-gap: var(--SPACE-LG);
+		align-content: start;
+
+		pointer-events: auto;
 
 		padding: 0;
-		@media (max-width: 62.5em) {
-			padding: 0;
+
+		> div {
+			grid-column: main;
 		}
 
-		> ul {
-			margin: 0 0 0 5vw;
+		> form {
+			grid-column: eighth-start 1 / eighth-end 5;
 			@media (max-width: 62.5em) {
-				margin: 0 0 0 2vw;
+				grid-column: third-start 1 / third-end 2;
 			}
-			> li {
-				font-size: var(--FONT-SIZE-XXL);
-				@media (max-width: 46.875em) {
-					font-size: 2rem;
+			grid-row: 1;
+			display: flex;
+			//width: 100%;
+			height: calc(var(--GRID-CELL) * 1.75);
+			align-items: center;
+
+			> button {
+				width: auto;
+				background: transparent;
+				margin: 0;
+				padding: 0 0.5em 0 0;
+				border: 0;
+				border-radius: 0;
+				color: white;
+				transition: color 0.3s ease;
+				font-weight: 300;
+				font-size: var(--FONT-SIZE-XL);
+				line-height: 0;
+				> svg {
+					margin-top: 0.111em;
+					height: calc(var(--GRID-CELL) * 0.618);
+					width: auto;
+					rect {
+						fill: white;
+						transition: fill 0.3s ease;
+					}
+					circle {
+						stroke: white;
+						transition: stroke 0.3s ease;
+					}
 				}
-				font-weight: 700;
-				margin: 0.4em 0 0.4em -4vw;
-				opacity: 0;
-				transition: margin-left 0.6s ease, opacity 0.6s ease;
-				a {
-					color: white;
-					transition: color 0.3s ease;
-					&:hover {
-						color: var(--COLOR-MID-GRAY);
-					}
-
-					position: relative;
-					&::after {
-						content: "›";
-						position: absolute;
-						top: calc(var(--FONT-SIZE-XXL) * 0.76);
-						font-size: var(--FONT-SIZE-XXXL);
-						@media (max-width: 46.875em) {
-							top: calc(2rem * 0.76);
-							font-size: 2.6rem;
+				&:hover {
+					color: var(--COLOR-ORANGE);
+					> svg {
+						rect {
+							fill: var(--COLOR-ORANGE);
 						}
-						font-weight: 300;
-						line-height: 0;
-						color: var(--COLOR-ORANGE);
-
-						margin-left: 0;
-						opacity: 0;
-						transition: margin-left 0.3s, opacity 0.3s;
+						circle {
+							stroke: var(--COLOR-ORANGE);
+						}
 					}
+				}
+			}
+			> input {
+				background: none;
+				border: none;
+				max-width: 100%;
+				padding: 0;
+				color: white;
+				font-size: var(--FONT-SIZE-LG);
+				caret-color: var(--COLOR-MID-GRAY);
 
-					&:hover::after {
-						margin-left: 0.333em;
+				&::placeholder {
+					color: white;
+					font-size: var(--FONT-SIZE-LG);
+				}
+
+				&.active {
+					color: var(--COLOR-ORANGE);
+				}
+			}
+		}
+
+		> h2 {
+			grid-column: main;
+			margin: 0 0 calc(-1 * var(--SPACE-MD));
+			font-size: var(--FONT-SIZE-XXXL);
+		}
+
+		> a {
+			&:nth-of-type(3n+1) {
+				grid-column: sixth-start 1 / sixth-end 2;
+			}
+			&:nth-of-type(3n+2) {
+				grid-column: sixth-start 3 / sixth-end 4;
+			}
+			&:nth-of-type(3n) {
+				grid-column: sixth-start 5 / sixth-end 6;
+			}
+
+			@media (max-width: 62.5em) {
+				&:nth-of-type(3n+1) {
+					grid-column: third-start 1 / third-end 1;
+				}
+				&:nth-of-type(3n+2) {
+					grid-column: third-start 2 / third-end 2;
+				}
+				&:nth-of-type(3n) {
+					grid-column: third-start 3 / third-end 3;
+				}
+			}
+
+			@media (max-width: 31.25em) {
+				&:nth-of-type(n) {
+					grid-column: main;
+				}
+			}
+
+			> figure {
+				margin: 0;
+				padding: 0;
+				display: grid;
+
+				> picture {
+					aspect-ratio: 1 / 1;
+					overflow: hidden;
+					margin-bottom: var(--SPACE-SM);
+
+					> img {
+						object-fit: cover;
+						height: 100%;
+						width: 100%;
+						max-width: 100%;
+						transform: scale(1);
+						transition: transform 0.75s ease;
+					}
+				}
+
+				> figcaption {
+					font-size: var(--FONT-SIZE-LG);
+
+					> span {
+						display: block;
+						font-size: var(--FONT-SIZE-SM);
+						text-transform: uppercase;
+						letter-spacing: 0.05em;
+					}
+				}
+			}
+
+			&:hover > figure > picture > img {
+				transform: scale(1.05);
+
+				@media (max-width: 46.875em) {
+					transform: scale(1);
+				}
+			}
+		}
+
+		> nav {
+			//margin-top: var(--SPACE-LG);
+			grid-column: eighth-start 1 / eighth-end 5;
+			@media (max-width: 62.5em) {
+				grid-column: third-start 1 / third-end 2;
+			}
+			display: grid;
+			grid-template-columns: subgrid;
+			@media (max-width: 31.25em) {
+				grid-column: main;
+				grid-template-columns: 1fr var(--GRID-CELL) 1fr;
+			}
+			row-gap: var(--SPACE-SM);
+			position: relative;
+
+			> a {
+				grid-column: eighth-start 1 / eighth-end 2;
+				@media (max-width: 62.5em) {
+					grid-column: third-start 1 / third-end 1;
+				}
+				@media (max-width: 31.25em) {
+					grid-column: 1 / span 1;
+				}
+				font-size: var(--FONT-SIZE-XXL);
+				color: var(--COLOR-DIM-GRAY);
+
+				&:hover {
+					color: var(--COLOR-ORANGE);
+				}
+
+				&.active {
+					color: white;
+
+					+ aside {
 						opacity: 1;
 					}
 				}
-			}
-		}
 
-		&.active > ul > li {
-			margin-left: 0;
-			opacity: 1;
+				+ aside {
+					opacity: 0;
+					grid-row: 1 / var(--num-rows);
+					grid-column: eighth-start 3 / eighth-end 5;
+					@media (max-width: 62.5em) {
+						grid-column: third-end 1 / half-end 1;
+					}
+					@media (max-width: 31.25em) {
+						grid-column: 3 / span 1;
+					}
 
-			@for $i from 1 through 10 {
-				&:nth-of-type(#{$i}) {
-					transition-delay: #{0.15 * $i}s;
+					display: flex;
+					flex-direction: column;
+					row-gap: var(--SPACE-MD);
+
+					padding-top: 0.333em;
+
+					font-size: var(--FONT-SIZE-XL);
+				}
+
+				+ figure,
+				+ aside + figure,
+				+ aside > a + figure {
+					position: fixed;
+					top: 0;
+					left: 0;
+					width: 100vw;
+					height: 100vh;
+					margin: 0;
+					pointer-events: none;
+
+					display: grid;
+					grid-template-columns: var(--GRID-WRAPPER);
+
+					@media (max-width: 31.25em) {
+						display: none;
+					}
+
+					opacity: 0;
+					transition: opacity 0.3s ease;
+
+					> img {
+						width: 100%;
+						height: 100%;
+						object-fit: cover;
+					}
+				}
+				+ figure {
+					> img {
+						grid-column: sixth-start 3 / viewport-end;
+						@media (max-width: 62.5em) {
+							grid-column: half-start 2 / viewport-end;
+						}
+					}
+				}
+				+ aside + figure,
+				+ aside > a + figure {
+					> img {
+						grid-column: eighth-start 6 / viewport-end;
+						@media (max-width: 62.5em) {
+							grid-column: half-start 2 / viewport-end;
+						}
+					}
+				}
+				&:hover,
+				+ aside > a:hover {
+					+ figure,
+					+ aside + figure {
+						opacity: 1;
+					}
 				}
 			}
 		}

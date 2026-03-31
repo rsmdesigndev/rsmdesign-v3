@@ -4,6 +4,7 @@
 		| ({ __typename: "page_blocks_v3_organism_data_feed" } 	& DataFeedData)
 		| ({ __typename: "page_blocks_v3_organism_card_row" } 	& CardRowData)
 		| ({ __typename: "page_blocks_v3_organism_hero" } 		& HeroData)
+		| ({ __typename: "homepage_v3_book_animation" })
 		;
 
 	type Market = {
@@ -64,6 +65,7 @@
 	import CardRow, { type CardRowData } from "./organisms/CardRow.svelte";
 	import DataFeed, { type DataFeedData } from "./organisms/DataFeed/index.svelte";
 	import Hero, { type HeroData } from "./organisms/Hero.svelte";
+	import BookParallaxAnimation from "./one-off/BookParallaxAnimation.svelte";
 
 
 	export let blocks: ({ item?: PageBlockV3 | null } | null | undefined)[] | null | undefined;
@@ -81,6 +83,8 @@
 			<DataFeed {data} previousTheme={sectionColorThemes[i-1]} rowNumber={i} />
 		{:else if data?.__typename === "page_blocks_v3_organism_hero"}
 			<Hero {data} {projectData} />
+		{:else if data?.__typename === "homepage_v3_book_animation"}
+			<BookParallaxAnimation />
 		{:else}
 			No page content
 		{/if}

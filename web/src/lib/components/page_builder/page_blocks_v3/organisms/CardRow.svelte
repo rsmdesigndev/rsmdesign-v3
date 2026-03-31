@@ -84,6 +84,7 @@
 		left: 0;
 		width: 100vw;
 		height: 100vh;
+		pointer-events: none;
 	}
 	div.bg-color {
 		/* 
@@ -137,6 +138,10 @@
 		display: grid;
 		grid-template-columns: subgrid;
 		align-items: var(--columns-alignment);
+
+		@media (max-width: 31.25em) {
+			row-gap: var(--SPACE-LG);
+		}
 
 		&.padding-top-sm {
 			padding-top: var(--SPACE-SM);

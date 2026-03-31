@@ -8,6 +8,7 @@
 		column_padding_left?: string | null;
 		column_padding_right?: string | null;
 		column_sticky?: string | null;
+		column_hidden_on_mobile?: boolean | null;
 		column_interaction_on_scroll?: boolean | null;
 		column_interaction_exclude_first_item?: boolean | null;
 		column_interaction_active_highlight?: string | null;
@@ -54,26 +55,60 @@
 	}
 
 	// Columns for tablet view
-	let colStartUnits: string = (data.grid_col_start_units === "viewport") ? "viewport" : "third";
-	let colStart: number = columns.currCol;
-	let colEndUnits: string = (data.grid_col_end_units === "viewport") ? "viewport" : "third";
-	let colSpan: number = 0;
+	let colStart: string;
+	let colEnd: string;
 
-	if ((data.grid_col_end_units === "sixth" && data.grid_col_end - data.grid_col_start === 5) ||
-		(data.grid_col_end_units === "eighth" && data.grid_col_end - data.grid_col_start === 7)) {
-		colSpan = 3;
-	} else if ((data.grid_col_end_units === "sixth" && data.grid_col_end - data.grid_col_start > 2) ||
-			   (data.grid_col_end_units === "eighth" && data.grid_col_end - data.grid_col_start > 3)) {
-		colSpan = 2;
-	} else if ((data.grid_col_end_units === "sixth" && data.grid_col_end - data.grid_col_start === 2) ||
-			   (data.grid_col_end_units === "eighth" && data.grid_col_end - data.grid_col_start === 3)) {
-		colStartUnits = "half";
-		colEndUnits = "half";
-		colSpan = 1;
+	if (columns.currCol == 1) {
+		if (data.grid_col_start_units === "viewport") {
+			colStart = "viewport-start";
+		} else {
+			colStart = "main-start";
+		}
 	} else {
-		colSpan = 1;
-		if (columns.currCol === 2) {
-			colStart = 3;
+		if (data.grid_col_start_units === "sixth") {
+			if (data.grid_col_end - data.grid_col_start == 6) {
+				colStart = "third-start 1";
+			} else if (data.grid_col_end - data.grid_col_start >= 3) {
+				colStart = "third-start 2";
+			} else if (data.grid_col_end - data.grid_col_start == 2) {
+				colStart = "half-start 2";
+			} else {
+				colStart = "third-start 3";
+			}
+		} else {
+			if (data.grid_col_end - data.grid_col_start == 7) {
+				colStart = "third-start 1";
+			} else if (data.grid_col_end - data.grid_col_start >= 4) {
+				colStart = "third-start 2";
+			} else if (data.grid_col_end - data.grid_col_start == 3) {
+				colStart = "half-start 2";
+			} else {
+				colStart = "third-start 3";
+			}
+		}
+	}
+
+	if (data.grid_col_end_units === "viewport") {
+		colEnd = "viewport-end";
+	} else if (data.grid_col_end_units === "sixth") {
+		if (columns.currCol == 2 || data.grid_col_end == 6) {
+			colEnd = "main-end";
+		} else if (data.grid_col_end - (data.grid_col_start ?? 1) >= 3) {
+			colEnd = "third-end 2";
+		} else if (data.grid_col_end - (data.grid_col_start ?? 1) == 2) {
+			colEnd = "half-end 1";
+		} else {
+			colEnd = "third-end 1";
+		}
+	} else {
+		if (columns.currCol == 2 || data.grid_col_end == 8) {
+			colEnd = "main-end";
+		} else if (data.grid_col_end - (data.grid_col_start ?? 1) >= 4) {
+			colEnd = "third-end 2";
+		} else if (data.grid_col_end - (data.grid_col_start ?? 1) == 3) {
+			colEnd = "half-end 1";
+		} else {
+			colEnd = "third-end 1";
 		}
 	}
 
@@ -102,13 +137,14 @@
 	<div bind:offsetHeight={columnHeight}
 		 id={data.column_sticky === "top" ? `sticky-row-${row}-col-${column}` : ""}
 		 class:is-sticky={data.column_sticky != "false"}
+		 style:--display-on-mobile={data.column_hidden_on_mobile ? "none" : "grid"}
 		 style:--top={data.column_sticky === "top" ? "var(--SPACE-LG)" :
 		 			 (data.column_sticky === "center" ? `calc(50vh - 1px * ${columnHeight} / 2)` :
 		 			  `calc(100vh - 1px * ${columnHeight} - var(--SPACE-MD))`
 		 			 )}
 		 class="column-container"
 		 style:--grid-column={`${data.grid_col_start_units}-start ${data.grid_col_start_units != "viewport" ? data.grid_col_start : ""} / ${data.grid_col_end_units}-end ${data.grid_col_end_units != "viewport" ? data.grid_col_end : ""}`}
-		 style:--grid-column-tablet={`${colStartUnits}-start ${colStart} / ${colEndUnits}-end ${colStart - 1 + colSpan}`}
+		 style:--grid-column-tablet={`${colStart} / ${colEnd}`}
 		 style:--grid-column-mobile={data.grid_col_start_units === "viewport" ? "viewport" : "main"}
 		 style:--row-gap={`var(--SPACE-${data.column_item_spacing?.toUpperCase()}`}
 		 style:--padding-left={`var(--SPACE-${data.column_padding_left?.toUpperCase()}`}
@@ -171,6 +207,7 @@
 		}
 		@media (max-width: 31.25em) {
 			grid-column: var(--grid-column-mobile);
+			display: var(--display-on-mobile);
 		}
 
 		display: grid;
@@ -179,6 +216,7 @@
 		
 		padding-left: var(--padding-left);
 		padding-right: var(--padding-right);
+		padding-bottom: 0.25em;
 		
 		@media (max-width: 62.5em) {
 			--padding-left: 0;
@@ -188,8 +226,10 @@
 		overflow: hidden;
 
 		&.is-sticky {
-			position: sticky;
-			top: var(--top);
+			@media (min-width: 31.25em) {
+				position: sticky;
+				top: var(--top);
+			}
 		}
 	}
 
