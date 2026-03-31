@@ -696,59 +696,7 @@
 		grid-template-columns: subgrid;
 		align-content: start;
 
-		.color-theme-light {
-			--theme-color-primary: var(--COLOR-BLACK);
-			--theme-color-secondary: var(--COLOR-MID-GRAY);
-			--theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--theme-color-accent: var(--COLOR-ORANGE);
-		}
-		.color-theme-dark {
-			--theme-color-primary: white;
-			--theme-color-secondary: var(--COLOR-MID-GRAY);
-			--theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--theme-color-accent: var(--COLOR-ORANGE);
-		}
-		.color-theme-neutral {
-			--theme-color-primary: var(--COLOR-BLACK);
-			--theme-color-secondary: white;
-			--theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--theme-color-accent: var(--COLOR-ORANGE);
-		}
-		.color-theme-color {
-			--theme-color-primary: white;
-			--theme-color-secondary: white;
-			--theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--theme-color-accent: var(--COLOR-BLACK);
-		}
-		.previous-color-theme-light {
-			--previous-theme-color-primary: var(--COLOR-BLACK);
-			--previous-theme-color-secondary: var(--COLOR-MID-GRAY);
-			--previous-theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--previous-theme-color-accent: var(--COLOR-ORANGE);
-		}
-		.previous-color-theme-dark {
-			--previous-theme-color-primary: white;
-			--previous-theme-color-secondary: var(--COLOR-MID-GRAY);
-			--previous-theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--previous-theme-color-accent: var(--COLOR-ORANGE);
-		}
-		.previous-color-theme-neutral {
-			--previous-theme-color-primary: var(--COLOR-BLACK);
-			--previous-theme-color-secondary: white;
-			--previous-theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--previous-theme-color-accent: var(--COLOR-ORANGE);
-		}
-		.previous-color-theme-color {
-			--previous-theme-color-primary: white;
-			--previous-theme-color-secondary: white;
-			--previous-theme-color-tertiary: var(--COLOR-DIM-GRAY);
-			--previous-theme-color-accent: var(--COLOR-BLACK);
-		}
-
-		--color-primary: var(--theme-color-primary, var(--COLOR-BLACK));
-		--color-secondary: var(--theme-color-secondary, var(--COLOR-MID-GRAY));
-		--color-tertiary: var(--theme-color-tertiary, var(--COLOR-DIM-GRAY));
-		--color-accent: var(--theme-color-accent, var(--COLOR-ORANGE));
+		
 
 		&.Grid {
 			row-gap: var(--SPACE-XL);

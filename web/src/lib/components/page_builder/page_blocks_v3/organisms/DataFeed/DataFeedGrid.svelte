@@ -145,8 +145,6 @@
 
 		position: relative;
 
-		--color-heading: var(--color-primary);
-
 		> figure {
 			grid-column: 1 / -1;
 			padding: 0;
