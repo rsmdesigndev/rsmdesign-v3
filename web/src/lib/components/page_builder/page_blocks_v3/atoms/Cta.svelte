@@ -72,10 +72,7 @@
 >
 	<span>
 		{#if data.cta_style != "light" && data.cta_text_bold}
-			<strong bind:this={boldText}
-					class:colon={data.cta_style === "colon"}
-					class:interpunct={data.cta_style === "interpunct"}
-			>
+			<strong bind:this={boldText}>
 				{@html data.cta_text_bold}
 			</strong>
 		{/if}
@@ -116,111 +113,131 @@
 			opacity: 1;
 		}
 
-		strong {
-			font-weight: 700;
-
-			&.colon::after {
-				content: ":";
-				margin-left: 0.05em;
-			}
-
-			&.interpunct::after {
-				content: "·";
-				margin-left: 0.4em;
-			}
-		}
-
 		strong,
 		span.light {
 			transition: color 0.3s ease;
 		}
-	}
 
-	a.cta:hover {
-		color: var(--color-accent);
-
-		&.hover-highlight-none {
-			color: inherit;
-		}
-		&.hover-highlight-bold {
+		&:not(.button) {
 			strong {
-				color: var(--color-accent, var(--COLOR-ORANGE));
+				font-weight: 700;
 			}
-			span.light {
-				color: inherit;
+
+			span.icon {
+				&[data-icon="arrow_left"]::after,
+				&[data-icon="arrow_right"]::after {
+					width: calc((var(--font-size) + var(--font-size) * var(--line-height)) / 2);
+					height: calc((var(--font-size) + var(--font-size) * var(--line-height)) / 2);
+					border: 1.5px solid var(--color-accent, var(--COLOR-ORANGE));
+					border-radius: 50%;
+
+					align-content: center;
+					justify-content: center;
+
+					font-size: calc(var(--font-size) * var(--line-height));
+					line-height: calc(var(--font-size) * var(--line-height) / 2);
+					color: var(--color-accent, var(--COLOR-ORANGE));
+
+					transition: color 0.25s ease, background-color 0.25s ease;
+				}
+			}
+
+			&:hover {
+				color: var(--color-accent);
+
+				&.hover-highlight-none {
+					color: inherit;
+				}
+				&.hover-highlight-bold {
+					strong {
+						color: var(--color-accent, var(--COLOR-ORANGE));
+					}
+					span.light {
+						color: inherit;
+					}
+				}
+				&.hover-highlight-light {
+					strong {
+						color: inherit;
+					}
+					span.light {
+						color: var(--color-accent, var(--COLOR-ORANGE));
+					}
+				}
+
+				span.icon[data-icon="arrow_left"]::after,
+				span.icon[data-icon="arrow_right"]::after {
+					background-color: var(--color-accent, var(--COLOR-ORANGE));
+					color: var(--color-background, white);
+				}
 			}
 		}
-		&.hover-highlight-light {
+
+		&.button {
+			min-height: calc(var(--GRID-CELL) * 1.5);
+			padding: 0.5em var(--SPACE-MD);
+			border: 2px solid var(--color-cta, var(--color-primary, inherit));
+			border-radius: var(--SPACE-LG);
+			background: transparent;
+			align-items: center;
+			justify-self: start;
+
 			strong {
-				color: inherit;
+				font-weight: 500;
 			}
-			span.light {
-				color: var(--color-accent, var(--COLOR-ORANGE));
+
+			span.icon {
+				&[data-icon="arrow_left"]::after,
+				&[data-icon="arrow_right"]::after {
+					font-size: calc(var(--font-size) * var(--line-height) * 2);
+					line-height: calc(var(--font-size) * var(--line-height));
+				}
+				&.margin-right {
+					margin-right: var(--SPACE-SM);
+				}
+				&.margin-left {
+					margin-left: var(--SPACE-SM);
+				}
 			}
 		}
 
-		span.icon[data-icon="arrow_left"]::after,
-		span.icon[data-icon="arrow_right"]::after {
-			background-color: var(--color-accent, var(--COLOR-ORANGE));
-			color: var(--color-background, white);
-		}
-	}
+		span.icon {
+			&.margin-right {
+				margin-right: calc(var(--GRID-CELL) / 4);
+			}
+			&.margin-left {
+				margin-left: calc(var(--GRID-CELL) / 4);
+			}
 
-	button, a.button {
-
-	}
-
-	span.icon {
-		&.margin-right {
-			margin-right: calc(var(--GRID-CELL) / 4);
-		}
-		&.margin-left {
-			margin-left: calc(var(--GRID-CELL) / 4);
-		}
-
-		&::after {
-			display: inline-flex;
-			box-sizing: border-box;
-		}
-		&[data-icon="arrow_left"]::after,
-		&[data-icon="arrow_right"]::after {
-			width: calc((var(--font-size) + var(--font-size) * var(--line-height)) / 2);
-			height: calc((var(--font-size) + var(--font-size) * var(--line-height)) / 2);
-			border: 1.5px solid var(--color-accent, var(--COLOR-ORANGE));
-			border-radius: 50%;
-
-			align-content: center;
-			justify-content: center;
-
-			font-size: calc(var(--font-size) * var(--line-height));
-			line-height: calc(var(--font-size) * var(--line-height) / 2);
-			color: var(--color-accent, var(--COLOR-ORANGE));
-
-			transition: color 0.25s ease, background-color 0.25s ease;
-		}
-		&[data-icon="arrow_left"]::after {
-			content: "‹";
-			padding-right: 1px;
-		}
-		&[data-icon="arrow_right"]::after {
-			content: "›";
-			padding-left: 1px;
-		}
-		&[data-icon="arrow_up"]::after {
-			content: "‹";
-		}
-		&[data-icon="arrow_down"]::after {
-			content: "›";
-		}
-		&[data-icon="arrow_up"]::after,
-		&[data-icon="arrow_down"]::after {
-			rotate: 90deg;
-			transform: translate(0.167em, 0);
-			transition: transform 0.3s ease-in-out;
-		}
-		&[data-icon="arrow_up"].open::after,
-		&[data-icon="arrow_down"].open::after {
-			transform: rotateY(180deg) translate(-0.167em, 0);
+			&::after {
+				display: inline-flex;
+				box-sizing: border-box;
+				font-weight: 300;
+			}
+			&[data-icon="arrow_left"]::after {
+				content: "‹";
+				padding-right: 1px;
+			}
+			&[data-icon="arrow_right"]::after {
+				content: "›";
+				padding-left: 1px;
+			}
+			&[data-icon="arrow_up"]::after {
+				content: "‹";
+			}
+			&[data-icon="arrow_down"]::after {
+				content: "›";
+			}
+			&[data-icon="arrow_up"]::after,
+			&[data-icon="arrow_down"]::after {
+				rotate: 90deg;
+				transform: translate(0.167em, 0);
+				transition: transform 0.3s ease-in-out;
+			}
+			&[data-icon="arrow_up"].open::after,
+			&[data-icon="arrow_down"].open::after {
+				transform: rotateY(180deg) translate(-0.167em, 0);
+			}
 		}
 	}
 </style>

@@ -59,5 +59,9 @@
 	iframe,
 	video {
 		width: 100%;
+		height: auto;
+	}
+	iframe {
+		aspect-ratio: 16 / 9;
 	}
 </style>

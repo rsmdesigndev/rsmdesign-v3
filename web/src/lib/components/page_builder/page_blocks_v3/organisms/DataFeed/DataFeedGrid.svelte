@@ -123,7 +123,8 @@
 					{/if}
 					{#if data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
 						<!--<p class="headline">[Insert hero headline here lorem ipsum dolor sit amet.]</p>-->
-						<Cta data={ { cta_icon: "arrow_right", 
+						<Cta data={ { cta_type: "link",
+									  cta_icon: "arrow_right", 
 									  cta_style: "bold",
 									  cta_text_bold: "View project",
 									  cta_text_align: "right"
@@ -137,12 +138,14 @@
 </template>
 
 <style lang="scss">
-	a.grid-item {
+	.grid-item {
 		display: grid;
 		grid-template-columns: subgrid;
 		align-self: start;
 
 		position: relative;
+
+		--color-heading: var(--color-primary);
 
 		> figure {
 			grid-column: 1 / -1;

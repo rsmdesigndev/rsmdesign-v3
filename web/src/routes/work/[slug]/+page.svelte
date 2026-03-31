@@ -36,6 +36,16 @@
 		project_other_collaborators?: data.project.project_other_collaborators,
 		project_other_collaborators_count?: data.project.project_other_collaborators_count,
 	};
+
+	const colorStyles: string = `
+		:root {
+			--color-background: ${data.project?.project_background_color};
+			--color-primary: ${data.project?.project_color_theme === "light" ? "var(--COLOR-BLACK)" : "white"};
+			--color-secondary: ${data.project?.project_color_theme === "light" ? "var(--COLOR-MID-GRAY)" : "var(--COLOR-MID-GRAY)"};
+			--color-tertiary: ${data.project?.project_color_theme === "light" ? "var(--COLOR-DIM-GRAY)" : "var(--COLOR-DIM-GRAY)"};
+			--color-accent: ${data.project?.project_color_theme === "light" ? "var(--COLOR-ORANGE)" : "var(--COLOR-ORANGE)"};
+		}
+	`;
 </script>
 
 <SeoHead
@@ -44,6 +54,22 @@
 	noindex={data.project.visibility === "draft"}
 	slug={`work/${data.project.slug}`}
 />
+
+<!--<svelte:head>
+	{@html `<style>${colorStyles}</style>`}
+</svelte:head>-->
+
+<!--<svelte:head>
+	<style>
+		:root {
+			--color-background: "#1A1818";
+			--color-primary: white;
+			--color-secondary: var(--COLOR-MID-GRAY);
+			--color-tertiary: var(--COLOR-DIM-GRAY);
+			--color-accent: var(--COLOR-ORANGE);
+		}
+	</style>
+</svelte:head>-->
 
 <template>
 	{#if data.project.project_use_page_blocks_v3}

@@ -15,6 +15,7 @@
 	import DottedArrowHover from "$lib/components/DottedArrowHover.svelte";
 	import { fade } from "svelte/transition";
 	import PageBlocks from "$lib/components/page_builder/page_blocks/index.svelte";
+	import PageBlocksV3, { type ProjectData } from "$lib/components/page_builder/page_blocks_v3/index.svelte";
 
 	export let data: PageData;
 
@@ -32,111 +33,119 @@
 	noindex={data.service.visibility === "draft"}
 />
 
-{#if data.service.use_page_blocks}
-	<PageBlocks content={data.service.page_content} />
-{:else}
-	<div class="container">
-		<section class="slideshow-section">
-			<Slideshow interval={5000} items={data.service.hero_images ?? []} let:item>
-				<figure in:fade out:fade>
-					<img
-						src={assetUrl(item?.directus_files_id?.filename_disk)}
-						alt={item?.directus_files_id?.description}
-					/>
-				</figure>
-			</Slideshow>
-		</section>
+<template>
+	{#if data.service.services_use_page_blocks_v3}
+		{#if data.service.services_page_blocks_v3}
+			<PageBlocksV3 blocks={data.service.services_page_blocks_v3} />
+		{:else}
+			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
+		{/if}
+	{:else if data.service.use_page_blocks}
+		<PageBlocks content={data.service.page_content} />
+	{:else}
+		<div class="container">
+			<section class="slideshow-section">
+				<Slideshow interval={5000} items={data.service.hero_images ?? []} let:item>
+					<figure in:fade out:fade>
+						<img
+							src={assetUrl(item?.directus_files_id?.filename_disk)}
+							alt={item?.directus_files_id?.description}
+						/>
+					</figure>
+				</Slideshow>
+			</section>
 
-		<h1 class="xxxl">{data.service.name}</h1>
-		<article class="overview">
-			{@html data.service.overview}
-		</article>
-		<section class="lists">
-			<h3 class="md">Services</h3>
-			<ul>
-				{#each data.service.sub_services as item}
-					<li>
-						{#if item.link}
-							<a href={item.link}>{item.name}</a>
-						{:else}
-							{item.name}
-						{/if}
-					</li>
-				{/each}
-			</ul>
-			{#if data.service.team_leaders?.length}
-				<h3 class="md">Team Leaders</h3>
+			<h1 class="xxxl">{data.service.name}</h1>
+			<article class="overview">
+				{@html data.service.overview}
+			</article>
+			<section class="lists">
+				<h3 class="md">Services</h3>
 				<ul>
-					{#each data.service.team_leaders ?? [] as item}
-						{#if item?.team_id}
-							<li>
-								<a href="/team/{item.team_id.slug}">{item.team_id.name}, {item.team_id.short_title}</a>
-							</li>
-						{/if}
+					{#each data.service.sub_services as item}
+						<li>
+							{#if item.link}
+								<a href={item.link}>{item.name}</a>
+							{:else}
+								{item.name}
+							{/if}
+						</li>
 					{/each}
 				</ul>
-			{/if}
-			<h3 class="md">Project Inquiry</h3>
-			<DottedArrowHover
-				href="/contact"
-			>
-				<p class="font-weight-400">Contact Us <DottedArrow /></p>
-			</DottedArrowHover>
-		</section>
-
-		<section class="projects-section">
-			<ProjectsGrid
-				data={{
-					grid_type: ProjectsGridType.Uniform,
-					num_projects: 9,
-					show_filters: false,
-					load_functionality: ProjectsLoadFunctionality.LoadMoreButton
-				}}
-			/>
-		</section>
-
-		{#if data.service.related_articles?.length}
-			<section class="articles-section">
-				<h2 class="xxxl">Related Articles.</h2>
-				<div class="articles-container">
-					{#each data.service.related_articles ?? [] as article}
-						{#if article}
-							<DottedArrowHover
-								href="/news/{article?.news_posts_id?.slug}"
-							>
-								{#if article.news_posts_id?.grid_image}
-									<figure class="post-grid-image">
-										<img 
-											src={assetUrl(article.news_posts_id?.grid_image?.filename_disk)}
-											alt={article.news_posts_id?.grid_image?.description} 
-										/>
-									</figure>
-								{/if}
-								<article class="post-text">
-									<p class="kicker">
-										<strong>{article.news_posts_id?.topics?.[0]?.news_topics_id?.name}</strong> {formatDate(article.news_posts_id?.published_date, { fullMonth: true })}
-									</p>
-									<h3 class="xxl">{article.news_posts_id?.post_title}</h3>
-									{#if article.news_posts_id?.article_preview}
-										<p class="article-preview">{article.news_posts_id.article_preview}</p>
-									{/if}
-									<p>Read more <DottedArrow /></p>
-								</article>
-							</DottedArrowHover>
-						{/if}
-					{/each}
-				</div>
+				{#if data.service.team_leaders?.length}
+					<h3 class="md">Team Leaders</h3>
+					<ul>
+						{#each data.service.team_leaders ?? [] as item}
+							{#if item?.team_id}
+								<li>
+									<a href="/team/{item.team_id.slug}">{item.team_id.name}, {item.team_id.short_title}</a>
+								</li>
+							{/if}
+						{/each}
+					</ul>
+				{/if}
+				<h3 class="md">Project Inquiry</h3>
+				<DottedArrowHover
+					href="/contact"
+				>
+					<p class="font-weight-400">Contact Us <DottedArrow /></p>
+				</DottedArrowHover>
 			</section>
-		{/if}
 
-		<section class="cta-section">
-			<DottedArrowHover href="/contact">
-				<h4 class="xxxl heading">Get in touch.</h4>
-				<p>Contact Us <DottedArrow /></p>
-			</DottedArrowHover>
-		</section>
-	</div>
-{/if}
+			<section class="projects-section">
+				<ProjectsGrid
+					data={{
+						grid_type: ProjectsGridType.Uniform,
+						num_projects: 9,
+						show_filters: false,
+						load_functionality: ProjectsLoadFunctionality.LoadMoreButton
+					}}
+				/>
+			</section>
+
+			{#if data.service.related_articles?.length}
+				<section class="articles-section">
+					<h2 class="xxxl">Related Articles.</h2>
+					<div class="articles-container">
+						{#each data.service.related_articles ?? [] as article}
+							{#if article}
+								<DottedArrowHover
+									href="/news/{article?.news_posts_id?.slug}"
+								>
+									{#if article.news_posts_id?.grid_image}
+										<figure class="post-grid-image">
+											<img 
+												src={assetUrl(article.news_posts_id?.grid_image?.filename_disk)}
+												alt={article.news_posts_id?.grid_image?.description} 
+											/>
+										</figure>
+									{/if}
+									<article class="post-text">
+										<p class="kicker">
+											<strong>{article.news_posts_id?.topics?.[0]?.news_topics_id?.name}</strong> {formatDate(article.news_posts_id?.published_date, { fullMonth: true })}
+										</p>
+										<h3 class="xxl">{article.news_posts_id?.post_title}</h3>
+										{#if article.news_posts_id?.article_preview}
+											<p class="article-preview">{article.news_posts_id.article_preview}</p>
+										{/if}
+										<p>Read more <DottedArrow /></p>
+									</article>
+								</DottedArrowHover>
+							{/if}
+						{/each}
+					</div>
+				</section>
+			{/if}
+
+			<section class="cta-section">
+				<DottedArrowHover href="/contact">
+					<h4 class="xxxl heading">Get in touch.</h4>
+					<p>Contact Us <DottedArrow /></p>
+				</DottedArrowHover>
+			</section>
+		</div>
+	{/if}
+</template>
 
 <style lang="scss">
 	.container {

@@ -112,6 +112,9 @@ export const _query = gql`
 				}
 			}
 			project_sign_painter_count
+			project_background_color
+			project_color_theme
+			project_use_page_blocks_v3
 			project_page_blocks_v3 {
 				item {
 					__typename
@@ -332,6 +335,7 @@ export const _query = gql`
 					... on page_blocks_v3_organism_data_feed {
 						change_background_color
 						section_background_color
+						section_color_theme
 						change_breadcrumbs
 						section_anchor_text
 						section_anchor_link
@@ -805,7 +809,6 @@ export const _query = gql`
 			project_opening_date
 			project_title
 			project_title_short
-			project_use_page_blocks_v3
 			seo_page_description
 			services {
 				services_id {

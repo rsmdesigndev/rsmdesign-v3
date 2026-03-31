@@ -31,7 +31,8 @@
 		{#if (data.blockquote_has_attribution && data.blockquote_attribution) || (data.blockquote_has_citation && data.blockquote_citation)}
 			<figcaption>
 				{#if data.blockquote_link}
-					<Cta data={ { cta_icon: "arrow_right", 
+					<Cta data={ { cta_type: "link",
+								  cta_icon: "arrow_right", 
 								  cta_style: `${(data.blockquote_has_attribution && data.blockquote_has_citation) ? "both" : "bold"}`,
 								  cta_text_bold: `${(data.blockquote_has_attribution && data.blockquote_attribution) ? 
 													 data.blockquote_attribution : 

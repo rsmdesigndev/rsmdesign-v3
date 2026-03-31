@@ -24,8 +24,10 @@ export const _query = gql`
 							grid_col_start
 							grid_col_end_units
 							grid_col_end
+							column_hidden_on_mobile
 							column_interaction_on_scroll
 							column_interaction_exclude_first_item
+							column_interaction_active_highlight
 							column_item_spacing
 							column_padding_left
 							column_padding_right
