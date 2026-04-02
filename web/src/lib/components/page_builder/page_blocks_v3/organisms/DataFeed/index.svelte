@@ -386,6 +386,53 @@
 				break;
 			}
 			case "Testimonials": {
+				let query = `
+					query Testimonials($limit: Int, $offset: Int) {
+						testimonials(
+							limit: $limit
+							offset: $offset
+							filter: { 
+								visibility: { _eq: "visible" } 
+							}
+						) {
+							quote_attribution
+							quote_attribution_job_title
+							company_name
+							quote
+							banner_image {
+								title
+								description
+								filename_disk
+							}
+							associated_project {
+								slug
+								project_title
+								location
+							}
+						}
+						testimonials_aggregated(
+							filter: {
+								visibility: { _eq: "visible" } 
+							})
+						{
+							count {
+								id
+							}
+						}
+					}
+				`
+				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
+					limit: numItems,
+					offset: loadOffset,
+				});
+
+				if(response) {
+					feedData.push(...response.testimonials);
+					feedData = feedData;
+					loaded = true;
+					loadTotalCount = response.testimonials_aggregated?.[0]?.count?.id ?? 0;
+				}
+
 				break;
 			}
 			case "Manual": {

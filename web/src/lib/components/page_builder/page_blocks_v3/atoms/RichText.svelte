@@ -68,11 +68,13 @@
 				text-transform: uppercase;
 				letter-spacing: 0.05em;
 				color: var(--color-rich-text, var(--color-primary, inherit));
+				margin-bottom: 0.5em;
 			}
 			h4 {
 				font-size: inherit;
 				font-weight: 700;
 				color: var(--color-rich-text, var(--color-primary, inherit));
+				margin-bottom: 1em;
 			}
 		}
 

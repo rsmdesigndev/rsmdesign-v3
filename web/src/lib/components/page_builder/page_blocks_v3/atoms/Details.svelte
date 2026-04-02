@@ -7,7 +7,22 @@
 	export let summaryText: string = "Open";
 	export let summaryTextOpen: string = summaryText;
 	export let summaryIcon: string = "arrow_down";
+
 	export let isOpen: boolean = false;
+
+	export let isAccordionItem: boolean = false;
+	export let headingSize: string = "md";
+
+	let headingWeight: number = 700;
+
+	switch (headingSize) {
+		case "lg":
+			headingWeight = 600;
+			break;
+		case "xl":
+			headingWeight = 500;
+			break;
+	}
 
 	let anchor: HTMLElement;
 	let height: number;
@@ -34,6 +49,9 @@
 	<details open 
 			 aria-expanded={isOpen} 
 			 bind:this={anchor}
+			 class:isAccordionItem
+			 style:--heading-size={`var(--FONT-SIZE-${headingSize.toUpperCase()})`}
+			 style:--heading-weight={headingWeight}
 	>
 		<summary on:click|preventDefault={toggle}
 				 class:open={isOpen}
@@ -49,7 +67,7 @@
 			/>
 		</summary>
 
-		<article class="rich-text" 
+		<div class="details-body" 
 				 class:open={isOpen}
 				 style:--height={height}
 				 style:--transition-speed={`${height / 1500}s`}
@@ -57,7 +75,7 @@
 			<div bind:offsetHeight={height}>
 				<slot />
 			</div>
-		</article>
+		</div>
 	</details>
 </template>
 
@@ -68,6 +86,47 @@
 		row-gap: var(--SPACE-MD);
 
 		color: var(--color-details, var(--color-primary, inherit));
+
+		&.isAccordionItem {
+			border-bottom: 2px solid var(--color-tertiary, var(--COLOR-MID-GRAY));
+			> summary {
+				justify-content: space-between;
+			}
+			> article.open {
+				padding-bottom: var(--SPACE-MD);
+			}
+			> .details-body {
+				:global {
+					p {
+						font-size: inherit;
+						color: var(--color-accordion, var(--color-primary, inherit));
+
+						&:last-of-type {
+							margin-bottom: 0;
+						}
+
+						strong {
+							font-weight: 700;
+						}
+					}
+
+					h3 {
+						font-size: inherit;
+						font-weight: 700;
+						text-transform: uppercase;
+						letter-spacing: 0.05em;
+						color: var(--color-accordion, var(--color-primary, inherit));
+						margin-bottom: 0.5em;
+					}
+					h4 {
+						font-size: inherit;
+						font-weight: 700;
+						color: var(--color-accordion, var(--color-primary, inherit));
+						margin-bottom: 1em;
+					}
+				}
+			}
+		}
 
 		> summary {
 			cursor: pointer;
@@ -83,9 +142,9 @@
 			flex-direction: row;
 			align-items: center;
 
-			font-size: var(--FONT-SIZE-MD);
+			font-size: var(--heading-size, var(--FONT-SIZE-MD));
 			line-height: 1.333;
-			font-weight: 700;
+			font-weight: var(--heading-weight, 700);
 
 			> span.icon {
 				margin-left: calc(var(--GRID-CELL) / 3);
@@ -126,7 +185,7 @@
 			}
 		}
 
-		> article {
+		> .details-body {
 			overflow: hidden;
 			height: 0;
 			transition: height 0.3s ease;

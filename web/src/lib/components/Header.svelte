@@ -46,8 +46,12 @@
 	let navParentText: string = "";
 	let navParentCta: string = "Return to";
 
+	let showBreadcrumbs: boolean = true;
+
 	afterNavigate(async () => {
-		if ($page.url.pathname != "" && $page.url.pathname != "/") {
+		if ($page.url.pathname == "" || $page.url.pathname == "/") {
+			showBreadcrumbs = false;
+		} else {
 			root_links: for (let item of navMenu.nav_menu_links) {
 				let link = item.nav_menu_links_id;
 				if (link.link_path == $page.url.pathname) {
@@ -288,11 +292,13 @@
 
 		<div class="nav-wrapper">
 			<div class="nav-container">
-				<div class="menu-breadcrumbs">
-					<a href={navParentLink}>
-						{navParentCta} {navParentText}
-					</a>
-				</div>
+				{#if showBreadcrumbs}
+					<div class="menu-breadcrumbs">
+						<a href={navParentLink}>
+							{navParentCta} {navParentText}
+						</a>
+					</div>
+				{/if}
 
 				<div
 					class="menu-button"

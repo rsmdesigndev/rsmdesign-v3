@@ -43,7 +43,7 @@ export const _query = gql`
 									__typename
 									... on page_blocks_v3_molecule_accordion {
 										accordion_first_item_open
-										accordion_data_bound
+										accordion_heading_size
 										accordion_items
 									}
 									... on page_blocks_v3_molecule_card {

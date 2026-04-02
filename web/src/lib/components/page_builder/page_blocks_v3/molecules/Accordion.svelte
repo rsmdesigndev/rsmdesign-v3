@@ -1,7 +1,7 @@
 <script lang="ts" context="module">
 	export type AccordionData = {
-		accordion_data_bound?: boolean | null;
-		accordion_first_item_open?: boolean | null;
+		accordion_heading_size?: boolean | null;
+		accordion_heading_size?: string | null;
 		accordion_items?: AccordionItem[] | null;
 	};
 
@@ -26,7 +26,7 @@
 	}
 
 	function selectItem(i: number, isOpen: boolean) {
-		if (isOpen) {
+		if (!isOpen) {
 			selectedItem = i;
 		}
 	}
@@ -39,7 +39,9 @@
 	>
 		{#each data.accordion_items as item, i}
 			<Details summaryText={item.item_heading}
-					 summaryIcon="plus"
+					 summaryIcon="arrow_down"
+					 isAccordionItem
+					 headingSize={data.accordion_heading_size}
 					 isOpen={selectedItem === i}
 					 on:toggle={(e) => selectItem(i, e.detail.isOpen)}
 			>

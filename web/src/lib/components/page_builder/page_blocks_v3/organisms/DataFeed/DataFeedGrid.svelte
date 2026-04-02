@@ -30,6 +30,12 @@
 
 <template>
 	{#each feedData as item, i}
+		<!-- {#if data.feed_source === "Cards"}
+			{#each data.feed_cards as card}
+				<Card data={card.data} />
+			{/each}
+		{:else}
+		-->
 		<svelte:element 
 			this={data.feed_source === "Projects" ? "a" :
 				 (data.feed_source === "Articles" ? "a" :
@@ -134,10 +140,32 @@
 				</figcaption>
 			</figure>
 		</svelte:element>
+		<!-- {/if} -->
 	{/each}
 </template>
 
 <style lang="scss">
+	a.grid-item {
+		> figure > picture {
+			aspect-ratio: 1 / 1;
+		}
+		&:hover {
+			> figure {
+				> picture {
+					> img {
+						transform: scale(1.05);
+
+						@media (max-width: 46.875em) {
+							transform: scale(1);
+						}
+					}
+				}
+				> figcaption {
+					--color-heading: var(--color-accent, var(--COLOR-ORANGE));
+				}
+			}
+		}
+	}
 	.grid-item {
 		display: grid;
 		grid-template-columns: subgrid;
@@ -156,7 +184,6 @@
 			> picture {
 				grid-column: 1 / -1;
 				margin: 0 0 var(--SPACE-SM);
-				aspect-ratio: 1 / 1;
 				overflow: hidden;
 
 				> img {
@@ -171,23 +198,6 @@
 
 			> figcaption {
 				grid-column: 1 / -1;
-			}
-		}
-
-		&:hover {
-			> figure {
-				> picture {
-					> img {
-						transform: scale(1.05);
-
-						@media (max-width: 46.875em) {
-							transform: scale(1);
-						}
-					}
-				}
-				> figcaption {
-					--color-heading: var(--color-accent, var(--COLOR-ORANGE));
-				}
 			}
 		}
 
