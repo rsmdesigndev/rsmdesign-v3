@@ -31,17 +31,23 @@
 		heading_has_superscript: false
 	}
 
-	if (data.feed_grid_dynamic_images.length) {
-		console.log(data.feed_grid_dynamic_images);
-		console.log(data.feed_grid_dynamic_images?.[0]?.directus_files_id.filename_disk);
-		console.log(data.feed_grid_dynamic_images?.[1]?.directus_files_id.filename_disk);
-	}
+	const imageIndexes: number[] = [2, 6, 14, 18, 26, 30, 38, 42, 51];
 
-	let imageCount: number = 0;
-	const incrementCount = () => {
-		imageCount++; 
-		//console.log("incrementing count: " + imageCount);
-		return "";
+	function chooseImage(i: number) {
+		if (data.feed_grid_columns === 4) {
+			if (data.feed_grid_dynamic_start_position) {
+				if (i % 2 == 0) {
+					return 3 * (1 + 8 * i / 2);
+				} else {
+					return 3 * (1 + 8 * Math.floor(i / 2)) + 8;
+				}
+			} else {
+				// TODO
+			}
+		}
+	}
+	function chooseImageMobile(i: number) {
+		// TODO
 	}
 </script>
 
@@ -75,15 +81,7 @@
 		{/each}
 	{:else}
 		{#each feedData as item, i}
-			<!-- {#if data.feed_source === "Cards"}
-				{#each data.feed_cards as card}
-					<Card data={card.data} />
-				{/each}
-			{:else}
-			-->
-			{@const index = i + imageCount}
-			
-			{#if data.feed_source === "Team" && ((data.feed_grid_columns === 3 && (i % 14 === 0 || i % 14 === 10)) || (data.feed_grid_columns === 4 && (i % 14 === 2 || i % 14 === 7)))}
+			{#if data.feed_source === "Team" && data.feed_grid_dynamic_images && imageIndexes.includes(i)}
 				<div class={`grid-item 
 							${data.feed_grid_columns === 3 ? "third" : 
 							 (data.feed_grid_columns === 4 ? "fourth" : "single-card")}
@@ -93,13 +91,12 @@
 				>
 					<figure>
 						<picture>
-							<img src={assetUrl(data.feed_grid_dynamic_images?.[imageCount]?.directus_files_id.filename_disk)}
-								 alt={data.feed_grid_dynamic_images?.[imageCount]?.directus_files_id.title}
+							<img src={assetUrl(data.feed_grid_dynamic_images?.[imageIndexes.indexOf(i)]?.directus_files_id.filename_disk)}
+								 alt={data.feed_grid_dynamic_images?.[imageIndexes.indexOf(i)]?.directus_files_id.description}
 							/>
 						</picture>
 					</figure>
 				</div>
-				{incrementCount()}
 			{/if}
 			<svelte:element 
 				this={data.feed_source === "Projects" ? "a" :
@@ -108,12 +105,13 @@
 				href={`/${data.feed_source === "Projects" ? "work/" : (data.feed_source === "Articles" ? "news/" : (data.feed_source === "Team" ? "team/" : "")) + item.slug}`}
 				id={`row-${rowNumber}-grid-${gridNumber}-item-${i}`}
 				class={`grid-item 
+						${data.feed_source === "Team" ? "team" : ""}
 						${data.feed_grid_columns === 3 ? "third" : 
 						 (data.feed_grid_columns === 4 ? "fourth" : "single-card")}
 						grid-style-${data.feed_grid_style}
 						${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
 					  `}
-				style:--grid-item={i + imageCount}
+				style:--grid-item={i}
 				style:--grid-columns={data.feed_grid_columns}
 			>
 				{#if data.feed_grid_style === "parallax"}
@@ -258,6 +256,14 @@
 					--color-heading: var(--color-accent, var(--COLOR-ORANGE));
 				}
 			}
+		}
+	}
+	a.grid-item.team {
+		> figure > picture {
+			aspect-ratio: unset;
+		}
+		&:hover > figure > picture > img {
+			transform: unset;
 		}
 	}
 	.grid-item {
