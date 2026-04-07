@@ -102,4 +102,9 @@
 		font-size: var(--FONT-SIZE-XL);
 		line-height: 1.133;
 	}
+	.rich-text-xxxxl {
+		font-size: 10vw;
+		line-height: 0.8;
+		margin-bottom: 0;
+	}
 </style>

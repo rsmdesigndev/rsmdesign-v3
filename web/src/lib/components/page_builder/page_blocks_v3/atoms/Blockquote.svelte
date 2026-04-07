@@ -1,10 +1,11 @@
 <script lang="ts" context="module">
-	export type blockquoteData = {
+	export type BlockquoteData = {
 		blockquote_size?: string | null;
 		blockquote_text?: string | null;
 		blockquote_has_attribution?: boolean | null;
 		blockquote_attribution?: string | null;
 		blockquote_has_citation?: boolean | null;
+		blockquote_citation_newline?: boolean | null;
 		blockquote_citation?: string | null;
 		blockquote_link?: string | null;
 	};
@@ -14,7 +15,10 @@
 	import Cta, { type CtaData } from "./Cta.svelte";
 	import type { BleedData } from "../organisms/CardColumn.svelte";
 	export let data: BlockquoteData;
-	export let bleed: BleedData;
+	export let bleed: BleedData = {
+		left: false,
+		right: false
+	};
 	export let isActive: boolean = true;
 </script>
 
@@ -24,7 +28,8 @@
 			style:--grid-column-end={bleed.right ? "-2" : "-1"}
 	>
 		<blockquote style:--font-size={`var(--FONT-SIZE-${data.blockquote_size?.toUpperCase()})`}
-					style:--line-height={data.blockquote_size === "xl" ? "1.133" : "1"}
+					style:--font-weight={data.blockquote_size === "lg" ? "300" : "400"}
+					style:--line-height={data.blockquote_size === "lg" || data.blockquote_size === "xl" ? "1.133" : "1"}
 					cite={data.blockquote_link ?? ""}>
 			{@html data.blockquote_text}
 		</blockquote>
@@ -47,7 +52,7 @@
 					/>
 				{:else}
 					{#if data.blockquote_has_attribution && data.blockquote_attribution}
-						{data.blockquote_attribution},
+						{data.blockquote_attribution}{#if !data.blockquote_citation_newline},{/if}
 					{/if}
 					{#if data.blockquote_has_citation && data.blockquote_citation}
 						<cite>{data.blockquote_citation}</cite>
@@ -76,7 +81,7 @@
 			padding: 0;
 
 			font-size: var(--font-size);
-			font-weight: 400;
+			font-weight: var(--font-weight);
 			line-height: var(--line-height);
 
 			:global {
@@ -92,6 +97,7 @@
 
 		> figcaption {
 			font-weight: 700;
+			white-space: pre-line;
 
 			> cite {
 				font-weight: 300;

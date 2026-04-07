@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { animate, AnimateTrigger } from "$lib/animate";
+	import type { ImageAssetRelation } from "$lib/cms";
 	import { assetUrl } from "$lib/cms/assets";
 	import { request } from "graphql-request";
 	import { env } from "$env/dynamic/public";
 
 	import DataFeedGrid from "./DataFeedGrid.svelte";
 	import DataFeedTable from "./DataFeedTable.svelte";
-	import Card, { type CardData } from "../../molecules/Card.svelte";
+	import type { CardData } from "../../molecules/Card.svelte";
 
 	// Types
 	export type DataFeedData = {
@@ -48,6 +49,7 @@
 		feed_grid_rows_per_load?: number | null;
 		feed_grid_style?: string | null;
 		feed_grid_dynamic_start_position?: boolean | null;
+		feed_grid_dynamic_images?: ImageAssetRelation[] | null;
 		feed_table_style?: string | null;
 		feed_table_image_position?: string | null;
 		feed_table_items_per_load?: number | null;
@@ -303,6 +305,53 @@
 				break;
 			}
 			case "Team": {
+				let query = `
+					query Team($limit: Int, $offset: Int) {
+						team(
+							limit: $limit
+							offset: $offset
+							sort: ["sort_priority", "-banner_grid_image_sort"]
+							filter: { 
+								visibility: { _in: ["visible", "visibleInFeeds"] } 
+							}
+						) {
+							slug
+							name
+							full_title
+							short_title
+							seo_page_description
+							headshot {
+								title
+								description
+								filename_disk
+							}
+							has_profile_page
+						}
+						team_aggregated(
+							filter: {
+								_and: [
+									{ visibility: { _in: ["visible", "visibleInFeeds"] } }
+								]
+							})
+						{
+							count {
+								id
+							}
+						}
+					}
+				`
+				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
+					limit: numItems,
+					offset: loadOffset,
+				});
+
+				if(response) {
+					feedData.push(...response.team);
+					feedData = feedData;
+					loaded = true;
+					loadTotalCount = response.team_aggregated?.[0]?.count?.id ?? 0;
+				}
+
 				break;
 			}
 			case "Awards": {
@@ -399,15 +448,15 @@
 							quote_attribution_job_title
 							company_name
 							quote
-							banner_image {
-								title
-								description
-								filename_disk
-							}
 							associated_project {
 								slug
 								project_title
 								location
+								grid_image {
+									filename_disk
+									title
+									description
+								}
 							}
 						}
 						testimonials_aggregated(
@@ -599,30 +648,22 @@
 		/>
 
 		{#key loaded}
-			{#if !loaded}
+			{#if !loaded && data.feed_source != "Manual"}
 				<p>Loading...</p>
-			{:else if feedData.length === 0}
-				<p>No projects match your query. Try another search or set of filters.</p>
+			{:else if feedData.length === 0 && data.feed_source != "Manual"}
+				<p>No results match your query. Try another search or set of filters.</p>
 			{:else}
-				{#if data.feed_view === "Grid"}
-					{#each Array(pagesLoaded) as page, i}
-						<div class="grid-container"
-							 class:carousel-slide={data.feed_load_functionality === "carousel"}
-							 class:slide-next={isNextSlide(i)}
-							 class:slide-prev={isPrevSlide(i)}
-							 class:slide-active={i === current}
-							 style:z-index={calcZIndex(i)}
-							 style:transition={data.feed_load_functionality === "carousel" ? `opacity ${animationDuration}ms ease` : ""}
-						>
+				{#if (data.feed_view === "Grid" || data.feed_source === "Manual" || data.feed_source === "Team" || data.feed_source === "Testimonials") && (data.feed_source != "Awards" && data.feed_source != "Careers")}
+					{#if data.feed_source === "Manual"}
+						<div class="grid-container">
 							<DataFeedGrid 
 								rowNumber={rowNumber}
-								gridNumber={i}
-								feedData={ feedData.slice(i * numItems, i * numItems + numItems) }
 								data={ { feed_source: data.feed_source,
+										 feed_cards: data.feed_cards,
 										 feed_grid_columns: data.feed_grid_columns,
 										 feed_grid_style: data.feed_grid_style,
 										 feed_grid_dynamic_start_position: 
-										 	((data.feed_grid_columns === 4) && Boolean(data.feed_grid_rows_per_load % 4) && (i % 2))
+										 	((data.feed_grid_columns === 4) && Boolean(data.feed_grid_rows_per_load % 4))
 										 	? 
 										 		!data.feed_grid_dynamic_start_position 
 										 	: 
@@ -630,8 +671,35 @@
 									 } }
 							/>
 						</div>
-					{/each}
-
+					{:else}
+						{#each Array(pagesLoaded) as page, i}
+							<div class="grid-container"
+								 class:carousel-slide={data.feed_load_functionality === "carousel"}
+								 class:slide-next={isNextSlide(i)}
+								 class:slide-prev={isPrevSlide(i)}
+								 class:slide-active={i === current}
+								 style:z-index={calcZIndex(i)}
+								 style:transition={data.feed_load_functionality === "carousel" ? `opacity ${animationDuration}ms ease` : ""}
+							>
+								<DataFeedGrid 
+									rowNumber={rowNumber}
+									gridNumber={i}
+									feedData={ feedData.slice(i * numItems, i * numItems + numItems) }
+									data={ { feed_source: data.feed_source,
+											 feed_grid_columns: data.feed_grid_columns,
+											 feed_grid_style: data.feed_grid_style,
+											 feed_grid_dynamic_images: data.feed_grid_dynamic_images,
+											 feed_grid_dynamic_start_position: 
+											 	((data.feed_grid_columns === 4) && Boolean(data.feed_grid_rows_per_load % 4) && (i % 2))
+											 	? 
+											 		!data.feed_grid_dynamic_start_position 
+											 	: 
+											 		data.feed_grid_dynamic_start_position
+										 } }
+								/>
+							</div>
+						{/each}
+					{/if}
 				{:else}
 					<DataFeedTable
 						{feedData}

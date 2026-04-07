@@ -25,6 +25,9 @@
 			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#bg-color-footer", animClass: "bg-color-animate" } }
 		/>
 		<div class="bg-color-trigger"
+			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#footer`, animClass: "footer-opacity-animate" } }
+		/>
+		<div class="bg-color-trigger"
 			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#menu-bar-footer", animClass: "bg-color-animate" } }
 		/>
 
@@ -470,6 +473,26 @@
 			}
 			100% {
 				background: var(--color-background);
+			}
+		}
+
+		.footer-opacity-animate {
+			opacity: 0;
+			animation: footer-opacity-animate 1s linear forwards;
+		}
+
+		@keyframes footer-opacity-animate {
+			0% {
+				opacity: 0;
+			}
+			25% {
+				opacity: 0;
+			}
+			33% {
+				opacity: 1;
+			}
+			100% {
+				opacity: 1;
 			}
 		}
 	}

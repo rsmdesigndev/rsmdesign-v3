@@ -50,6 +50,7 @@
 			 aria-expanded={isOpen} 
 			 bind:this={anchor}
 			 class:isAccordionItem
+			 class:open={isOpen}
 			 style:--heading-size={`var(--FONT-SIZE-${headingSize.toUpperCase()})`}
 			 style:--heading-weight={headingWeight}
 	>
@@ -68,9 +69,9 @@
 		</summary>
 
 		<div class="details-body" 
-				 class:open={isOpen}
-				 style:--height={height}
-				 style:--transition-speed={`${height / 1500}s`}
+			 class:open={isOpen}
+			 style:--height={height}
+			 style:--transition-speed={`${height / 1500}s`}
 		>
 			<div bind:offsetHeight={height}>
 				<slot />
@@ -88,14 +89,32 @@
 		color: var(--color-details, var(--color-primary, inherit));
 
 		&.isAccordionItem {
-			border-bottom: 2px solid var(--color-tertiary, var(--COLOR-MID-GRAY));
+			padding-bottom: 0;
+			transition: padding-bottom 0.3s ease;
+			&:hover:not(.open) {
+				padding-bottom: 0.25em;
+			}
+
+			border-bottom: 2px solid var(--color-secondary, var(--COLOR-MID-GRAY));
+			
 			> summary {
 				justify-content: space-between;
+				> span.icon {
+					color: var(--color-secondary, var(--COLOR-MID-GRAY));
+					transition: color 0.3s ease;
+				}
+				&.open > span.icon {
+					color: var(--color-accent, var(--COLOR-ORANGE));
+				}
 			}
-			> article.open {
-				padding-bottom: var(--SPACE-MD);
+			&:hover > summary > span.icon {
+				color: var(--color-accent, var(--COLOR-ORANGE));
 			}
+			
 			> .details-body {
+				&.open {
+					padding-bottom: var(--SPACE-MD);
+				}
 				:global {
 					p {
 						font-size: inherit;

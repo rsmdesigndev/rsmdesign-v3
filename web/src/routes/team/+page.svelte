@@ -6,13 +6,14 @@
 	import DottedArrow from "$lib/components/DottedArrow.svelte";
 	import DottedArrowHover from "$lib/components/DottedArrowHover.svelte";
 	import type { PageData } from "./$types";
+	import PageBlocksV3 from "$lib/components/page_builder/page_blocks_v3/index.svelte";
 
 	export let data: PageData;
 </script>
 
 <SeoHead
-	title="Meet the Team"
-	description="The studio is a team of designers from diverse creative backgrounds including graphic design, architecture, interior design, industrial design, and branding. Our design studio believes in challenging ourselves to discover each project’s unique spirit. We create narratives for places that engage."
+	title={data.team_page?.seo_title}
+	description={data.team_page?.seo_page_description}
 />
 
 <svelte:head>
@@ -26,42 +27,60 @@
 </svelte:head>
 
 <template>
-	<div class="container team-container">
-		<Section
-			teamGrid
-			span_columns=1
-			col_units="whole"
-			col_start=1
-			span_rows=1
-		>
-			<TeamGrid teamMembers={data.team.filter((member) => !!member.banner_grid_image_color)} />
-		</Section>
+	{#if data.team_page?.team_use_page_blocks_v3}
+		{#if data.team_page.team_page_blocks_v3}
+			<PageBlocksV3 blocks={data.team_page.team_page_blocks_v3} />
+		{:else}
+			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
+		{/if}
+	{:else}
+		<div class="container team-container">
+			<Section
+				teamGrid
+				span_columns=1
+				col_units="whole"
+				col_start=1
+				span_rows=1
+			>
+				<TeamGrid teamMembers={data.team.filter((member) => !!member.banner_grid_image_color)} />
+			</Section>
 
-		<Section
-			header
-			span_columns=5
-			col_units="sixth"
-			col_start=1
-			span_rows=1
-		>
-			<h1 class="md">Team</h1>
-			<h2 class="xxxl">Fearlessly authentic.</h2>
-		</Section>
+			<Section
+				header
+				span_columns=5
+				col_units="sixth"
+				col_start=1
+				span_rows=1
+			>
+				<h1 class="md">Team</h1>
+				<h2 class="xxxl">Fearlessly authentic.</h2>
+			</Section>
 
-		<Section
-			richText
-			span_columns=1
-			col_units="half"
-			col_start=1
-			span_rows=1
-		>
-			<p>The studio is a passionate team of designers from diverse creative backgrounds including graphic design, architecture, interior design, industrial design, and branding. Our design studio is dedicated to innovation where intellectual questioning and creative debate are encouraged. Challenging ourselves to discover each project’s unique spirit, we create narratives for places that engage people with their environment.</p>
-		</Section>
+			<Section
+				richText
+				span_columns=1
+				col_units="half"
+				col_start=1
+				span_rows=1
+			>
+				<p>The studio is a passionate team of designers from diverse creative backgrounds including graphic design, architecture, interior design, industrial design, and branding. Our design studio is dedicated to innovation where intellectual questioning and creative debate are encouraged. Challenging ourselves to discover each project’s unique spirit, we create narratives for places that engage people with their environment.</p>
+			</Section>
 
-		<section class="team grid-col-4">
-			{#each data.team.sort((a, b) => a.sort_priority - b.sort_priority) as member}
-				{#if member.has_profile_page}
-					<a href="/team/{member.slug}">
+			<section class="team grid-col-4">
+				{#each data.team.sort((a, b) => a.sort_priority - b.sort_priority) as member}
+					{#if member.has_profile_page}
+						<a href="/team/{member.slug}">
+							<figure>
+								<img src={assetUrl(member.headshot?.filename_disk)} alt={member.headshot?.description} />
+								<figcaption>
+									<h3 class="sm">{member.name}</h3>
+									{#if member.short_title}
+										<p class="sm">{member.short_title}</p>
+									{/if}
+								</figcaption>
+							</figure>
+						</a>
+					{:else}
 						<figure>
 							<img src={assetUrl(member.headshot?.filename_disk)} alt={member.headshot?.description} />
 							<figcaption>
@@ -71,27 +90,17 @@
 								{/if}
 							</figcaption>
 						</figure>
-					</a>
-				{:else}
-					<figure>
-						<img src={assetUrl(member.headshot?.filename_disk)} alt={member.headshot?.description} />
-						<figcaption>
-							<h3 class="sm">{member.name}</h3>
-							{#if member.short_title}
-								<p class="sm">{member.short_title}</p>
-							{/if}
-						</figcaption>
-					</figure>
-				{/if}
-			{/each}
-		</section>
-		<section class="cta-section">
-			<DottedArrowHover href="/careers">
-				<h4 class="xxxl heading">Join our team.</h4>
-				<p>Current Openings <DottedArrow /></p>
-			</DottedArrowHover>
-		</section>
-	</div>
+					{/if}
+				{/each}
+			</section>
+			<section class="cta-section">
+				<DottedArrowHover href="/careers">
+					<h4 class="xxxl heading">Join our team.</h4>
+					<p>Current Openings <DottedArrow /></p>
+				</DottedArrowHover>
+			</section>
+		</div>
+	{/if}
 </template>
 
 <style lang="scss">

@@ -263,7 +263,13 @@ export const _query = gql`
 						feed_grid_rows_per_load
 						feed_grid_style
 						feed_grid_dynamic_start_position
-						feed_table_style
+						feed_grid_dynamic_images {
+							directus_files_id {
+								filename_disk
+								title
+								description
+							}
+						}
 						feed_table_image_position
 						feed_table_items_per_load
 						feed_cards {

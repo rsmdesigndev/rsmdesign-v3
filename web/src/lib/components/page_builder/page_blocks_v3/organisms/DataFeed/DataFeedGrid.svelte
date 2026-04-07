@@ -1,21 +1,25 @@
 <script lang="ts">
+	import type { ImageAssetRelation } from "$lib/cms";
 	import { assetUrl } from "$lib/cms/assets";
 	import { animate, AnimateTrigger } from "$lib/animate";
 	import Card, { type CardData } from "../../molecules/Card.svelte";
 	import Heading from "../../atoms/Heading.svelte";
 	import Cta, { type CtaData } from "../../atoms/Cta.svelte";
+	import Blockquote, { type BlockquoteData } from "../../atoms/Blockquote.svelte";
 	
 	export type dataFeedGridData = {
 		feed_source?: string | null;
 		feed_grid_columns?: number | null;
 		feed_grid_style?: string | null;
 		feed_grid_dynamic_start_position?: boolean | null;
+		feed_grid_dynamic_images?: ImageAssetRelation[] | null;
+		feed_cards?: CardData[] | null;
 	};
 
 	export let data: dataFeedGridData;
-	export let feedData: any[];
+	export let feedData: any[] | null;
 	export let rowNumber: number;
-	export let gridNumber: number;
+	export let gridNumber: number = 0;
 
 	const itemHeading = {
 		heading_type: "feed-item",
@@ -26,122 +30,205 @@
 		heading_has_large_text: true,
 		heading_has_superscript: false
 	}
+
+	let count = 0;
+	const incrementCount = () => {
+		count++; 
+		console.log("incrementing count: " + count);
+		return "";
+	}
 </script>
 
 <template>
-	{#each feedData as item, i}
-		<!-- {#if data.feed_source === "Cards"}
-			{#each data.feed_cards as card}
-				<Card data={card.data} />
-			{/each}
-		{:else}
-		-->
-		<svelte:element 
-			this={data.feed_source === "Projects" ? "a" :
-				 (data.feed_source === "Articles" ? "a" :
-				 (data.feed_source === "Team" && item.has_profile_page ? "a" : "div"))}
-			href={`/${data.feed_source === "Projects" ? "work" : (data.feed_source === "Articles" ? "news" : (data.feed_source === "Team" ? "team" : ""))}/${item.slug}`}
-			id={`row-${rowNumber}-grid-${gridNumber}-item-${i}`}
-			class={`grid-item 
-					${data.feed_grid_columns === 3 ? "third" : 
-					 (data.feed_grid_columns === 4 ? "fourth" : "single-card")}
-					grid-style-${data.feed_grid_style}
-					${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
-				  `}
-			style:--grid-item={i}
-			style:--grid-columns={data.feed_grid_columns}
-		>
-			{#if data.feed_grid_style === "parallax"}
-				<div class="parallax-animation-trigger"
-					 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#row-${rowNumber}-grid-${gridNumber}-item-${i}`, animClass: "feed-grid-parallax-animate" } }
+	{#if data.feed_source === "Manual"}
+		{#each data.feed_cards as card, i}
+			<div
+				id={`row-${rowNumber}-grid-${gridNumber}-item-${i}`}
+				class={`grid-item 
+						${data.feed_grid_columns === 3 ? "third" : 
+						 (data.feed_grid_columns === 4 ? "fourth" : "single-card")}
+						grid-style-${data.feed_grid_style}
+						${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
+					  `}
+				style:--grid-item={i}
+				style:--grid-columns={data.feed_grid_columns}
+			>
+				{#if data.feed_grid_style === "parallax"}
+					<div class="parallax-animation-trigger"
+						 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#row-${rowNumber}-grid-${gridNumber}-item-${i}`, animClass: "feed-grid-parallax-animate" } }
+					/>
+				{/if}
+				<Card data={card} 
+					  bleed={ { left: false, 
+								right: false 
+							} } 
+					  isScrollItem={false}
+					  isActive={true}
 				/>
-			{/if}
-			<figure>
-				<picture>
-					{#if data.feed_grid_style === "dynamic"}
-						<source media="(max-width: 31.25em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
-						{#if data.feed_grid_columns === 3 && (i % 14 === 0 || i % 14 === 10)}
-							<img src={assetUrl(item.hero_image?.filename_disk)}
-								 alt={item.hero_image?.title}
+			</div>
+		{/each}
+	{:else}
+		{#each feedData as item, i}
+			<!-- {#if data.feed_source === "Cards"}
+				{#each data.feed_cards as card}
+					<Card data={card.data} />
+				{/each}
+			{:else}
+			-->
+			{#if data.feed_source === "Team" && ((data.feed_grid_columns === 3 && (i % 14 === 0 || i % 14 === 10)) || (data.feed_grid_columns === 4 && (i % 14 === 2 || i % 14 === 7)))}
+				<div class={`grid-item 
+							${data.feed_grid_columns === 3 ? "third" : 
+							 (data.feed_grid_columns === 4 ? "fourth" : "single-card")}
+							grid-style-${data.feed_grid_style}
+							${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
+						  `}
+				>
+					<figure>
+						<picture>
+							<img src={assetUrl(data.feed_grid_dynamic_images?.[count]?.filename_disk)}
+								 alt={data.feed_grid_dynamic_images?.[count]?.title}
 							/>
-						{:else if data.feed_grid_columns === 4}
-							{#if data.feed_grid_dynamic_start_position}
-								{#if (i % 10 === 1 || i % 10 === 5)}
-									<source media="(max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
-								{:else}
-									<source media="(max-width: 62.5em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
-								{/if}
-								{#if (i % 14 === 2 || i % 14 === 7)}
+						</picture>
+					</figure>
+				</div>
+				{incrementCount()}
+			{:else}
+				<svelte:element 
+					this={data.feed_source === "Projects" ? "a" :
+						 (data.feed_source === "Articles" ? "a" :
+						 (data.feed_source === "Team" && item.has_profile_page ? "a" : "div"))}
+					href={`/${data.feed_source === "Projects" ? "work/" : (data.feed_source === "Articles" ? "news/" : (data.feed_source === "Team" ? "team/" : "")) + item.slug}`}
+					id={`row-${rowNumber}-grid-${gridNumber}-item-${i}`}
+					class={`grid-item 
+							${data.feed_grid_columns === 3 ? "third" : 
+							 (data.feed_grid_columns === 4 ? "fourth" : "single-card")}
+							grid-style-${data.feed_grid_style}
+							${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
+						  `}
+					style:--grid-item={i}
+					style:--grid-columns={data.feed_grid_columns}
+				>
+					{#if data.feed_grid_style === "parallax"}
+						<div class="parallax-animation-trigger"
+							 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#row-${rowNumber}-grid-${gridNumber}-item-${i}`, animClass: "feed-grid-parallax-animate" } }
+						/>
+					{/if}
+					<figure class:testimonial={data.feed_source === "Testimonials"}>
+						<picture>
+							{#if data.feed_source === "Team"}
+								<img src={assetUrl(item.headshot?.filename_disk)}
+									 alt={item.headshot?.title}
+								/>
+							{:else if data.feed_source === "Testimonials"}
+								<img src={assetUrl(item.associated_project.grid_image?.filename_disk)}
+									 alt={item.associated_project.grid_image?.title}
+								/>
+							{:else if data.feed_grid_style === "dynamic"}
+								<source media="(max-width: 31.25em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
+								{#if data.feed_grid_columns === 3 && (i % 14 === 0 || i % 14 === 10)}
 									<img src={assetUrl(item.hero_image?.filename_disk)}
 										 alt={item.hero_image?.title}
 									/>
+								{:else if data.feed_grid_columns === 4}
+									{#if data.feed_grid_dynamic_start_position}
+										{#if (i % 10 === 1 || i % 10 === 5)}
+											<source media="(max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
+										{:else}
+											<source media="(max-width: 62.5em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
+										{/if}
+										{#if (i % 14 === 2 || i % 14 === 7)}
+											<img src={assetUrl(item.hero_image?.filename_disk)}
+												 alt={item.hero_image?.title}
+											/>
+										{:else}
+											<img src={assetUrl(item.grid_image?.filename_disk)}
+												 alt={item.grid_image?.title}
+											/>
+										{/if}
+									{:else}
+										{#if (i % 10 === 0 || i % 10 === 6)}
+											<source media="(max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
+										{:else}
+											<source media="(max-width: 62.5em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
+										{/if}
+										{#if (i % 14 === 0 || i % 14 === 9)}
+											<img src={assetUrl(item.hero_image?.filename_disk)}
+												 alt={item.hero_image?.title}
+											/>
+										{:else}
+											<img src={assetUrl(item.grid_image?.filename_disk)}
+												 alt={item.grid_image?.title}
+											/>
+										{/if}
+									{/if}
 								{:else}
 									<img src={assetUrl(item.grid_image?.filename_disk)}
 										 alt={item.grid_image?.title}
 									/>
 								{/if}
+							{:else if data.feed_grid_style === "banner"}
+								<img src={assetUrl(item.hero_image?.filename_disk)}
+									 alt={item.hero_image?.title}
+								/>
 							{:else}
-								{#if (i % 10 === 0 || i % 10 === 6)}
-									<source media="(max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
-								{:else}
-									<source media="(max-width: 62.5em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
-								{/if}
-								{#if (i % 14 === 0 || i % 14 === 9)}
-									<img src={assetUrl(item.hero_image?.filename_disk)}
-										 alt={item.hero_image?.title}
+								<img src={assetUrl(item.grid_image?.filename_disk)}
+									 alt={item.grid_image?.title}
+								/>
+							{/if}
+						</picture>
+						<figcaption>
+							{#if data.feed_source === "Projects"}
+								<Heading 
+									data={ {...itemHeading, 
+											heading_small: item.location,
+											heading_large: item.project_title
+										 } }
+								/>
+							{:else if data.feed_source === "Articles"}
+								<Heading 
+									data={ {...itemHeading, 
+											heading_small: item.topics?.[0]?.news_topics_id?.name,
+											heading_large: item.post_title
+										 } }
+								/>
+							{:else if data.feed_source === "Team"}
+								<Heading 
+									data={ {...itemHeading, 
+											heading_small: item.short_title,
+											heading_large: item.name
+										 } }
+								/>
+							{/if}
+							{#if data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
+								<!--<p class="headline">[Insert hero headline here lorem ipsum dolor sit amet.]</p>-->
+								{#if data.feed_source === "Projects"}
+									<Cta data={ { cta_type: "link",
+												  cta_icon: "arrow_right", 
+												  cta_style: "bold",
+												  cta_text_bold: "View project",
+												  cta_text_align: "right"
+											  } }
 									/>
-								{:else}
-									<img src={assetUrl(item.grid_image?.filename_disk)}
-										 alt={item.grid_image?.title}
+								{:else if data.feed_source === "Testimonials"}
+									<Blockquote 
+										data={ { blockquote_size: "lg",
+												 blockquote_text: item.quote ?? "",
+												 blockquote_has_attribution: true,
+												 blockquote_attribution: `${item.quote_attribution ?? ""} \n`,
+												 blockquote_has_citation: true,
+												 blockquote_citation_newline: true,
+												 blockquote_citation: `${item.quote_attribution_job_title ?? ""} \n${item.company_name ?? ""}`,
+												 blockquote_link: null
+											 } }
 									/>
 								{/if}
 							{/if}
-						{:else}
-							<img src={assetUrl(item.grid_image?.filename_disk)}
-								 alt={item.grid_image?.title}
-							/>
-						{/if}
-					{:else if data.feed_grid_style === "banner"}
-						<img src={assetUrl(item.hero_image?.filename_disk)}
-							 alt={item.hero_image?.title}
-						/>
-					{:else}
-						<img src={assetUrl(item.grid_image?.filename_disk)}
-							 alt={item.grid_image?.title}
-						/>
-					{/if}
-				</picture>
-				<figcaption>
-					{#if data.feed_source === "Projects"}
-						<Heading 
-							data={ {...itemHeading, 
-									heading_small: item.location,
-									heading_large: item.project_title
-								 } }
-						/>
-					{:else if data.feed_source === "Articles"}
-						<Heading 
-							data={ {...itemHeading, 
-									heading_small: item.topics?.[0]?.news_topics_id?.name,
-									heading_large: item.post_title
-								 } }
-						/>
-					{/if}
-					{#if data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
-						<!--<p class="headline">[Insert hero headline here lorem ipsum dolor sit amet.]</p>-->
-						<Cta data={ { cta_type: "link",
-									  cta_icon: "arrow_right", 
-									  cta_style: "bold",
-									  cta_text_bold: "View project",
-									  cta_text_align: "right"
-								  } }
-						/>
-					{/if}
-				</figcaption>
-			</figure>
-		</svelte:element>
-		<!-- {/if} -->
-	{/each}
+						</figcaption>
+					</figure>
+				</svelte:element>
+			{/if}
+		{/each}
+	{/if}
 </template>
 
 <style lang="scss">
@@ -206,7 +293,7 @@
 				margin-bottom: 0;
 			}
 
-			&:not(.grid-style-banner) {
+			&:not(.grid-style-banner), {
 				grid-column: main;
 				display: grid;
 				grid-template-columns: subgrid;
@@ -242,6 +329,28 @@
 						> p.headline {
 							text-wrap: balance;
 							margin-top: var(--SPACE-SM);
+						}
+					}
+
+					&.testimonial {
+						> picture {
+							grid-column: eighth-start 1 / eighth-end 4;
+
+							@media (max-width: 62.5em) {
+								grid-column: half-start 1 / half-end 1;
+							}
+						}
+						> figcaption {
+							grid-row: 1;
+							grid-column: eighth-start 5 / eighth-end 7;
+
+							margin-bottom: 0;
+
+							text-align: left;
+
+							@media (max-width: 62.5em) {
+								grid-column: half-start 2 / half-end 2;
+							}
 						}
 					}
 				}
@@ -326,18 +435,18 @@
 
 		@media (min-width: 62.5em) {
 			&.third {
-				&:nth-of-type(3n+1) {
+				&:nth-child(3n+1) {
 					grid-column: sixth-start 1 / sixth-end 2;
 				}
-				&:nth-of-type(3n+2) {
+				&:nth-child(3n+2) {
 					grid-column: sixth-start 3 / sixth-end 4;
 				}
-				&:nth-of-type(3n) {
+				&:nth-child(3n) {
 					grid-column: sixth-start 5 / sixth-end 6;
 				}
 
 				&.grid-style-dynamic {
-					&:nth-of-type(14n+1) {
+					&:nth-child(14n+1) {
 						grid-column: viewport-start / sixth-end 4;
 
 						picture {
@@ -348,28 +457,28 @@
 							grid-column-start: 2;
 						}
 					}
-					&:nth-of-type(7n+2) {
+					&:nth-child(7n+2) {
 						grid-column: sixth-start 5 / sixth-end 6;
 					}
-					&:nth-of-type(7n+3) {
+					&:nth-child(7n+3) {
 						grid-column: sixth-start 1 / sixth-end 2;
 					}
-					&:nth-of-type(14n+4) {
+					&:nth-child(14n+4) {
 						grid-column: sixth-start 3 / sixth-end 6;
 					}
-					&:nth-of-type(7n+5) {
+					&:nth-child(7n+5) {
 						grid-column: sixth-start 1 / sixth-end 2;
 					}
-					&:nth-of-type(7n+6) {
+					&:nth-child(7n+6) {
 						grid-column: sixth-start 3 / sixth-end 4;
 					}
-					&:nth-of-type(7n) {
+					&:nth-child(7n) {
 						grid-column: sixth-start 5 / sixth-end 6;
 					}
-					&:nth-of-type(14n+8) {
+					&:nth-child(14n+8) {
 						grid-column: sixth-start 1 / sixth-end 4;
 					}
-					&:nth-of-type(14n+11) {
+					&:nth-child(14n+11) {
 						grid-column: sixth-start 3 / viewport-end;
 
 						picture {
@@ -384,33 +493,33 @@
 			}
 
 			&.fourth {
-				&:nth-of-type(4n+1) {
+				&:nth-child(4n+1) {
 					grid-column: eighth-start 1 / eighth-end 2;
 				}
-				&:nth-of-type(4n+2) {
+				&:nth-child(4n+2) {
 					grid-column: eighth-start 3 / eighth-end 4;
 				}
-				&:nth-of-type(4n+3) {
+				&:nth-child(4n+3) {
 					grid-column: eighth-start 5 / eighth-end 6;
 				}
-				&:nth-of-type(4n) {
+				&:nth-child(4n) {
 					grid-column: eighth-start 7 / eighth-end 8;
 				}
 				&.grid-style-dynamic {
-					&:nth-of-type(7n+4) {
+					&:nth-child(7n+4) {
 						grid-column: eighth-start 1 / eighth-end 2;
 					}
-					&:nth-of-type(7n+5) {
+					&:nth-child(7n+5) {
 						grid-column: eighth-start 3 / eighth-end 4;
 					}
-					&:nth-of-type(7n+6) {
+					&:nth-child(7n+6) {
 						grid-column: eighth-start 5 / eighth-end 6;
 					}
-					&:nth-of-type(7n) {
+					&:nth-child(7n) {
 						grid-column: eighth-start 7 / eighth-end 8;
 					}
 					&.start-left {
-						&:nth-of-type(14n+1) {
+						&:nth-child(14n+1) {
 							grid-column: viewport-start / eighth-end 4;
 
 							picture {
@@ -421,19 +530,19 @@
 								grid-column-start: 2;
 							}
 						}
-						&:nth-of-type(14n+2) {
+						&:nth-child(14n+2) {
 							grid-column: eighth-start 5 / eighth-end 6;
 						}
-						&:nth-of-type(14n+3) {
+						&:nth-child(14n+3) {
 							grid-column: eighth-start 7 / eighth-end 8;
 						}
-						&:nth-of-type(14n+8) {
+						&:nth-child(14n+8) {
 							grid-column: eighth-start 1 / eighth-end 2;
 						}
-						&:nth-of-type(14n+9) {
+						&:nth-child(14n+9) {
 							grid-column: eighth-start 3 / eighth-end 4;
 						}
-						&:nth-of-type(14n+10) {
+						&:nth-child(14n+10) {
 							grid-column: eighth-start 5 / viewport-end;
 
 							picture {
@@ -446,13 +555,13 @@
 						}
 					}
 					&.start-right {
-						&:nth-of-type(14n+1) {
+						&:nth-child(14n+1) {
 							grid-column: eighth-start 1 / eighth-end 2;
 						}
-						&:nth-of-type(14n+2) {
+						&:nth-child(14n+2) {
 							grid-column: eighth-start 3 / eighth-end 4;
 						}
-						&:nth-of-type(14n+3) {
+						&:nth-child(14n+3) {
 							grid-column: eighth-start 5 / viewport-end;
 
 							picture {
@@ -463,7 +572,7 @@
 								grid-column-end: -2;
 							}
 						}
-						&:nth-of-type(14n+8) {
+						&:nth-child(14n+8) {
 							grid-column: viewport-start / eighth-end 4;
 
 							picture {
@@ -474,10 +583,10 @@
 								grid-column-start: 2;
 							}
 						}
-						&:nth-of-type(14n+9) {
+						&:nth-child(14n+9) {
 							grid-column: eighth-start 5 / eighth-end 6;
 						}
-						&:nth-of-type(14n+10) {
+						&:nth-child(14n+10) {
 							grid-column: eighth-start 7 / eighth-end 8;
 						}
 					}
@@ -486,61 +595,61 @@
 		}
 
 		@media (max-width: 62.5em) {
-			&:nth-of-type(3n+1) {
+			&:nth-child(3n+1) {
 				grid-column: third-start 1 / third-end 1;
 			}
-			&:nth-of-type(3n+2) {
+			&:nth-child(3n+2) {
 				grid-column: third-start 2 / third-end 2;
 			}
-			&:nth-of-type(3n) {
+			&:nth-child(3n) {
 				grid-column: third-start 3 / third-end 3;
 			}
 
 			&.grid-style-dynamic {
-				&:nth-of-type(10n+1) {
+				&:nth-child(10n+1) {
 					grid-column: viewport-start / third-end 2;
 
 					figcaption {
 						grid-column-start: 2;
 					}
 				}
-				&:nth-of-type(10n+2) {
+				&:nth-child(10n+2) {
 					grid-column: third-start 3 / third-end 3;
 				}
-				&:nth-of-type(10n+3) {
+				&:nth-child(10n+3) {
 					grid-column: third-start 1 / third-end 1;
 				}
-				&:nth-of-type(10n+4) {
+				&:nth-child(10n+4) {
 					grid-column: third-start 2 / third-end 2;
 				}
-				&:nth-of-type(10n+5) {
+				&:nth-child(10n+5) {
 					grid-column: third-start 3 / third-end 3;
 				}
-				&:nth-of-type(10n+6) {
+				&:nth-child(10n+6) {
 					grid-column: third-start 1 / third-end 1;
 				}
-				&:nth-of-type(10n+7) {
+				&:nth-child(10n+7) {
 					grid-column: third-start 2 / viewport-end;
 
 					figcaption {
 						grid-column-end: -2;
 					}
 				}
-				&:nth-of-type(10n+8) {
+				&:nth-child(10n+8) {
 					grid-column: third-start 1 / third-end 1;
 				}
-				&:nth-of-type(10n+9) {
+				&:nth-child(10n+9) {
 					grid-column: third-start 2 / third-end 2;
 				}
-				&:nth-of-type(10n) {
+				&:nth-child(10n) {
 					grid-column: third-start 3 / third-end 3;
 				}
 			}
 		}
 
 		@media (max-width: 31.25em) {
-			&:nth-of-type(n),
-			&.grid-style-dynamic:nth-of-type(n) {
+			&:nth-child(n),
+			&.grid-style-dynamic:nth-child(n) {
 				grid-column: main;
 			}
 		}

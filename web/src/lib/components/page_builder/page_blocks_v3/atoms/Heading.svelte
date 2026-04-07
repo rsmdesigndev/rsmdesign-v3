@@ -40,6 +40,8 @@
 		case "xl":
 			if (data.heading_weight === "bold") {
 				weightLarge = 500;
+			} else if (data.heading_weight === "light") {
+				weightLarge = 300;
 			} else {
 				weightLarge = 400;
 			}
