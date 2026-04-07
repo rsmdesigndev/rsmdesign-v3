@@ -258,12 +258,13 @@
 			}
 		}
 	}
-	a.grid-item.team {
+	.grid-item.team {
 		> figure > picture {
-			aspect-ratio: unset;
-		}
-		&:hover > figure > picture > img {
-			transform: unset;
+			aspect-ratio: 1 / 1;
+			
+			> img {
+				object-position: center top;
+			}
 		}
 	}
 	.grid-item {

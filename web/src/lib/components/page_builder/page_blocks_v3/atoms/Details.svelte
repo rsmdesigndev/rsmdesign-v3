@@ -170,6 +170,7 @@
 				align-self: stretch;
 				display: inline-flex;
 				align-content: center;
+				max-height: 100%;
 
 				&::after {
 					display: inline;
