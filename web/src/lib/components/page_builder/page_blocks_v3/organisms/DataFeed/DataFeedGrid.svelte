@@ -31,10 +31,16 @@
 		heading_has_superscript: false
 	}
 
-	let count = 0;
+	if (data.feed_grid_dynamic_images.length) {
+		console.log(data.feed_grid_dynamic_images);
+		console.log(data.feed_grid_dynamic_images?.[0]?.directus_files_id.filename_disk);
+		console.log(data.feed_grid_dynamic_images?.[1]?.directus_files_id.filename_disk);
+	}
+
+	let imageCount: number = 0;
 	const incrementCount = () => {
-		count++; 
-		console.log("incrementing count: " + count);
+		imageCount++; 
+		//console.log("incrementing count: " + imageCount);
 		return "";
 	}
 </script>
@@ -75,6 +81,8 @@
 				{/each}
 			{:else}
 			-->
+			{@const index = i + imageCount}
+			
 			{#if data.feed_source === "Team" && ((data.feed_grid_columns === 3 && (i % 14 === 0 || i % 14 === 10)) || (data.feed_grid_columns === 4 && (i % 14 === 2 || i % 14 === 7)))}
 				<div class={`grid-item 
 							${data.feed_grid_columns === 3 ? "third" : 
@@ -85,148 +93,147 @@
 				>
 					<figure>
 						<picture>
-							<img src={assetUrl(data.feed_grid_dynamic_images?.[count]?.filename_disk)}
-								 alt={data.feed_grid_dynamic_images?.[count]?.title}
+							<img src={assetUrl(data.feed_grid_dynamic_images?.[imageCount]?.directus_files_id.filename_disk)}
+								 alt={data.feed_grid_dynamic_images?.[imageCount]?.directus_files_id.title}
 							/>
 						</picture>
 					</figure>
 				</div>
 				{incrementCount()}
-			{:else}
-				<svelte:element 
-					this={data.feed_source === "Projects" ? "a" :
-						 (data.feed_source === "Articles" ? "a" :
-						 (data.feed_source === "Team" && item.has_profile_page ? "a" : "div"))}
-					href={`/${data.feed_source === "Projects" ? "work/" : (data.feed_source === "Articles" ? "news/" : (data.feed_source === "Team" ? "team/" : "")) + item.slug}`}
-					id={`row-${rowNumber}-grid-${gridNumber}-item-${i}`}
-					class={`grid-item 
-							${data.feed_grid_columns === 3 ? "third" : 
-							 (data.feed_grid_columns === 4 ? "fourth" : "single-card")}
-							grid-style-${data.feed_grid_style}
-							${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
-						  `}
-					style:--grid-item={i}
-					style:--grid-columns={data.feed_grid_columns}
-				>
-					{#if data.feed_grid_style === "parallax"}
-						<div class="parallax-animation-trigger"
-							 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#row-${rowNumber}-grid-${gridNumber}-item-${i}`, animClass: "feed-grid-parallax-animate" } }
-						/>
-					{/if}
-					<figure class:testimonial={data.feed_source === "Testimonials"}>
-						<picture>
-							{#if data.feed_source === "Team"}
-								<img src={assetUrl(item.headshot?.filename_disk)}
-									 alt={item.headshot?.title}
-								/>
-							{:else if data.feed_source === "Testimonials"}
-								<img src={assetUrl(item.associated_project.grid_image?.filename_disk)}
-									 alt={item.associated_project.grid_image?.title}
-								/>
-							{:else if data.feed_grid_style === "dynamic"}
-								<source media="(max-width: 31.25em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
-								{#if data.feed_grid_columns === 3 && (i % 14 === 0 || i % 14 === 10)}
-									<img src={assetUrl(item.hero_image?.filename_disk)}
-										 alt={item.hero_image?.title}
-									/>
-								{:else if data.feed_grid_columns === 4}
-									{#if data.feed_grid_dynamic_start_position}
-										{#if (i % 10 === 1 || i % 10 === 5)}
-											<source media="(max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
-										{:else}
-											<source media="(max-width: 62.5em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
-										{/if}
-										{#if (i % 14 === 2 || i % 14 === 7)}
-											<img src={assetUrl(item.hero_image?.filename_disk)}
-												 alt={item.hero_image?.title}
-											/>
-										{:else}
-											<img src={assetUrl(item.grid_image?.filename_disk)}
-												 alt={item.grid_image?.title}
-											/>
-										{/if}
-									{:else}
-										{#if (i % 10 === 0 || i % 10 === 6)}
-											<source media="(max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
-										{:else}
-											<source media="(max-width: 62.5em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
-										{/if}
-										{#if (i % 14 === 0 || i % 14 === 9)}
-											<img src={assetUrl(item.hero_image?.filename_disk)}
-												 alt={item.hero_image?.title}
-											/>
-										{:else}
-											<img src={assetUrl(item.grid_image?.filename_disk)}
-												 alt={item.grid_image?.title}
-											/>
-										{/if}
-									{/if}
-								{:else}
-									<img src={assetUrl(item.grid_image?.filename_disk)}
-										 alt={item.grid_image?.title}
-									/>
-								{/if}
-							{:else if data.feed_grid_style === "banner"}
+			{/if}
+			<svelte:element 
+				this={data.feed_source === "Projects" ? "a" :
+					 (data.feed_source === "Articles" ? "a" :
+					 (data.feed_source === "Team" && item.has_profile_page ? "a" : "div"))}
+				href={`/${data.feed_source === "Projects" ? "work/" : (data.feed_source === "Articles" ? "news/" : (data.feed_source === "Team" ? "team/" : "")) + item.slug}`}
+				id={`row-${rowNumber}-grid-${gridNumber}-item-${i}`}
+				class={`grid-item 
+						${data.feed_grid_columns === 3 ? "third" : 
+						 (data.feed_grid_columns === 4 ? "fourth" : "single-card")}
+						grid-style-${data.feed_grid_style}
+						${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
+					  `}
+				style:--grid-item={i + imageCount}
+				style:--grid-columns={data.feed_grid_columns}
+			>
+				{#if data.feed_grid_style === "parallax"}
+					<div class="parallax-animation-trigger"
+						 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#row-${rowNumber}-grid-${gridNumber}-item-${i}`, animClass: "feed-grid-parallax-animate" } }
+					/>
+				{/if}
+				<figure class:testimonial={data.feed_source === "Testimonials"}>
+					<picture>
+						{#if data.feed_source === "Team"}
+							<img src={assetUrl(item.headshot?.filename_disk)}
+								 alt={item.headshot?.title}
+							/>
+						{:else if data.feed_source === "Testimonials"}
+							<img src={assetUrl(item.associated_project.grid_image?.filename_disk)}
+								 alt={item.associated_project.grid_image?.title}
+							/>
+						{:else if data.feed_grid_style === "dynamic"}
+							<source media="(max-width: 31.25em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
+							{#if data.feed_grid_columns === 3 && (i % 14 === 0 || i % 14 === 10)}
 								<img src={assetUrl(item.hero_image?.filename_disk)}
 									 alt={item.hero_image?.title}
 								/>
+							{:else if data.feed_grid_columns === 4}
+								{#if data.feed_grid_dynamic_start_position}
+									{#if (i % 10 === 1 || i % 10 === 5)}
+										<source media="(max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
+									{:else}
+										<source media="(max-width: 62.5em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
+									{/if}
+									{#if (i % 14 === 2 || i % 14 === 7)}
+										<img src={assetUrl(item.hero_image?.filename_disk)}
+											 alt={item.hero_image?.title}
+										/>
+									{:else}
+										<img src={assetUrl(item.grid_image?.filename_disk)}
+											 alt={item.grid_image?.title}
+										/>
+									{/if}
+								{:else}
+									{#if (i % 10 === 0 || i % 10 === 6)}
+										<source media="(max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
+									{:else}
+										<source media="(max-width: 62.5em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
+									{/if}
+									{#if (i % 14 === 0 || i % 14 === 9)}
+										<img src={assetUrl(item.hero_image?.filename_disk)}
+											 alt={item.hero_image?.title}
+										/>
+									{:else}
+										<img src={assetUrl(item.grid_image?.filename_disk)}
+											 alt={item.grid_image?.title}
+										/>
+									{/if}
+								{/if}
 							{:else}
 								<img src={assetUrl(item.grid_image?.filename_disk)}
 									 alt={item.grid_image?.title}
 								/>
 							{/if}
-						</picture>
-						<figcaption>
+						{:else if data.feed_grid_style === "banner"}
+							<img src={assetUrl(item.hero_image?.filename_disk)}
+								 alt={item.hero_image?.title}
+							/>
+						{:else}
+							<img src={assetUrl(item.grid_image?.filename_disk)}
+								 alt={item.grid_image?.title}
+							/>
+						{/if}
+					</picture>
+					<figcaption>
+						{#if data.feed_source === "Projects"}
+							<Heading 
+								data={ {...itemHeading, 
+										heading_small: item.location,
+										heading_large: item.project_title
+									 } }
+							/>
+						{:else if data.feed_source === "Articles"}
+							<Heading 
+								data={ {...itemHeading, 
+										heading_small: item.topics?.[0]?.news_topics_id?.name,
+										heading_large: item.post_title
+									 } }
+							/>
+						{:else if data.feed_source === "Team"}
+							<Heading 
+								data={ {...itemHeading, 
+										heading_small: item.short_title,
+										heading_large: item.name
+									 } }
+							/>
+						{/if}
+						{#if data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
+							<!--<p class="headline">[Insert hero headline here lorem ipsum dolor sit amet.]</p>-->
 							{#if data.feed_source === "Projects"}
-								<Heading 
-									data={ {...itemHeading, 
-											heading_small: item.location,
-											heading_large: item.project_title
-										 } }
+								<Cta data={ { cta_type: "link",
+											  cta_icon: "arrow_right", 
+											  cta_style: "bold",
+											  cta_text_bold: "View project",
+											  cta_text_align: "right"
+										  } }
 								/>
-							{:else if data.feed_source === "Articles"}
-								<Heading 
-									data={ {...itemHeading, 
-											heading_small: item.topics?.[0]?.news_topics_id?.name,
-											heading_large: item.post_title
-										 } }
-								/>
-							{:else if data.feed_source === "Team"}
-								<Heading 
-									data={ {...itemHeading, 
-											heading_small: item.short_title,
-											heading_large: item.name
+							{:else if data.feed_source === "Testimonials"}
+								<Blockquote 
+									data={ { blockquote_size: "lg",
+											 blockquote_text: item.quote ?? "",
+											 blockquote_has_attribution: true,
+											 blockquote_attribution: `${item.quote_attribution ?? ""} \n`,
+											 blockquote_has_citation: true,
+											 blockquote_citation_newline: true,
+											 blockquote_citation: `${item.quote_attribution_job_title ?? ""} \n${item.company_name ?? ""}`,
+											 blockquote_link: null
 										 } }
 								/>
 							{/if}
-							{#if data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
-								<!--<p class="headline">[Insert hero headline here lorem ipsum dolor sit amet.]</p>-->
-								{#if data.feed_source === "Projects"}
-									<Cta data={ { cta_type: "link",
-												  cta_icon: "arrow_right", 
-												  cta_style: "bold",
-												  cta_text_bold: "View project",
-												  cta_text_align: "right"
-											  } }
-									/>
-								{:else if data.feed_source === "Testimonials"}
-									<Blockquote 
-										data={ { blockquote_size: "lg",
-												 blockquote_text: item.quote ?? "",
-												 blockquote_has_attribution: true,
-												 blockquote_attribution: `${item.quote_attribution ?? ""} \n`,
-												 blockquote_has_citation: true,
-												 blockquote_citation_newline: true,
-												 blockquote_citation: `${item.quote_attribution_job_title ?? ""} \n${item.company_name ?? ""}`,
-												 blockquote_link: null
-											 } }
-									/>
-								{/if}
-							{/if}
-						</figcaption>
-					</figure>
-				</svelte:element>
-			{/if}
+						{/if}
+					</figcaption>
+				</figure>
+			</svelte:element>
 		{/each}
 	{/if}
 </template>

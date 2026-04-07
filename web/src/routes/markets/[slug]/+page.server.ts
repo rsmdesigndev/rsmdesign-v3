@@ -649,6 +649,7 @@ export const _query = gql`
 								description
 							}
 						}
+						feed_table_style
 						feed_table_image_position
 						feed_table_items_per_load
 						feed_cards {
