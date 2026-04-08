@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import { animate, AnimateTrigger } from "$lib/animate";
+	import { createEventDispatcher, onMount } from "svelte";
 	import type { ImageAssetRelation } from "$lib/cms";
 	import { assetUrl } from "$lib/cms/assets";
 	import { request } from "graphql-request";
@@ -12,7 +11,6 @@
 
 	// Types
 	export type DataFeedData = {
-		change_background_color?: boolean | null;
 		section_background_color?: string | null;
 		section_color_theme?: string | null;
 		change_breadcrumbs?: boolean | null;
@@ -58,8 +56,24 @@
 
 	// Props
 	export let data: DataFeedData;
-	export let previousTheme: string | null;
 	export let rowNumber: number;
+
+	// Color theme
+	const dispatch = createEventDispatcher();
+
+	function selectFeedOnIntersection(node: Element) {
+		const observer = new IntersectionObserver(([entry]) => {
+			if (entry.isIntersecting) {
+				dispatch('selectFeed');
+			}
+		}, { rootMargin: '-50% 0% -50% 0%' });
+		observer.observe(node);
+		return {
+			destroy() {
+				observer.disconnect();
+			}
+		};
+	}
 
 	// Stateful component variables
 	$: feedData = [];
@@ -617,35 +631,14 @@
 </script>
 
 <template>
-	<div id={`bg-color-${rowNumber}`}
-		 class="bg-color"
-		 style:--color-background={data.section_background_color}
-	/>
-
-	<div id={`menu-bar-${rowNumber}`}
-		 class="menu-bar" 
-		 style:--color-background={data.section_background_color}
-	/>
-
 	<section id={`row-${rowNumber}`}
 			 class={`padding-top-${data.section_padding_top}
 					 padding-bottom-${data.section_padding_bottom}
 					 ${data.feed_view}
-					 color-theme-${data.section_color_theme}
-					 previous-color-theme-${previousTheme}
 				   `}
 			 style:--z-index={data.feed_view === "Table" && data.feed_table_style === "simple" ? "3" : "2"}
-			 style:--color-background={data.section_background_color}
+			 use:selectFeedOnIntersection
 	>
-		<div class="bg-color-trigger"
-			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#bg-color-${rowNumber}`, animClass: "bg-color-animate" } }
-		/>
-		<div class="bg-color-trigger"
-			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#row-${rowNumber}`, animClass: "theme-switch-animate" } }
-		/>
-		<div class="bg-color-trigger"
-			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#menu-bar-${rowNumber}`, animClass: "bg-color-animate" } }
-		/>
 
 		{#key loaded}
 			{#if !loaded && data.feed_source != "Manual"}
@@ -749,48 +742,6 @@
 </template>
 
 <style lang="scss">
-	div.bg-color,
-	div.menu-bar {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100vw;
-		height: 100vh;
-		pointer-events: none;
-	}
-	div.bg-color {
-		/* 
-			Z-Indexes
-			1: Background color
-			2: Content
-			3: Menu bar
-			4: Logo
-			5: Hero
-			6: Breadcrumbs
-			7: Menu overlay
-			8: Menu button
-		*/
-		z-index: 1;
-	}
-
-	div.menu-bar {
-		/* 
-			Z-Indexes
-			1: Background color
-			2: Content
-			3: Menu bar
-			4: Logo
-			5: Hero
-			6: Breadcrumbs
-			7: Menu overlay
-			8: Menu button
-		*/
-		z-index: 3;
-
-		height: calc(var(--GRID-CELL) * 1.75);
-		margin-bottom: calc(-1 * var(--SPACE-LG));
-	}
-
 	section {
 		/* 
 			Z-Indexes
@@ -918,14 +869,6 @@
 		&.padding-bottom-xxxl {
 			padding-bottom: var(--SPACE-XXXL);
 		}
-
-		> .bg-color-trigger {
-			position: absolute;
-			top: 0;
-			left: 0;
-			height: 100%;
-			pointer-events: none;
-		}
 	}
 
 	.button-container {
@@ -960,68 +903,12 @@
 			}
 
 			font-size: var(--FONT-SIZE-LG);
-			color: var(--COLOR-SECONDARY);
+			color: var(--color-secondary);
 			transition: color 0.3s ease;
 
 			&:hover {
-				color: var(--COLOR-ORANGE);
+				color: var(--color-accent);
 				cursor: pointer;
-			}
-		}
-	}
-
-	:global {
-		.bg-color-animate {
-			background: transparent;
-			animation: bg-color-animate 1s linear forwards;
-		}
-
-		@keyframes bg-color-animate {
-			0% {
-				background: transparent;
-			}
-			25% {
-				background: transparent;
-			}
-			33% {
-				background: var(--color-background);
-			}
-			100% {
-				background: var(--color-background);
-			}
-		}
-
-		.theme-switch-animate {
-			animation: theme-switch-animate 1s linear forwards;
-		}
-
-		// TODO: Find way to fix 'flips at 50%' behavior
-		// See https://stackoverflow.com/questions/50661638/css-animate-custom-properties-variables
-		// https://web.dev/blog/at-property-baseline
-		@keyframes theme-switch-animate {
-			0% {
-				--color-primary: var(--previous-theme-color-primary, var(--COLOR-BLACK));
-				--color-secondary: var(--previous-theme-color-secondary, var(--COLOR-MID-GRAY));
-				--color-tertiary: var(--previous-theme-color-tertiary, var(--COLOR-DIM-GRAY));
-				--color-accent: var(--previous-theme-color-accent, var(--COLOR-ORANGE));
-			}
-			25% {
-				--color-primary: var(--previous-theme-color-primary, var(--COLOR-BLACK));
-				--color-secondary: var(--previous-theme-color-secondary, var(--COLOR-MID-GRAY));
-				--color-tertiary: var(--previous-theme-color-tertiary, var(--COLOR-DIM-GRAY));
-				--color-accent: var(--previous-theme-color-accent, var(--COLOR-ORANGE));
-			}
-			33% {
-				--color-primary: var(--theme-color-primary, var(--COLOR-BLACK));
-				--color-secondary: var(--theme-color-secondary, var(--COLOR-MID-GRAY));
-				--color-tertiary: var(--theme-color-tertiary, var(--COLOR-DIM-GRAY));
-				--color-accent: var(--theme-color-accent, var(--COLOR-ORANGE));
-			}
-			100% {
-				--color-primary: var(--theme-color-primary, var(--COLOR-BLACK));
-				--color-secondary: var(--theme-color-secondary, var(--COLOR-MID-GRAY));
-				--color-tertiary: var(--theme-color-tertiary, var(--COLOR-DIM-GRAY));
-				--color-accent: var(--theme-color-accent, var(--COLOR-ORANGE));
 			}
 		}
 	}

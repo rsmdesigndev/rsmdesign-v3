@@ -69,7 +69,7 @@ $BREAKPOINT-LG: 125em;
 	line-height: 1.333;
 	letter-spacing: 0;
 
-	color: var(--text-color, var(--COLOR-BLACK));
+	color: var(--color-primary, var(--COLOR-BLACK));
 }
 
 :global {
@@ -89,11 +89,11 @@ $BREAKPOINT-LG: 125em;
 
 		&:hover,
 		&:focus {
-			color: var(--COLOR-ORANGE);
+			color: var(--color-accent, var(--COLOR-ORANGE));
 		}
 
 		&.active {
-			color: var(--COLOR-MID-GRAY);
+			color: var(--color-secondary, var(--COLOR-MID-GRAY));
 		}
 	}
 
@@ -231,11 +231,11 @@ $BREAKPOINT-LG: 125em;
 			}
 			
 			a {
-				color: var(--COLOR-ORANGE);
+				color: var(--color-accent, var(--COLOR-ORANGE));
 				transition: color 250ms ease;
 
 				&:hover {
-					color: var(--COLOR-ORANGE-HOVER);
+					color: var(--color-secondary, var(--COLOR-ORANGE-HOVER));
 				}
 			}
 		}

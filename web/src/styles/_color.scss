@@ -8,5 +8,5 @@
 }
 
 @mixin body {
-	background-color: var(--color-background, var(--bg-color, white));
+	background-color: var(--color-background, white);
 }

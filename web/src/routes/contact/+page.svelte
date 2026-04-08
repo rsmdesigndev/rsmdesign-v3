@@ -22,11 +22,11 @@
 <svelte:head>
 	<style>
 		:root {
-			--bg-color: var(--COLOR-BLACK);
-			--bg-scrim: none;
-			--text-color: white;
-			--accent-color: var(--COLOR-ORANGE);
-			--midtone-color: var(--COLOR-DIM-GRAY);
+			--color-primary: white;
+			--color-secondary: var(--COLOR-MID-GRAY);
+			--color-tertiary: var(--COLOR-DIM-GRAY);
+			--color-accent: var(--COLOR-ORANGE);
+			--color-background: var(--COLOR-BLACK);
 		}
 	</style>
 </svelte:head>

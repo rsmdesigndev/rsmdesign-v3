@@ -181,6 +181,7 @@
 				&[data-icon="arrow_down"]::after {
 					content: "›";
 					width: calc(var(--FONT-SIZE-MD) * 1.333);
+					height: var(--heading-size, var(--FONT-SIZE-LG));
 					font-size: calc(var(--FONT-SIZE-MD) * sqrt(3));
 					font-weight: 300;
 

@@ -391,7 +391,6 @@ export const _query = gql`
 				item {
 					__typename
 					... on page_blocks_v3_organism_card_row {
-						change_background_color
 						section_background_color
 						section_color_theme
 						change_breadcrumbs
@@ -605,7 +604,6 @@ export const _query = gql`
 						}
 					}
 					... on page_blocks_v3_organism_data_feed {
-						change_background_color
 						section_background_color
 						section_color_theme
 						change_breadcrumbs
@@ -729,6 +727,8 @@ export const _query = gql`
 						}
 					}
 					... on page_blocks_v3_organism_hero {
+						section_background_color
+						section_color_theme
 						hero_style
 						hero_media_type
 						hero_image {

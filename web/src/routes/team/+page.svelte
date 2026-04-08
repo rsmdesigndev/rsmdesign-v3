@@ -19,9 +19,11 @@
 <svelte:head>
 	<style>
 		:root {
-			--bg-color: var(--COLOR-BLACK);
-			--bg-scrim: none;
-			--text-color: white;
+			--color-primary: white;
+			--color-secondary: var(--COLOR-MID-GRAY);
+			--color-tertiary: var(--COLOR-DIM-GRAY);
+			--color-accent: var(--COLOR-ORANGE);
+			--color-background: var(--COLOR-BLACK);
 		}
 	</style>
 </svelte:head>

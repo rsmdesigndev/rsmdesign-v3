@@ -12,7 +12,7 @@
 </script>
 
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import type { ImageAssetRelation } from "$lib/cms";
 	import { assetUrl } from "$lib/cms/assets";
 	import { animate, AnimateTrigger } from "$lib/animate";
@@ -22,6 +22,24 @@
 	export let data: HeroData;
 	export let projectData: ProjectData | null;
 
+	// Color theme
+	const dispatch = createEventDispatcher();
+
+	function selectHeroOnIntersection(node: Element) {
+		const observer = new IntersectionObserver(([entry]) => {
+			if (entry.isIntersecting) {
+				dispatch('selectHero');
+			}
+		}, { rootMargin: '-50% 0% -50% 0%' });
+		observer.observe(node);
+		return {
+			destroy() {
+				observer.disconnect();
+			}
+		};
+	}
+
+	// Display & animation
 	$: h1Height = 0;
 	$: h3Height = 0;
 	$: h1ContainerHeight = 0;
@@ -68,6 +86,8 @@
 		 style:--h1-container-height={h1ContainerHeight}
 		 style:--h2-height={h2Height}
 		 style:--h3-height={h3Height}
+
+		 use:selectHeroOnIntersection
 >
 	{#if data.hero_media_type === "Video"}
 		<div id="hero-video-wrapper" class="video-wrapper">
@@ -365,7 +385,7 @@
 				//margin-bottom: calc(1px * var(--expertise-height));
 
 				> h3 {
-					color: white;
+					color: var(--color-primary);
 					margin-bottom: 0.15em;
 				}
 
@@ -377,13 +397,13 @@
 
 					> h1 {
 						position: absolute;
-						color: white;
+						color: var(--color-primary);
 					}
 				}
 
 				> h2 {
 					opacity: 0;
-					color: var(--COLOR-BLACK);
+					color: var(--color-secondary);
 					width: clamp(100%, 22ch, 96vw);
 				}
 			}
@@ -453,7 +473,7 @@
 				top: 0;
 
 				> h1 {
-					color: white;
+					color: var(--color-primary);
 					margin-bottom: 0.15em;
 				}
 			}
@@ -527,30 +547,30 @@
 				top: 0;
 				font-size: var(--FONT-SIZE-XXXL);
 				font-weight: 400;
-				color: white;
+				color: var(--color-primary);
 			}
 			33.3% {
 				top: 0;
 				font-size: var(--FONT-SIZE-XXXL);
 				font-weight: 400;
-				color: white;
+				color: var(--color-primary);
 			}
 			50% {
-				color: white;
+				color: var(--color-primary);
 				font-weight: 400;
 			}
 			66.7% {
 				top: calc((var(--h1-container-height) - var(--h1-height)) * 1px);
 				font-size: var(--FONT-SIZE-LG);
 				font-weight: 700;
-				color: var(--COLOR-BLACK);
+				color: var(--color-secondary);
 				transform: translate(0rem, 0rem);
 			}
 			100% {
 				top: calc((var(--h1-container-height) - var(--h1-height)) * 1px);
 				font-size: var(--FONT-SIZE-LG);
 				font-weight: 700;
-				color: var(--COLOR-BLACK);
+				color: var(--color-secondary);
 				transform: translate(0rem, calc(var(--SPACE-LG) * -1));
 			}
 		}

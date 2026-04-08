@@ -6,11 +6,11 @@
 		text-transform: uppercase;
 		font-weight: 700;
 		letter-spacing: 0.05em;
-		color: var(--COLOR-MID-GRAY);
+		color: var(--color-secondary, var(--COLOR-MID-GRAY));
 
 		&:hover,
 		&:focus {
-			color: var(--COLOR-ORANGE);
+			color: car(--color-accent, var(--COLOR-ORANGE));
 		}
 	}
 	
@@ -51,7 +51,7 @@
 
 	input {
 		border: none;
-		border-bottom: 2px solid var(--COLOR-MID-GRAY);
+		border-bottom: 2px solid var(--color-secondary, var(--COLOR-MID-GRAY));
 		font-family: var(--FONT-FAMILY-PROXIMA-NOVA);
 		font-size: var(--FONT-SIZE-SM);
 	}
@@ -83,7 +83,7 @@
 		margin: 0;
 		padding: 0 0 56.25% 0;
 		overflow: hidden;
-		background: var(--COLOR-ORANGE);
+		background: var(--color-accent, var(--COLOR-ORANGE));
 
 		iframe {
 			position: absolute;

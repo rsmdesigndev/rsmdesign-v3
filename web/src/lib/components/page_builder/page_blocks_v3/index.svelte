@@ -72,17 +72,124 @@
 	export let project: boolean = false;
 	export let projectData: ProjectData | null | undefined = undefined;
 
-	const sectionColorThemes: string[] = blocks?.map((c) => c?.item?.section_color_theme);
+	const sectionColorThemes: string[] = blocks?.map((c) => c?.item?.section_color_theme ?? "light");
+	const sectionBackgroundColors: string[] = blocks?.map((c) => c?.item?.section_background_color ?? "white");
+
+	let colorPrimary: string = "var(--COLOR-BLACK)";
+	let colorSecondary: string = "var(--COLOR-MID-GRAY)";
+	let colorTertiary: string = "var(--COLOR-DIM-GRAY)";
+	let colorAccent: string = "var(--COLOR-ORANGE)";
+	let colorBackground: string = "white";
+
+	function changeTheme(i: number) {
+		// colorBackground = sectionBackgroundColors[i];
+		//console.log("background g: " + parseInt(sectionBackgroundColors[i].slice(1, 3), 16));
+		interpolateBackgroundColor(sectionBackgroundColors[i-1] ?? "#FFFFFF", sectionBackgroundColors[i], 300);
+		switch (sectionColorThemes[i]) {
+			case "light":
+				colorPrimary = "var(--COLOR-BLACK)";
+				colorSecondary = "var(--COLOR-MID-GRAY)";
+				colorTertiary = "var(--COLOR-DIM-GRAY)";
+				colorAccent = "var(--COLOR-ORANGE)";
+				break;
+			case "dark":
+				colorPrimary = "white";
+				colorSecondary = "var(--COLOR-MID-GRAY)";
+				colorTertiary = "var(--COLOR-DIM-GRAY)";
+				colorAccent = "var(--COLOR-ORANGE)";
+				break;
+			case "color":
+				colorPrimary = "white";
+				colorSecondary = "white";
+				colorTertiary = "var(--COLOR-DIM-GRAY)";
+				colorAccent = "var(--COLOR-BLACK)";
+				break;
+			case "neutral":
+				colorPrimary = "white";
+				colorSecondary = "var(--COLOR-BLACK)";
+				colorTertiary = "var(--COLOR-DIM-GRAY)";
+				colorAccent = "var(--COLOR-BLACK)";
+				break;
+		}
+	}
+
+	function hexToRGB(hex: string) {
+		let r: number = parseInt(hex.slice(1, 3), 16);
+		let g: number = parseInt(hex.slice(3, 5), 16);
+		let b: number = parseInt(hex.slice(5, 7), 16);
+		return { r, g, b };
+	}
+
+	function interpolateBackgroundColor(startHex: string, endHex: string, duration: number) {
+		const startRGB: any = hexToRGB(startHex);
+		const endRGB: any = hexToRGB(endHex);
+
+		const steps: number = duration / 8.333;
+		const stepR: number = (endRGB.r - startRGB.r) / steps;
+		const stepG: number = (endRGB.g - startRGB.g) / steps;
+		const stepB: number = (endRGB.b - startRGB.b) / steps;
+
+		let currentR: number = startRGB.r;
+		let currentG: number = startRGB.g;
+		let currentB: number = startRGB.b;
+
+		let currentStep: number = 0;
+
+		const interval = setInterval(() => {
+			if (currentStep >= steps) {
+				clearInterval(interval);
+				colorBackground = endHex;
+				return;
+			}
+
+			currentR += stepR;
+			currentG += stepG;
+			currentB += stepB;
+
+			const newColor: string = `rgb(${Math.round(currentR)}, ${Math.round(currentG)}, ${Math.round(currentB)})`;
+			colorBackground = newColor; // Change background color
+			currentStep++;
+		}, 8.333);
+
+		//console.log("background changed: " + colorBackground);
+	}
 </script>
+
+<svelte:head>
+	{@html 
+		`<style>
+			:root {
+				--color-primary: ${colorPrimary};
+				--color-secondary: ${colorSecondary};
+				--color-tertiary: ${colorTertiary};
+				--color-accent: ${colorAccent};
+				--color-background: ${colorBackground};
+			}
+		</style>`
+	}
+</svelte:head>
 
 <template>
 	{#each blocks?.map((c) => c?.item) ?? [] as data, i}
 		{#if data?.__typename === "page_blocks_v3_organism_card_row"}
-			<CardRow {data} {projectData} previousTheme={sectionColorThemes[i-1]} rowNumber={i} />
+			<CardRow 
+				{data} 
+				{projectData} 
+				rowNumber={i} 
+				on:selectRow={() => changeTheme(i)}
+			/>
 		{:else if data?.__typename === "page_blocks_v3_organism_data_feed"}
-			<DataFeed {data} previousTheme={sectionColorThemes[i-1]} rowNumber={i} />
+			<DataFeed 
+				{data} 
+				rowNumber={i} 
+				on:selectFeed={() => changeTheme(i)}
+			/>
 		{:else if data?.__typename === "page_blocks_v3_organism_hero"}
-			<Hero {data} {projectData} />
+			<Hero 
+				{data} 
+				{projectData} 
+				on:selectHero={() => changeTheme(i)}
+			/>
 		{:else if data?.__typename === "homepage_v3_book_animation"}
 			<BookParallaxAnimation />
 		{:else}
@@ -92,7 +199,7 @@
 </template>
 
 <style lang="scss">
-	:global {
+	/*:global {
 		@property --color-primary {
 			syntax: "<color>";
 			inherits: true;
@@ -162,5 +269,5 @@
 			--previous-theme-color-tertiary: var(--COLOR-DIM-GRAY);
 			--previous-theme-color-accent: var(--COLOR-BLACK);
 		}
-	}
+	}*/
 </style>

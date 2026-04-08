@@ -62,7 +62,7 @@
 	 class:scroll-item={isScrollItem}
 	 style:--grid-column-start={bleed.left ? "2" : "1"}
 	 style:--grid-column-end={bleed.right ? "-2" : "-1"}
-	 style:--active-highlight={`var(--color-${activeHighlight}, var(--COLOR-ORANGE))`}
+	 style:--active-highlight={`var(--color-${activeHighlight}, var(--color-accent))`}
 	 style:--color-heading-small={activeHighlight === "primary" ? "var(--color-secondary)" : "var(--color-heading)"}
 >
 	{#if data.heading_has_small_text && data.heading_small}
