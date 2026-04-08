@@ -12,7 +12,7 @@
 	
 	export let data: PageData;
 
-	console.log(data.about.about_page_blocks_v3);
+	//console.log(data.about.about_page_blocks_v3);
 
 	let testimonialIndex = 0;
 	$: currentTestimonial = data.testimonials[testimonialIndex];

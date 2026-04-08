@@ -168,6 +168,8 @@
 								{item.post_title}
 							{:else if data.feed_source === "Awards"}
 								{item.award_body_designation}
+							{:else if data.feed_source === "Careers"}
+								{item.name}
 							{/if}
 						</strong>
 						{#if data.feed_source === "Projects"}
@@ -198,6 +200,10 @@
 							{:else}
 								No project linked or entered
 							{/if}
+						{:else if data.feed_source === "Careers"}
+							{#each item.studios as studio}
+								<span>{studio.studio_locations_id.location}</span>
+							{/each}
 						{/if}
 					</div>
 				</div>
@@ -210,6 +216,8 @@
 						{/if}
 					{:else if data.feed_source === "Awards"}
 						{item.year}
+					{:else if data.feed_source === "Careers"}
+						{item.years_experience} years exp.
 					{/if}
 				</div>
 			{/if}

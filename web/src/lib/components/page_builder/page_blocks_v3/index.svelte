@@ -82,8 +82,6 @@
 	let colorBackground: string = "white";
 
 	function changeTheme(i: number) {
-		// colorBackground = sectionBackgroundColors[i];
-		//console.log("background g: " + parseInt(sectionBackgroundColors[i].slice(1, 3), 16));
 		interpolateBackgroundColor(sectionBackgroundColors[i-1] ?? "#FFFFFF", sectionBackgroundColors[i], 300);
 		switch (sectionColorThemes[i]) {
 			case "light":
@@ -150,8 +148,6 @@
 			colorBackground = newColor; // Change background color
 			currentStep++;
 		}, 8.333);
-
-		//console.log("background changed: " + colorBackground);
 	}
 </script>
 

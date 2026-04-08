@@ -498,6 +498,51 @@
 
 				break;
 			}
+		case "Careers": {
+				let query = `
+					query Careers($limit: Int, $offset: Int) {
+						careers(
+							limit: $limit
+							offset: $offset
+							sort: ["-sort"]
+							filter: { 
+								visibility: { _eq: "visible" } 
+							}
+						) {
+							slug
+							name
+							studios {
+								studio_locations_id {
+									location
+								}
+							}
+							years_experience
+						}
+						careers_aggregated(
+							filter: {
+								visibility: { _eq: "visible" } 
+							})
+						{
+							count {
+								id
+							}
+						}
+					}
+				`
+				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
+					limit: numItems,
+					offset: loadOffset,
+				});
+
+				if(response) {
+					feedData.push(...response.careers);
+					feedData = feedData;
+					loaded = true;
+					loadTotalCount = response.careers_aggregated?.[0]?.count?.id ?? 0;
+				}
+
+				break;
+			}
 			case "Manual": {
 				break;
 			}

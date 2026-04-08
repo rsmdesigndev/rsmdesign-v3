@@ -385,7 +385,7 @@
 				//margin-bottom: calc(1px * var(--expertise-height));
 
 				> h3 {
-					color: var(--color-primary);
+					color: var(--color-background);
 					margin-bottom: 0.15em;
 				}
 
@@ -397,13 +397,13 @@
 
 					> h1 {
 						position: absolute;
-						color: var(--color-primary);
+						color: var(--color-background);
 					}
 				}
 
 				> h2 {
 					opacity: 0;
-					color: var(--color-secondary);
+					color: var(--color-primary);
 					width: clamp(100%, 22ch, 96vw);
 				}
 			}
@@ -473,7 +473,7 @@
 				top: 0;
 
 				> h1 {
-					color: var(--color-primary);
+					color: var(--color-background);
 					margin-bottom: 0.15em;
 				}
 			}
@@ -547,30 +547,30 @@
 				top: 0;
 				font-size: var(--FONT-SIZE-XXXL);
 				font-weight: 400;
-				color: var(--color-primary);
+				color: var(--color-background);
 			}
 			33.3% {
 				top: 0;
 				font-size: var(--FONT-SIZE-XXXL);
 				font-weight: 400;
-				color: var(--color-primary);
+				color: var(--color-background);
 			}
 			50% {
-				color: var(--color-primary);
+				color: var(--color-background);
 				font-weight: 400;
 			}
 			66.7% {
 				top: calc((var(--h1-container-height) - var(--h1-height)) * 1px);
 				font-size: var(--FONT-SIZE-LG);
 				font-weight: 700;
-				color: var(--color-secondary);
+				color: var(--color-primary);
 				transform: translate(0rem, 0rem);
 			}
 			100% {
 				top: calc((var(--h1-container-height) - var(--h1-height)) * 1px);
 				font-size: var(--FONT-SIZE-LG);
 				font-weight: 700;
-				color: var(--color-secondary);
+				color: var(--color-primary);
 				transform: translate(0rem, calc(var(--SPACE-LG) * -1));
 			}
 		}
