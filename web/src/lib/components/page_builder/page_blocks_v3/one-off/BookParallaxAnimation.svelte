@@ -26,6 +26,8 @@
 		margin-top: var(--SPACE-XXL);
 
 		grid-column: viewport;
+		max-width: 100vw;
+		overflow-x: hidden;
 		display: grid;
 		grid-template-columns: subgrid;
 		align-content: start;
