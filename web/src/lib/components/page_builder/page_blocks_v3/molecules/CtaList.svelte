@@ -59,142 +59,186 @@
 				/>
 			{/each}
 		{:else}
-			<h3 class={`heading heading-caps`}
-				style:--font-size="var(--FONT-SIZE-MD)"
-				style:--font-weight="700"
-				style:--line-height="1.333"
-			>
-				Project info
-			</h3>
-			{#if projectData.project_client_count > 0}
-				{#each projectData.project_client.slice(0, projectData.project_client_count) as collaborator}
-					<Cta data={ {...collaboratorCta, 
-								 cta_text_bold: "Client", 
-								 cta_text_light: collaborator.collaborators_id.collaborator_name,
-								 cta_link: collaborator.collaborators_id.collaborator_website} 
-							  }
-						 {sizeOverride}
-						 {hoverOverride}
-						 {iconOverride}
-					/>
-				{/each}
+			<article>
+				<h3 class={`heading heading-caps`}
+					style:--font-size="var(--FONT-SIZE-MD)"
+					style:--font-weight="700"
+					style:--line-height="1.333"
+				>
+					Project info
+				</h3>
+				{#if projectData.project_client_count > 0}
+					{#each projectData.project_client.slice(0, projectData.project_client_count) as collaborator}
+						<Cta data={ {...collaboratorCta, 
+									 cta_text_bold: "Client", 
+									 cta_text_light: collaborator.collaborators_id.collaborator_name,
+									 cta_link: collaborator.collaborators_id.collaborator_website} 
+								  }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
+					{/each}
+				{/if}
+				{#if projectData.project_developer_count > 0}
+					{#each projectData.project_developer.slice(0, projectData.project_developer_count) as collaborator}
+						<Cta data={ {...collaboratorCta, 
+									 cta_text_bold: "Developer", 
+									 cta_text_light: collaborator.collaborators_id.collaborator_name,
+									 cta_link: collaborator.collaborators_id.collaborator_website} 
+								  }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
+					{/each}
+				{/if}
+				{#if projectData.project_architect_count > 0}
+					{#each projectData.project_architect.slice(0, projectData.project_architect_count) as collaborator}
+						<Cta data={ {...collaboratorCta, 
+									 cta_text_bold: "Architect", 
+									 cta_text_light: collaborator.collaborators_id.collaborator_name,
+									 cta_link: collaborator.collaborators_id.collaborator_website} 
+								  }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
+					{/each}
+				{/if}
+				{#if projectData.project_landscape_count > 0}
+					{#each projectData.project_landscape.slice(0, projectData.project_landscape_count) as collaborator}
+						<Cta data={ {...collaboratorCta, 
+									 cta_text_bold: "Landscape", 
+									 cta_text_light: collaborator.collaborators_id.collaborator_name,
+									 cta_link: collaborator.collaborators_id.collaborator_website} 
+								  }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
+					{/each}
+				{/if}
+				{#if projectData.project_lighting_count > 0}
+					{#each projectData.project_lighting.slice(0, projectData.project_lighting_count) as collaborator}
+						<Cta data={ {...collaboratorCta, 
+									 cta_text_bold: "Lighting", 
+									 cta_text_light: collaborator.collaborators_id.collaborator_name,
+									 cta_link: collaborator.collaborators_id.collaborator_website} 
+								  }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
+					{/each}
+				{/if}
+				{#if projectData.project_fabricator_count > 0}
+					{#each projectData.project_fabricator.slice(0, projectData.project_fabricator_count) as collaborator}
+						<Cta data={ {...collaboratorCta, 
+									 cta_text_bold: "Fabricator", 
+									 cta_text_light: collaborator.collaborators_id.collaborator_name,
+									 cta_link: collaborator.collaborators_id.collaborator_website} 
+								  }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
+					{/each}
+				{/if}
+				{#if projectData.project_painter_count > 0}
+					{#each projectData.project_painter.slice(0, projectData.project_painter_count) as collaborator}
+						<Cta data={ {...collaboratorCta, 
+									 cta_text_bold: "Painter", 
+									 cta_text_light: collaborator.collaborators_id.collaborator_name,
+									 cta_link: collaborator.collaborators_id.collaborator_website} 
+								  }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
+					{/each}
+				{/if}
+				{#if projectData.project_sign_painter_count > 0}
+					{#each projectData.project_sign_painter.slice(0, projectData.project_sign_painter_count) as collaborator}
+						<Cta data={ {...collaboratorCta, 
+									 cta_text_bold: "Sign Painter", 
+									 cta_text_light: collaborator.collaborators_id.collaborator_name,
+									 cta_link: collaborator.collaborators_id.collaborator_website} 
+								  }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
+					{/each}
+				{/if}
+				{#if projectData.project_photographer_count > 0}
+					{#each projectData.project_photographer.slice(0, projectData.project_photographer_count) as collaborator}
+						<Cta data={ {...collaboratorCta, 
+									 cta_text_bold: "Photographer", 
+									 cta_text_light: collaborator.collaborators_id.collaborator_name,
+									 cta_link: collaborator.collaborators_id.collaborator_website} 
+								  }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
+					{/each}
+				{/if}
+				{#if projectData.project_other_collaborators_count > 0}
+					{#each projectData.project_other_collaborators.slice(0, projectData.project_other_collaborators_count) as collaborator}
+						<Cta data={ {...collaboratorCta, 
+									 cta_text_bold: "Other", 
+									 cta_text_light: collaborator.collaborators_id.collaborator_name,
+									 cta_link: collaborator.collaborators_id.collaborator_website} 
+								  }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
+					{/each}
+				{/if}
+			</article>
+			{#if projectData.project_services.length > 2}
+				<article>
+					<h3 class={`heading heading-caps`}
+						style:--font-size="var(--FONT-SIZE-MD)"
+						style:--font-weight="700"
+						style:--line-height="1.333"
+					>
+						Additional services
+					</h3>
+					{#each projectData.project_services.slice(2) as service}
+						<Cta data={ {...collaboratorCta, 
+									 cta_text_light: service.services_id.name,
+									 cta_link: `/${service.services_id.slug}`
+								  } }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
+					{/each}
+				</article>
 			{/if}
-			{#if projectData.project_developer_count > 0}
-				{#each projectData.project_developer.slice(0, projectData.project_developer_count) as collaborator}
-					<Cta data={ {...collaboratorCta, 
-								 cta_text_bold: "Developer", 
-								 cta_text_light: collaborator.collaborators_id.collaborator_name,
-								 cta_link: collaborator.collaborators_id.collaborator_website} 
-							  }
-						 {sizeOverride}
-						 {hoverOverride}
-						 {iconOverride}
-					/>
-				{/each}
-			{/if}
-			{#if projectData.project_architect_count > 0}
-				{#each projectData.project_architect.slice(0, projectData.project_architect_count) as collaborator}
-					<Cta data={ {...collaboratorCta, 
-								 cta_text_bold: "Architect", 
-								 cta_text_light: collaborator.collaborators_id.collaborator_name,
-								 cta_link: collaborator.collaborators_id.collaborator_website} 
-							  }
-						 {sizeOverride}
-						 {hoverOverride}
-						 {iconOverride}
-					/>
-				{/each}
-			{/if}
-			{#if projectData.project_landscape_count > 0}
-				{#each projectData.project_landscape.slice(0, projectData.project_landscape_count) as collaborator}
-					<Cta data={ {...collaboratorCta, 
-								 cta_text_bold: "Landscape", 
-								 cta_text_light: collaborator.collaborators_id.collaborator_name,
-								 cta_link: collaborator.collaborators_id.collaborator_website} 
-							  }
-						 {sizeOverride}
-						 {hoverOverride}
-						 {iconOverride}
-					/>
-				{/each}
-			{/if}
-			{#if projectData.project_lighting_count > 0}
-				{#each projectData.project_lighting.slice(0, projectData.project_lighting_count) as collaborator}
-					<Cta data={ {...collaboratorCta, 
-								 cta_text_bold: "Lighting", 
-								 cta_text_light: collaborator.collaborators_id.collaborator_name,
-								 cta_link: collaborator.collaborators_id.collaborator_website} 
-							  }
-						 {sizeOverride}
-						 {hoverOverride}
-						 {iconOverride}
-					/>
-				{/each}
-			{/if}
-			{#if projectData.project_fabricator_count > 0}
-				{#each projectData.project_fabricator.slice(0, projectData.project_fabricator_count) as collaborator}
-					<Cta data={ {...collaboratorCta, 
-								 cta_text_bold: "Fabricator", 
-								 cta_text_light: collaborator.collaborators_id.collaborator_name,
-								 cta_link: collaborator.collaborators_id.collaborator_website} 
-							  }
-						 {sizeOverride}
-						 {hoverOverride}
-						 {iconOverride}
-					/>
-				{/each}
-			{/if}
-			{#if projectData.project_painter_count > 0}
-				{#each projectData.project_painter.slice(0, projectData.project_painter_count) as collaborator}
-					<Cta data={ {...collaboratorCta, 
-								 cta_text_bold: "Painter", 
-								 cta_text_light: collaborator.collaborators_id.collaborator_name,
-								 cta_link: collaborator.collaborators_id.collaborator_website} 
-							  }
-						 {sizeOverride}
-						 {hoverOverride}
-						 {iconOverride}
-					/>
-				{/each}
-			{/if}
-			{#if projectData.project_sign_painter_count > 0}
-				{#each projectData.project_sign_painter.slice(0, projectData.project_sign_painter_count) as collaborator}
-					<Cta data={ {...collaboratorCta, 
-								 cta_text_bold: "Sign Painter", 
-								 cta_text_light: collaborator.collaborators_id.collaborator_name,
-								 cta_link: collaborator.collaborators_id.collaborator_website} 
-							  }
-						 {sizeOverride}
-						 {hoverOverride}
-						 {iconOverride}
-					/>
-				{/each}
-			{/if}
-			{#if projectData.project_photographer_count > 0}
-				{#each projectData.project_photographer.slice(0, projectData.project_photographer_count) as collaborator}
-					<Cta data={ {...collaboratorCta, 
-								 cta_text_bold: "Photographer", 
-								 cta_text_light: collaborator.collaborators_id.collaborator_name,
-								 cta_link: collaborator.collaborators_id.collaborator_website} 
-							  }
-						 {sizeOverride}
-						 {hoverOverride}
-						 {iconOverride}
-					/>
-				{/each}
-			{/if}
-			{#if projectData.project_other_collaborators_count > 0}
-				{#each projectData.project_other_collaborators.slice(0, projectData.project_other_collaborators_count) as collaborator}
-					<Cta data={ {...collaboratorCta, 
-								 cta_text_bold: "Other", 
-								 cta_text_light: collaborator.collaborators_id.collaborator_name,
-								 cta_link: collaborator.collaborators_id.collaborator_website} 
-							  }
-						 {sizeOverride}
-						 {hoverOverride}
-						 {iconOverride}
-					/>
-				{/each}
+			{#if projectData.project_markets.length > 2}
+				<article>
+					<h3 class={`heading heading-caps`}
+						style:--font-size="var(--FONT-SIZE-MD)"
+						style:--font-weight="700"
+						style:--line-height="1.333"
+					>
+						Additional markets
+					</h3>
+					{#each projectData.markets.slice(2) as market}
+						<Cta data={ {...collaboratorCta, 
+									 cta_text_light: market.markets_id.name,
+									 cta_link: `/${market.markets_id.slug}`
+								  } }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
+					{/each}
+				</article>
 			{/if}
 		{/if}
 	</div>
@@ -208,16 +252,23 @@
 
 		color: var(--color-primary, inherit);
 
-		> h3.heading {
-			margin-bottom: var(--FONT-SIZE-XS);
+		> article {
+			margin-bottom: var(--SPACE-MD);
+			display: flex;
+			flex-direction: column;
+			row-gap: 0.5em;
 
-			font-size: var(--font-size);
-			font-weight: var(--font-weight);
-			line-height: var(--line-height);
+			h3.heading {
+				margin-bottom: 0;
 
-			&.heading-caps {
-				text-transform: uppercase;
-				letter-spacing: 0.05em;
+				font-size: var(--font-size);
+				font-weight: var(--font-weight);
+				line-height: var(--line-height);
+
+				&.heading-caps {
+					text-transform: uppercase;
+					letter-spacing: 0.05em;
+				}
 			}
 		}
 	}

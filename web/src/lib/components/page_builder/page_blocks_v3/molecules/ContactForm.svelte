@@ -40,7 +40,5 @@
 <style lang="scss">
 	.form-container {
 		grid-column: var(--grid-column-start) / var(--grid-column-end);
-
-		
 	}
 </style>

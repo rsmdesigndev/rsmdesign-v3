@@ -57,6 +57,7 @@
 		project_photographer_count?: number | null;
 		project_other_collaborators?: Collaborator[] | null;
 		project_other_collaborators_count?: number | null;
+		project_awards?: any | null;
 	} | null;
 </script>
 

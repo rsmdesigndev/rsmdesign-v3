@@ -35,6 +35,7 @@
 		project_photographer_count?: data.project.project_photographer_count,
 		project_other_collaborators?: data.project.project_other_collaborators,
 		project_other_collaborators_count?: data.project.project_other_collaborators_count,
+		project_awards?: data.project.design_awards
 	};
 
 	const colorStyles: string = `
