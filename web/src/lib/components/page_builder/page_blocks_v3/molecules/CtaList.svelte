@@ -198,7 +198,7 @@
 					{/each}
 				{/if}
 			</article>
-			{#if projectData.project_services.length > 2}
+			<!--{#if projectData.project_services?.length > 2}
 				<article>
 					<h3 class={`heading heading-caps`}
 						style:--font-size="var(--FONT-SIZE-MD)"
@@ -207,7 +207,7 @@
 					>
 						Additional services
 					</h3>
-					{#each projectData.project_services.slice(2) as service}
+					{#each projectData.project_services?.slice(2) as service}
 						<Cta data={ {...collaboratorCta, 
 									 cta_text_light: service.services_id.name,
 									 cta_link: `/${service.services_id.slug}`
@@ -219,7 +219,7 @@
 					{/each}
 				</article>
 			{/if}
-			{#if projectData.project_markets.length > 2}
+			{#if projectData.project_markets?.length > 2}
 				<article>
 					<h3 class={`heading heading-caps`}
 						style:--font-size="var(--FONT-SIZE-MD)"
@@ -228,7 +228,7 @@
 					>
 						Additional markets
 					</h3>
-					{#each projectData.markets.slice(2) as market}
+					{#each projectData.markets?.slice(2) as market}
 						<Cta data={ {...collaboratorCta, 
 									 cta_text_light: market.markets_id.name,
 									 cta_link: `/${market.markets_id.slug}`
@@ -239,7 +239,7 @@
 						/>
 					{/each}
 				</article>
-			{/if}
+			{/if}-->
 		{/if}
 	</div>
 </template>
