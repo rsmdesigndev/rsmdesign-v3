@@ -548,6 +548,55 @@
 
 				break;
 			}
+		case "Studios": {
+				let query = `
+					query Studios($limit: Int, $offset: Int) {
+						studio_locations(
+							limit: $limit
+							offset: $offset
+							sort: ["sort_priority"]
+							filter: { 
+								visibility: { _eq: "visible" } 
+							}
+						) {
+							slug
+							location
+							grid_image {
+								filename_disk
+								title
+								description
+							}
+							studio_contact_person {
+								slug
+								name
+							}
+							studio_contact_block
+						}
+						studio_locations_aggregated(
+							filter: {
+								visibility: { _eq: "visible" } 
+							})
+						{
+							count {
+								id
+							}
+						}
+					}
+				`
+				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
+					limit: numItems,
+					offset: loadOffset,
+				});
+
+				if(response) {
+					feedData.push(...response.studio_locations);
+					feedData = feedData;
+					loaded = true;
+					loadTotalCount = response.studio_locations_aggregated?.[0]?.count?.id ?? 0;
+				}
+
+				break;
+			}
 			case "Manual": {
 				break;
 			}
@@ -819,7 +868,7 @@
 		}
 		&.Table {
 			row-gap: 0;
-			min-height: 100vh;
+			//min-height: 100vh;
 		}
 
 		&.padding-top-sm {

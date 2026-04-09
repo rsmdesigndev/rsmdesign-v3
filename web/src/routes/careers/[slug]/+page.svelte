@@ -7,7 +7,7 @@
 </script>
 
 <SeoHead
-	title={`Work at RSM Design · ${data.career.name}`}
+	title={`${data.career.name} · Careers`}
 	description={data.career.seo_page_description ?? ""}
 	noindex={data.career.visibility === "draft"}
 />

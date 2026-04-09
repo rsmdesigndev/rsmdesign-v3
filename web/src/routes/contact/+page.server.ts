@@ -6,6 +6,8 @@ import { error } from "@sveltejs/kit";
 export const _query = gql`
 	query ContactPage {
 		contact_page {
+			seo_title
+			seo_page_description
 			contact_page_blocks_v3 {
 				item {
 					__typename
@@ -23,6 +25,10 @@ export const _query = gql`
 							grid_col_start
 							grid_col_end_units
 							grid_col_end
+							grid_col_start_units_tablet
+							grid_col_start_tablet
+							grid_col_end_units_tablet
+							grid_col_end_tablet
 							column_hidden_on_mobile
 							column_interaction_on_scroll
 							column_interaction_exclude_first_item
@@ -198,6 +204,14 @@ export const _query = gql`
 												}
 											}
 										}
+									}
+									... on page_blocks_v3_molecule_contact_form {
+										form
+										form_type
+									}
+									... on page_blocks_v3_molecule_contact_form {
+										form
+										form_type
 									}
 									... on page_blocks_v3_molecule_cta_list {
 										cta_list_size

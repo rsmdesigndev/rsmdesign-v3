@@ -4,6 +4,10 @@
 		grid_col_start?: number | null;
 		grid_col_end_units?: string | null;
 		grid_col_end?: number | null;
+		grid_col_start_units_tablet?: string | null;
+		grid_col_start_tablet?: number | null;
+		grid_col_end_units_tablet?: string | null;
+		grid_col_end_tablet?: number | null;
 		column_item_spacing?: string | null;
 		column_padding_left?: string | null;
 		column_padding_right?: string | null;
@@ -19,6 +23,7 @@
 		| ({ __typename: "page_blocks_v3_molecule_accordion" }		& AccordionData)
 		| ({ __typename: "page_blocks_v3_organism_card_carousel" }	& CardCarouselData)
 		| ({ __typename: "page_blocks_v3_molecule_card" }			& CardData)
+		| ({ __typename: "page_blocks_v3_molecule_contact_form" }	& ContactFormData)
 		| ({ __typename: "page_blocks_v3_molecule_cta_list" }		& CtaListData)
 		| ({ __typename: "page_blocks_v3_atom_spacer" }				& SpacerData)
 		;
@@ -34,6 +39,7 @@
 	import Accordion, { type AccordionData } from "../molecules/Accordion.svelte";
 	import Card, { type CardData } from "../molecules/Card.svelte";
 	import CardCarousel, { type CardCarouselData } from "./CardCarousel.svelte";
+	import ContactForm, { type ContactFormData } from "../molecules/ContactForm.svelte";
 	import CtaList, { type CtaListData } from "../molecules/CtaList.svelte";
 	import Spacer, { type SpacerData } from "../atoms/Spacer.svelte";
 	import type { ProjectData } from "../index.svelte";
@@ -144,7 +150,7 @@
 		 			 )}
 		 class="column-container"
 		 style:--grid-column={`${data.grid_col_start_units}-start ${data.grid_col_start_units != "viewport" ? data.grid_col_start : ""} / ${data.grid_col_end_units}-end ${data.grid_col_end_units != "viewport" ? data.grid_col_end : ""}`}
-		 style:--grid-column-tablet={`${colStart} / ${colEnd}`}
+		 style:--grid-column-tablet={data.grid_col_start_units_tablet != "auto" && data.grid_col_end_units_tablet != "auto" ? `${data.grid_col_start_units_tablet}-start ${data.grid_col_start_units_tablet != "viewport" ? data.grid_col_start_tablet : ""} / ${data.grid_col_end_units_tablet}-end ${data.grid_col_end_units_tablet != "viewport" ? data.grid_col_end_tablet : ""}` : `${colStart} / ${colEnd}`}
 		 style:--grid-column-mobile={data.grid_col_start_units === "viewport" ? "viewport" : "main"}
 		 style:--row-gap={`var(--SPACE-${data.column_item_spacing?.toUpperCase()}`}
 		 style:--padding-left={`var(--SPACE-${data.column_padding_left?.toUpperCase()}`}
@@ -175,6 +181,11 @@
 					colItem={i}
 					{bleed}
 					bind:selectedItem
+				/>
+			{:else if data?.__typename === "page_blocks_v3_molecule_contact_form"}
+				<ContactForm
+					{data}
+					{bleed}
 				/>
 			{:else if data?.__typename === "page_blocks_v3_molecule_cta_list"}
 				<CtaList 

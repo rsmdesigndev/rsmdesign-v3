@@ -7,8 +7,8 @@
 </script>
 
 <SeoHead
-	title = {data?.careers_page?.seo_title ? data?.careers_page?.seo_title : "Careers"}
-	description = {data?.careers_page?.seo_page_description ? data?.careers_page?.seo_page_description : "Explore Careers at RSM Design"}
+	title={data?.careers_page?.seo_title ? data?.careers_page?.seo_title : "Careers"}
+	description={data?.careers_page?.seo_page_description ? data?.careers_page?.seo_page_description : "Explore Careers at RSM Design"}
 />
 
 <template>

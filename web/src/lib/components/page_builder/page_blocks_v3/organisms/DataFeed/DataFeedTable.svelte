@@ -82,7 +82,7 @@
 	<div class="deselectionTrigger above"
 		 use:deselectItemsOnIntersection
 	/>
-	{#if data.feed_table_style === "simple"}
+	{#if data.feed_table_style === "simple" && (data.feed_source === "Projects" || data.feed_source === "Articles")}
 		<div class={`table-heading image-position-${data.feed_table_image_position}`}>
 			{#if data.first_filter}
 				<Heading 
@@ -123,6 +123,7 @@
 				  }`}
 			class={`table-item
 					table-style-${data.feed_table_style}
+					${data.feed_source === "Studios" ? "table-item-studio" : ""}
 					image-position-${data.feed_table_image_position}
 				  `}
 			class:active={selectedItem === i}
@@ -131,20 +132,34 @@
 			use:selectItemOnIntersection={i}
 		><!-- TODO: add on:click|preventDefault={selectItemOnClick(i)} -->
 			{#if data.feed_table_style === "simple"}
-				<div class="table-item-heading-container">
-					{#if data.feed_source === "Projects"}
-						{item.location}
-					{:else if data.feed_source === "Articles"}
-						{item.topics?.[0]?.news_topics_id?.name}
-					{/if}
-					<strong>
+				{#if data.feed_source === "Projects" || data.feed_source === "Articles"}
+					<div class="table-item-heading-container">
 						{#if data.feed_source === "Projects"}
-							{item.project_title}
+							{item.location}
 						{:else if data.feed_source === "Articles"}
-							{item.post_title}
+							{item.topics?.[0]?.news_topics_id?.name}
 						{/if}
-					</strong>
-				</div>
+						<strong>
+							{#if data.feed_source === "Projects"}
+								{item.project_title}
+							{:else if data.feed_source === "Articles"}
+								{item.post_title}
+							{/if}
+						</strong>
+					</div>
+				{:else if data.feed_source === "Studios"}
+					<article>
+						<a href={`/studios/${item.slug}`}>
+							{item.location}
+						</a>
+						<a href={`/team/${item.studio_contact_person.slug}`}>
+							{item.studio_contact_person.name}
+						</a>
+						<p>
+							{@html item.studio_contact_block}
+						</p>
+					</article>
+				{/if}
 			{:else}
 				<!--
 					Projects
@@ -229,7 +244,9 @@
 		>
 			{#if data.feed_table_style === "simple"}
 				<picture>
-					<source media="(min-width: 31.25em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
+					{#if data.feed_source === "Projects"}
+						<source media="(min-width: 31.25em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
+					{/if}
 					<img src={assetUrl(item.grid_image?.filename_disk)}
 						 alt={item.grid_image?.title}
 					/>
@@ -318,6 +335,38 @@
 		&.table-style-simple {
 			grid-column: viewport;
 			padding: var(--SPACE-SM) 0;
+
+			&.table-item-studio {
+				grid-column: eighth-start 1 / eighth-end 2;
+				@media (max-width: 62.5em) {
+					grid-column: half-start 1 / half-end 1;
+				}
+				@media (max-width: 31.25em) {
+					grid-column: main;
+				}
+
+				&:nth-of-type(2n) {
+					grid-column: eighth-start 3 / eighth-end 4;
+					@media (max-width: 62.5em) {
+						grid-column: half-start 1 / half-end 1;
+					}
+					@media (max-width: 31.25em) {
+						grid-column: main;
+					}
+				}
+
+				> article {
+					grid-column: 1 / -1;
+					> a {
+						display: block;
+
+						&:first-child {
+							font-weight: 600;
+							margin-bottom: 0.5em;
+						}
+					}
+				}
+			}
 
 			> .table-item-heading-container {
 				font-size: var(--FONT-SIZE-XS);
