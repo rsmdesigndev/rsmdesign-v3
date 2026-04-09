@@ -175,12 +175,18 @@
 
 		&.button {
 			min-height: calc(var(--GRID-CELL) * 1.5);
-			padding: 0.5em var(--SPACE-MD);
+			padding: 0.333em var(--SPACE-MD) 0.5em;
 			border: 2px solid var(--color-cta, var(--color-primary, inherit));
 			border-radius: var(--SPACE-LG);
-			background: transparent;
 			align-items: center;
 			justify-self: start;
+
+			background: transparent;
+			transition: background-color 0.3s ease, color 0.3s ease;
+			&:hover {
+				background-color: var(--color-primary, var(--COLOR-MID-GRAY));
+				color: var(--color-background, white);
+			}
 
 			strong {
 				font-weight: 500;

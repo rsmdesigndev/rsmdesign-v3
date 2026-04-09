@@ -387,7 +387,7 @@ export const _query = gql`
 export const load: PageServerLoad = async ({ params }) => {
 	const res = await cmsClient.CareersSlug({ slug: params.slug });
 
-	if (res.team.length === 0) {
+	if (res.careers.length === 0) {
 		throw error(404);
 	}
 

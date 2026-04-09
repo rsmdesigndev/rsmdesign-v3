@@ -115,7 +115,8 @@
 		<svelte:element 
 			this={data.feed_source === "Awards" && item.project_name ? "div" : "a"}
 			href={`/${
-						data.feed_source === "Articles" ? "news" : "work"
+						data.feed_source === "Articles" ? "news" : 
+						(data.feed_source === "Careers" ? "careers" : "work")
 				  }/${
 						data.feed_source === "Awards" && item.project ? 
 							item.project.slug : item.slug
@@ -217,7 +218,7 @@
 					{:else if data.feed_source === "Awards"}
 						{item.year}
 					{:else if data.feed_source === "Careers"}
-						{item.years_experience} years exp.
+						{item.years_experience} years
 					{/if}
 				</div>
 			{/if}
@@ -360,7 +361,11 @@
 			grid-column: main;
 			padding: var(--SPACE-MD) 0;
 			//margin-bottom: var(--SPACE-MD);
-			border-bottom: 1px solid var(--color-secondary, var(--COLOR-MID-GRAY));
+			border-top: 1px solid var(--color-secondary, var(--COLOR-MID-GRAY));
+
+			&:last-of-type {
+				border-bottom: 1px solid var(--color-secondary, var(--COLOR-MID-GRAY));
+			}
 			
 			color: var(--color-secondary, var(--COLOR-MID-GRAY));
 

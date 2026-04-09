@@ -504,13 +504,18 @@
 						careers(
 							limit: $limit
 							offset: $offset
-							sort: ["-sort"]
+							sort: ["sort"]
 							filter: { 
 								visibility: { _eq: "visible" } 
 							}
 						) {
 							slug
 							name
+							grid_image {
+								filename_disk
+								title
+								description
+							}
 							studios {
 								studio_locations_id {
 									location

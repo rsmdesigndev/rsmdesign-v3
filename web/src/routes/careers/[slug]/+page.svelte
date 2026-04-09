@@ -13,8 +13,8 @@
 />
 
 <template>
-	{#if data.careers_page.careers_page_page_blocks_v3}
-		<PageBlocksV3 blocks={data.careers_page.careers_page_page_blocks_v3} />
+	{#if data.career.careers_page_blocks_v3}
+		<PageBlocksV3 blocks={data.career.careers_page_blocks_v3} />
 	{:else}
 		<div class="container">Page Blocks v3 selected, but no blocks added.</div>
 	{/if}

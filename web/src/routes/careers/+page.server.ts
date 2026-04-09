@@ -5,7 +5,7 @@ import { cmsClient } from "$lib/cms";
 import { error } from "@sveltejs/kit";
 
 export const _query = gql`
-	query CareersIndexPage {
+	query CareersPage {
 		careers_page {
 			seo_title
 			seo_page_description
@@ -377,15 +377,14 @@ export const _query = gql`
 					}
 				}
 			}
+		}
 	}
 `;
 
 export const load: PageServerLoad = async ({ params }) => {
-	const res = await cmsClient.CareersIndexPage();
+	const res = await cmsClient.CareersPage();
 
 	return {
-		careers_page: res.careers_page,
-		careers: res.careers,
-		team: res.team
+		careers_page: res.careers_page
 	};
 };
