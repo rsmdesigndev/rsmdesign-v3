@@ -102,7 +102,7 @@
 				this={data.feed_source === "Projects" ? "a" :
 					 (data.feed_source === "Articles" ? "a" :
 					 (data.feed_source === "Team" && item.has_profile_page ? "a" : "div"))}
-				href={`/${data.feed_source === "Projects" ? "work/" : (data.feed_source === "Articles" ? "news/" : (data.feed_source === "Team" ? "team/" : "")) + item.slug}`}
+				href={`/${data.feed_source === "Projects" ? "work/" : (data.feed_source === "Articles" ? "news/" : (data.feed_source === "Team" ? "team/" : ""))}${item.slug}`}
 				id={`row-${rowNumber}-grid-${gridNumber}-item-${i}`}
 				class={`grid-item 
 						${data.feed_source === "Team" ? "team" : ""}
