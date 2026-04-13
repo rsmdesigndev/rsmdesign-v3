@@ -479,6 +479,11 @@
 			}
 
 			> .table-item-col3 {
+				flex-direction: row;
+				align-items: center;
+				justify-content: space-between;
+				flex-wrap: wrap;
+				row-gap: 0;
 				foo: bar;
 				@media (max-width: 62.5em) {
 					grid-column: third-start 3 / third-end 3;
