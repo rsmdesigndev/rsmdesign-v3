@@ -93,7 +93,7 @@
 		>
 			{data.heading_large}
 			{#if data.heading_has_superscript && data.heading_superscript}
-				<sup>(&hairsp;{data.heading_superscript}&hairsp;)</sup>
+				<sup>{data.heading_superscript}</sup>
 			{/if}
 		</svelte:element>
 	{/if}
@@ -127,6 +127,17 @@
 			line-height: var(--line-height);
 
 			transition: color 0.3s ease;
+
+			display: flex;
+			align-items: center;
+			column-gap: calc(var(--GRID-CELL) / 3);
+
+			> sup {
+				font-size: 50%;
+				font-weight: calc(var(--font-weight) + 100);
+				color: var(--color-secondary);
+
+			}
 		}
 		.heading-small {
 			text-transform: uppercase;

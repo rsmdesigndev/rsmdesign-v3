@@ -8,6 +8,7 @@
 	import DataFeedGrid from "./DataFeedGrid.svelte";
 	import DataFeedTable from "./DataFeedTable.svelte";
 	import type { CardData } from "../../molecules/Card.svelte";
+	import Heading from "../../atoms/Heading.svelte";
 
 	// Types
 	export type DataFeedData = {
@@ -740,6 +741,7 @@
 					 padding-bottom-${data.section_padding_bottom}
 					 ${data.feed_view}
 				   `}
+			 class:tall={data.feed_view === "Grid" && data.feed_grid_style === "dynamic" && data.feed_grid_columns === 3}
 			 style:--z-index={data.feed_view === "Table" && data.feed_table_style === "simple" ? "3" : "2"}
 			 use:selectFeedOnIntersection
 	>
@@ -769,6 +771,22 @@
 							/>
 						</div>
 					{:else}
+						{#if data.feed_view === "Grid" && data.feed_grid_style === "dynamic" && data.feed_grid_columns === 3}
+							<div class="grid-heading">
+								<Heading 
+									data={ { heading_type: "page",
+											 heading_primary: "large",
+											 heading_size: "xxxl",
+											 heading_weight: "regular",
+											 heading_has_small_text: false,
+											 heading_has_large_text: true,
+											 heading_has_superscript: true, 
+											 heading_large: data.feed_source,
+											 heading_superscript: loadTotalCount
+										 } }
+								/>
+							</div>
+						{/if}
 						{#each Array(pagesLoaded) as page, i}
 							<div class="grid-container"
 								 class:carousel-slide={data.feed_load_functionality === "carousel"}
@@ -868,14 +886,15 @@
 		grid-template-columns: subgrid;
 		align-content: start;
 
-		
-
 		&.Grid {
 			row-gap: var(--SPACE-XL);
 		}
 		&.Table {
 			row-gap: 0;
 			//min-height: 100vh;
+		}
+		&.tall {
+			min-height: 200vh;
 		}
 
 		&.padding-top-sm {
@@ -917,6 +936,11 @@
 
 		button {
 			grid-column: main;
+		}
+
+		.grid-heading {
+			grid-column: main;
+			margin-bottom: var(--SPACE-MD);
 		}
 
 		.grid-container {
@@ -1004,7 +1028,7 @@
 		&.infinite-scroll {
 			height: 0;
 			overflow: hidden;
-			margin-top: calc(-1 * var(--SPACE-XXXL));
+			margin-top: -100vh;
 		}
 		&.carousel-button {
 			padding: 0;

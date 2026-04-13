@@ -765,7 +765,7 @@ export const _query = gql`
 export const load: PageServerLoad = async ({ params }) => {
 	const res = await cmsClient.News();
 
-	console.log(res.news_page?.page_content);
+	//console.log(res.news_page?.page_content);
 	
 	return {
 		news_page: res.news_page,
