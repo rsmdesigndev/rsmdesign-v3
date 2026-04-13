@@ -439,6 +439,22 @@
 				grid-column: eighth-start 5 / eighth-end 8;
 			}
 
+			@media (max-width: 62.5em) {
+				grid-column: half-start 1 / half-end 1;
+
+				&:nth-child(2n) {
+					grid-column: half-start 2 / half-end 2;
+				}
+			}
+
+			@media (max-width: 31.25em) {
+				grid-column: main;
+
+				&:nth-child(2n) {
+					grid-column: main;
+				}
+			}
+
 			&.testimonial {
 				display: grid;
 				grid-template-columns: subgrid;
@@ -447,6 +463,8 @@
 					display: grid;
 					grid-template-columns: subgrid;
 					align-items: start;
+
+					grid-column: 1 / -1;
 
 					> picture {
 						grid-column: eighth-start 1 / eighth-end 2;
@@ -637,14 +655,17 @@
 		}
 
 		@media (max-width: 62.5em) {
-			&:nth-child(3n+1) {
-				grid-column: third-start 1 / third-end 1;
-			}
-			&:nth-child(3n+2) {
-				grid-column: third-start 2 / third-end 2;
-			}
-			&:nth-child(3n) {
-				grid-column: third-start 3 / third-end 3;
+			&.third,
+			&.fourth {
+				&:nth-child(3n+1) {
+					grid-column: third-start 1 / third-end 1;
+				}
+				&:nth-child(3n+2) {
+					grid-column: third-start 2 / third-end 2;
+				}
+				&:nth-child(3n) {
+					grid-column: third-start 3 / third-end 3;
+				}
 			}
 
 			&.grid-style-dynamic {
@@ -690,9 +711,14 @@
 		}
 
 		@media (max-width: 31.25em) {
-			&:nth-child(n),
-			&.grid-style-dynamic:nth-child(n) {
-				grid-column: main;
+			&.single-card,
+			&.half,
+			&.third,
+			&.fourth {
+				&:nth-child(n),
+				&.grid-style-dynamic:nth-child(n) {
+					grid-column: main;
+				}
 			}
 		}
 

@@ -184,6 +184,7 @@
 		grid-column: var(--grid-column-start) / var(--grid-column-end);
 		grid-row: 1 / span 1;
 		width: var(--carousel-card-width);
+		max-width: 100vw;
 
 		> .carousel-container {
 			width: var(--carousel-width);
