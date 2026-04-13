@@ -57,8 +57,9 @@
 			<div
 				id={`row-${rowNumber}-grid-${gridNumber}-item-${i}`}
 				class={`grid-item 
-						${data.feed_grid_columns === 3 ? "third" : 
-						 (data.feed_grid_columns === 4 ? "fourth" : "single-card")}
+						${data.feed_grid_columns === 2 ? "half" : 
+						 (data.feed_grid_columns === 3 ? "third" : 
+						 (data.feed_grid_columns === 4 ? "fourth" : "single-card"))}
 						grid-style-${data.feed_grid_style}
 						${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
 					  `}
@@ -83,8 +84,9 @@
 		{#each feedData as item, i}
 			{#if data.feed_source === "Team" && data.feed_grid_dynamic_images && imageIndexes.includes(i)}
 				<div class={`grid-item 
-							${data.feed_grid_columns === 3 ? "third" : 
-							 (data.feed_grid_columns === 4 ? "fourth" : "single-card")}
+							${data.feed_grid_columns === 2 ? "half" : 
+							 (data.feed_grid_columns === 3 ? "third" : 
+							 (data.feed_grid_columns === 4 ? "fourth" : "single-card"))}
 							grid-style-${data.feed_grid_style}
 							${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
 						  `}
@@ -106,8 +108,10 @@
 				id={`row-${rowNumber}-grid-${gridNumber}-item-${i}`}
 				class={`grid-item 
 						${data.feed_source === "Team" ? "team" : ""}
-						${data.feed_grid_columns === 3 ? "third" : 
-						 (data.feed_grid_columns === 4 ? "fourth" : "single-card")}
+						${data.feed_source === "Testimonials" ? "testimonial" : ""}
+						${data.feed_grid_columns === 2 ? "half" : 
+						 (data.feed_grid_columns === 3 ? "third" : 
+						 (data.feed_grid_columns === 4 ? "fourth" : "single-card"))}
 						grid-style-${data.feed_grid_style}
 						${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
 					  `}
@@ -126,8 +130,8 @@
 								 alt={item.headshot?.title}
 							/>
 						{:else if data.feed_source === "Testimonials"}
-							<img src={assetUrl(item.associated_project.grid_image?.filename_disk)}
-								 alt={item.associated_project.grid_image?.title}
+							<img src={assetUrl(item.banner_image?.filename_disk)}
+								 alt={item.banner_image?.title}
 							/>
 						{:else if data.feed_grid_style === "dynamic"}
 							<source media="(max-width: 31.25em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
@@ -204,6 +208,18 @@
 										heading_large: item.name
 									 } }
 							/>
+						{:else if data.feed_source === "Testimonials"}
+							<Blockquote 
+								data={ { blockquote_size: "md",
+										 blockquote_text: item.quote ?? "",
+										 blockquote_has_attribution: true,
+										 blockquote_attribution: `${item.quote_attribution ?? ""} \n`,
+										 blockquote_has_citation: true,
+										 blockquote_citation_newline: true,
+										 blockquote_citation: `${item.quote_attribution_job_title ?? ""} \n${item.company_name ?? ""}`,
+										 blockquote_link: null
+									 } }
+							/>
 						{/if}
 						{#if data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
 							<!--<p class="headline">[Insert hero headline here lorem ipsum dolor sit amet.]</p>-->
@@ -214,18 +230,6 @@
 											  cta_text_bold: "View project",
 											  cta_text_align: "right"
 										  } }
-								/>
-							{:else if data.feed_source === "Testimonials"}
-								<Blockquote 
-									data={ { blockquote_size: "lg",
-											 blockquote_text: item.quote ?? "",
-											 blockquote_has_attribution: true,
-											 blockquote_attribution: `${item.quote_attribution ?? ""} \n`,
-											 blockquote_has_citation: true,
-											 blockquote_citation_newline: true,
-											 blockquote_citation: `${item.quote_attribution_job_title ?? ""} \n${item.company_name ?? ""}`,
-											 blockquote_link: null
-										 } }
 								/>
 							{/if}
 						{/if}
@@ -347,28 +351,6 @@
 							margin-top: var(--SPACE-SM);
 						}
 					}
-
-					&.testimonial {
-						> picture {
-							grid-column: eighth-start 1 / eighth-end 4;
-
-							@media (max-width: 62.5em) {
-								grid-column: half-start 1 / half-end 1;
-							}
-						}
-						> figcaption {
-							grid-row: 1;
-							grid-column: eighth-start 5 / eighth-end 7;
-
-							margin-bottom: 0;
-
-							text-align: left;
-
-							@media (max-width: 62.5em) {
-								grid-column: half-start 2 / half-end 2;
-							}
-						}
-					}
 				}
 			}
 
@@ -446,6 +428,49 @@
 				}
 				&::after {
 					opacity: 1;
+				}
+			}
+		}
+
+		&.half {
+			grid-column: eighth-start 1 / eighth-end 4;
+
+			&:nth-child(2n) {
+				grid-column: eighth-start 5 / eighth-end 8;
+			}
+
+			&.testimonial {
+				display: grid;
+				grid-template-columns: subgrid;
+
+				> figure {
+					display: grid;
+					grid-template-columns: subgrid;
+					align-items: start;
+
+					> picture {
+						grid-column: eighth-start 1 / eighth-end 2;
+
+						@media (max-width: 62.5em) {
+							grid-column: 1 / -1;
+						}
+
+						> img {
+							object-fit: contain;
+						}
+					}
+					> figcaption {
+						grid-row: 1;
+						grid-column: eighth-start 3 / eighth-end 4;
+
+						margin-bottom: 0;
+
+						text-align: left;
+
+						@media (max-width: 62.5em) {
+							grid-column: 1 / -1;
+						}
+					}
 				}
 			}
 		}

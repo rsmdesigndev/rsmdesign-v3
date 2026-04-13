@@ -177,6 +177,7 @@ export const _query = gql`
 										carousel_autoplay
 										carousel_autoplay_interval
 										carousel_show_arrows
+										carousel_cards_per_slide
 										carousel_cards {
 											card_item_spacing
 											card_link

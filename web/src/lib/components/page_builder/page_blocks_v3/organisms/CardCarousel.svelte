@@ -3,6 +3,7 @@
 		carousel_autoplay?: boolean | null;
 		carousel_autoplay_interval?: number | null;
 		carousel_show_arrows?: boolean | null;
+		carousel_cards_per_slide?: number | null;
 		carousel_cards?: CardData[] | null;
 	}
 </script>
@@ -140,12 +141,12 @@
 		 style:--grid-column-start={fullBleed ? "1" : (bleed.left ? "2" : "1")}
 		 style:--grid-column-end={fullBleed ? "-1" : (bleed.right ? "-2" : "-1")}
 		 bind:offsetWidth={carouselWidth}
-		 style:--carousel-card-width={carouselWidth + "px"}
 	>
 		<div class="carousel-container"
 			 style:--grid-template-columns={animation === "fade" ? "1fr" : `repeat(${cards?.length ?? 1}, var(--carousel-card-width))`}
+			 style:--carousel-card-width={`calc((${carouselWidth + "px"} - var(--SPACE-MD) * ${data.carousel_cards_per_slide - 1}) / ${data.carousel_cards_per_slide})`}
 			 style:--carousel-width={animation === "fade" ? "100%" : 
-			 	`calc(var(--carousel-card-width) + (var(--carousel-card-width) + var(--SPACE-MD)) * ${cards?.length - 1})`}
+			 	`calc(${carouselWidth + "px"} + (var(--carousel-card-width) + var(--SPACE-MD)) * ${cards?.length - 1})`}
 			 style:transform={(animation === "slide")
 					? `translateX(calc(${selectedItem * -1} * (var(--carousel-card-width) + var(--SPACE-MD)))`
 					: "none"
