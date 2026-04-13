@@ -16,7 +16,7 @@
 	section {
 		z-index: 2;
 		position: relative;
-		margin-top: var(--SPACE-XXL);
+		margin-top: var(--SPACE-LG);
 
 		grid-column: viewport;
 		width: 100vw;
