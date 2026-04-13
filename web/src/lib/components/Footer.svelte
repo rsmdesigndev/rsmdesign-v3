@@ -36,8 +36,6 @@
 		<div bind:offsetHeight={footerHeight}
 			style:top={`calc(100vh - 1px * ${footerHeight} - var(--SPACE-MD))`}
 		>
-			<hr />
-
 			<!--<a class="footer-logo" href="/">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
 					<g class="logomark" fill-rule="nonzero">
