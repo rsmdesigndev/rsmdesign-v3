@@ -9,6 +9,7 @@
 	export let data: PageData;
 
 	const projectData: ProjectData = {
+		project_slug?: data.project.slug,
 		project_title?: data.project.project_title,
 		project_location_city?: data.project.project_location_city?.city_name,
 		project_location_state?: data.project.project_location_city?.state_province?.state_province_name,

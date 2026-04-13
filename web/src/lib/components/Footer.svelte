@@ -31,6 +31,8 @@
 			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#menu-bar-footer", animClass: "bg-color-animate" } }
 		/>
 
+		<hr />
+
 		<!--<a class="footer-logo" href="/">
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
 				<g class="logomark" fill-rule="nonzero">
@@ -197,7 +199,16 @@
 		grid-template-columns: var(--GRID-WRAPPER);
 		row-gap: var(--SPACE-LG);
 
-		margin: var(--SPACE-LG) 0;
+		margin: var(--SPACE-XL) 0 var(--SPACE-LG);
+
+		> hr {
+			grid-column: main;
+			margin: 0;
+			width: 100%;
+			height: 1px;
+			background-color: white;
+			border: none;
+		}
 
 		> a.footer-logo {
 			grid-column: main;

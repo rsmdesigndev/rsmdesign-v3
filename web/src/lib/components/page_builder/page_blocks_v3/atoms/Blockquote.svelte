@@ -29,7 +29,8 @@
 	>
 		<blockquote style:--font-size={`var(--FONT-SIZE-${data.blockquote_size?.toUpperCase()})`}
 					style:--font-weight={data.blockquote_size === "lg" ? "300" : "400"}
-					style:--line-height={data.blockquote_size === "lg" || data.blockquote_size === "xl" ? "1.133" : "1"}
+					style:--line-height={data.blockquote_size === "lg" ? "1.167" : 
+										(data.blockquote_size === "xl" ? "1.133" : "1")}
 					cite={data.blockquote_link ?? ""}>
 			{@html data.blockquote_text}
 		</blockquote>

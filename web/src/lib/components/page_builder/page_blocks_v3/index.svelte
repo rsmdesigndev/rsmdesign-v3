@@ -32,6 +32,7 @@
 	} | null;
 
 	export type ProjectData = {
+		project_slug?: string | null;
 		project_title?: string | null;
 		project_location_city?: string | null;
 		project_location_state?: string | null;
@@ -66,6 +67,7 @@
 	// import components & types
 	import CardRow, { type CardRowData } from "./organisms/CardRow.svelte";
 	import DataFeed, { type DataFeedData } from "./organisms/DataFeed/index.svelte";
+	import NextEntry, { EntryType } from "./organisms/NextEntry.svelte";
 	import Hero, { type HeroData } from "./organisms/Hero.svelte";
 	import BookParallaxAnimation from "./one-off/BookParallaxAnimation.svelte";
 	import LogosTickerTape from "./one-off/LogosTickerTape.svelte";
@@ -77,6 +79,12 @@
 	const sectionColorThemes: string[] = blocks?.map((c) => c?.item?.section_color_theme ?? "light");
 	const sectionBackgroundColors: string[] = blocks?.map((c) => c?.item?.section_background_color ?? "white");
 
+	// add theme for NextEntry component on Projects
+	if (project) {
+		sectionColorThemes.push("dark");
+		sectionBackgroundColors.push("var(--COLOR-BLACK)");
+	}
+
 	let colorPrimary: string = "var(--COLOR-BLACK)";
 	let colorSecondary: string = "var(--COLOR-MID-GRAY)";
 	let colorTertiary: string = "var(--COLOR-DIM-GRAY)";
@@ -85,34 +93,35 @@
 
 	function changeTheme(i: number) {
 		//interpolateBackgroundColor(sectionBackgroundColors[i-1] ?? "#FFFFFF", sectionBackgroundColors[i], 300);
+		colorBackground = sectionBackgroundColors[i];
 		switch (sectionColorThemes[i]) {
 			case "light":
 				colorPrimary = "var(--COLOR-BLACK)";
 				colorSecondary = "var(--COLOR-MID-GRAY)";
 				colorTertiary = "var(--COLOR-DIM-GRAY)";
 				colorAccent = "var(--COLOR-ORANGE)";
-				colorBackground = "white";
+				//colorBackground = "white";
 				break;
 			case "dark":
 				colorPrimary = "white";
 				colorSecondary = "var(--COLOR-MID-GRAY)";
 				colorTertiary = "var(--COLOR-DIM-GRAY)";
 				colorAccent = "var(--COLOR-ORANGE)";
-				colorBackground = "var(--COLOR-BLACK)";
+				//colorBackground = "var(--COLOR-BLACK)";
 				break;
 			case "color":
 				colorPrimary = "white";
 				colorSecondary = "white";
 				colorTertiary = "var(--COLOR-DIM-GRAY)";
 				colorAccent = "var(--COLOR-BLACK)";
-				colorBackground = "";
+				//colorBackground = "";
 				break;
 			case "neutral":
 				colorPrimary = "white";
 				colorSecondary = "var(--COLOR-BLACK)";
 				colorTertiary = "var(--COLOR-DIM-GRAY)";
 				colorAccent = "var(--COLOR-BLACK)";
-				colorBackground = "";
+				//colorBackground = "";
 				break;
 		}
 	}
@@ -200,6 +209,14 @@
 			No page content
 		{/if}
 	{/each}
+	{#if project}
+		<NextEntry 
+			project 
+			entryType={EntryType.Project} 
+			currentSlug={projectData.project_slug ?? ""} 
+			on:selectComponent={() => changeTheme(blocks.length)}
+		/>
+	{/if}
 </template>
 
 <style lang="scss">
