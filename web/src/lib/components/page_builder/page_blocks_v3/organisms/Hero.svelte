@@ -386,6 +386,7 @@
 
 				> h3 {
 					color: var(--color-background);
+					transition: color 0.3s ease;
 					margin-bottom: 0.15em;
 				}
 
@@ -398,12 +399,14 @@
 					> h1 {
 						position: absolute;
 						color: var(--color-background);
+						transition: color 0.3s ease;
 					}
 				}
 
 				> h2 {
 					opacity: 0;
 					color: var(--color-primary);
+					transition: color 0.3s ease;
 					width: clamp(100%, 22ch, 96vw);
 				}
 			}

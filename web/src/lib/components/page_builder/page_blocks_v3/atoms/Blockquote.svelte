@@ -71,7 +71,7 @@
 		color: var(--color-blockquote, var(--color-primary, inherit));
 
 		opacity: 0;
-		transition: opacity 0.3s ease;
+		transition: opacity 0.3s ease, color 0.3s ease;
 		&.active {
 			opacity: 1;
 		}

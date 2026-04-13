@@ -5,6 +5,7 @@
 		| ({ __typename: "page_blocks_v3_organism_card_row" } 	& CardRowData)
 		| ({ __typename: "page_blocks_v3_organism_hero" } 		& HeroData)
 		| ({ __typename: "homepage_v3_book_animation" })
+		| ({ __typename: "about_v3_logos_animation" })
 		;
 
 	type Market = {
@@ -67,7 +68,7 @@
 	import DataFeed, { type DataFeedData } from "./organisms/DataFeed/index.svelte";
 	import Hero, { type HeroData } from "./organisms/Hero.svelte";
 	import BookParallaxAnimation from "./one-off/BookParallaxAnimation.svelte";
-
+	import LogosTickerTape from "./one-off/LogosTickerTape.svelte";
 
 	export let blocks: ({ item?: PageBlockV3 | null } | null | undefined)[] | null | undefined;
 	export let project: boolean = false;
@@ -83,36 +84,40 @@
 	let colorBackground: string = "white";
 
 	function changeTheme(i: number) {
-		interpolateBackgroundColor(sectionBackgroundColors[i-1] ?? "#FFFFFF", sectionBackgroundColors[i], 300);
+		//interpolateBackgroundColor(sectionBackgroundColors[i-1] ?? "#FFFFFF", sectionBackgroundColors[i], 300);
 		switch (sectionColorThemes[i]) {
 			case "light":
 				colorPrimary = "var(--COLOR-BLACK)";
 				colorSecondary = "var(--COLOR-MID-GRAY)";
 				colorTertiary = "var(--COLOR-DIM-GRAY)";
 				colorAccent = "var(--COLOR-ORANGE)";
+				colorBackground = "white";
 				break;
 			case "dark":
 				colorPrimary = "white";
 				colorSecondary = "var(--COLOR-MID-GRAY)";
 				colorTertiary = "var(--COLOR-DIM-GRAY)";
 				colorAccent = "var(--COLOR-ORANGE)";
+				colorBackground = "var(--COLOR-BLACK)";
 				break;
 			case "color":
 				colorPrimary = "white";
 				colorSecondary = "white";
 				colorTertiary = "var(--COLOR-DIM-GRAY)";
 				colorAccent = "var(--COLOR-BLACK)";
+				colorBackground = "";
 				break;
 			case "neutral":
 				colorPrimary = "white";
 				colorSecondary = "var(--COLOR-BLACK)";
 				colorTertiary = "var(--COLOR-DIM-GRAY)";
 				colorAccent = "var(--COLOR-BLACK)";
+				colorBackground = "";
 				break;
 		}
 	}
 
-	function hexToRGB(hex: string) {
+	/*function hexToRGB(hex: string) {
 		let r: number = parseInt(hex.slice(1, 3), 16);
 		let g: number = parseInt(hex.slice(3, 5), 16);
 		let b: number = parseInt(hex.slice(5, 7), 16);
@@ -149,7 +154,7 @@
 			colorBackground = newColor; // Change background color
 			currentStep++;
 		}, 8.333);
-	}
+	}*/
 </script>
 
 <svelte:head>
@@ -189,6 +194,8 @@
 			/>
 		{:else if data?.__typename === "homepage_v3_book_animation"}
 			<BookParallaxAnimation />
+		{:else if data?.__typename === "about_v3_logos_animation"}
+			<LogosTickerTape />
 		{:else}
 			No page content
 		{/if}

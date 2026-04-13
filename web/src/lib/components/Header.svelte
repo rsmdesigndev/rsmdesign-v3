@@ -46,12 +46,10 @@
 	let navParentText: string = "";
 	let navParentCta: string = "Return to";
 
-	let showBreadcrumbs: boolean = true;
+	//let showBreadcrumbs: boolean = true;
 
 	afterNavigate(async () => {
-		if ($page.url.pathname == "" || $page.url.pathname == "/") {
-			showBreadcrumbs = false;
-		} else {
+		if ($page.url.pathname != "" && $page.url.pathname != "/") {
 			root_links: for (let item of navMenu.nav_menu_links) {
 				let link = item.nav_menu_links_id;
 				if (link.link_path == $page.url.pathname) {
@@ -293,7 +291,7 @@
 
 		<div class="nav-wrapper">
 			<div class="nav-container">
-				{#if showBreadcrumbs}
+				{#if navParentText != ""}
 					<div class="menu-breadcrumbs">
 						<a href={navParentLink}>
 							{navParentCta} {navParentText}
@@ -448,7 +446,8 @@
 	}
 
 	div.menu-bar {
-		background: var(--color-background, white);
+		background-color: var(--color-background, white);
+		transition: background-color 0.3s ease;
 	}
 
 	div.logo-container {
@@ -493,6 +492,7 @@
 
 		> div.menu-breadcrumbs > a {
 			color: var(--color-primary, var(--COLOR-BLACK));
+			transition: color 0.3s ease;
 		}
 
 		> div.menu-button {

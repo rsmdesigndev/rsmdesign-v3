@@ -87,6 +87,7 @@
 		row-gap: var(--SPACE-MD);
 
 		color: var(--color-details, var(--color-primary, inherit));
+		transition: color 0.3s ease;
 
 		&.isAccordionItem {
 			padding-bottom: 0;
@@ -119,6 +120,7 @@
 					p {
 						font-size: inherit;
 						color: var(--color-accordion, var(--color-primary, inherit));
+						transition: color 0.3s ease;
 
 						&:last-of-type {
 							margin-bottom: 0;
@@ -135,12 +137,14 @@
 						text-transform: uppercase;
 						letter-spacing: 0.05em;
 						color: var(--color-accordion, var(--color-primary, inherit));
+						transition: color 0.3s ease;
 						margin-bottom: 0.5em;
 					}
 					h4 {
 						font-size: inherit;
 						font-weight: 700;
 						color: var(--color-accordion, var(--color-primary, inherit));
+						transition: color 0.3s ease;
 						margin-bottom: 1em;
 					}
 				}
@@ -208,11 +212,10 @@
 
 		> .details-body {
 			overflow: hidden;
-			height: 0;
-			transition: height 0.3s ease;
 			position: relative;
-
+			height: 0;
 			color: var(--color-details, var(--color-primary, inherit));
+			transition: height 0.3s ease, color 0.3s ease;
 
 			&::after {
 				content: "";

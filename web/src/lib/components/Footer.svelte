@@ -31,23 +31,23 @@
 			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#menu-bar-footer", animClass: "bg-color-animate" } }
 		/>
 
-		<a class="footer-logo" href="/">
+		<!--<a class="footer-logo" href="/">
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
 				<g class="logomark" fill-rule="nonzero">
 					<path d="M49.8 72.14c-3.72 0-6.92-.95-9.38-3.7l4.01-3.76c1.55 1.7 3.16 2.96 5.71 2.96 1.76 0 4.01-.86 4.01-2.76 0-4.96-12.98-1.05-12.98-10.23 0-5.36 4.81-7.76 9.67-7.76 3.21 0 6.62 1 8.57 3.66l-4 3.6a5.46 5.46 0 0 0-4.72-2.45c-1.6 0-3.5.75-3.5 2.55 0 4.31 12.97.8 12.97 10.18 0 5.7-5.46 7.71-10.37 7.71M38.72 53.05a12.07 12.07 0 0 0-2.9-.45 6.05 6.05 0 0 0-6.47 6.06v12.88h-6.02V47.5h6.02v3.8h.1a7.66 7.66 0 0 1 7.11-4.4 7.63 7.63 0 0 1 2.16.35zm53.46 23.8a54.3 54.3 0 0 0 1.8-3.02A13.87 13.87 0 0 0 95 70.12q.05-.37.1-.61V57.9c0-3-.9-5.6-4.46-5.6-3.76 0-5.16 3.1-5.16 6.2v13.03h-6.02V57.22c0-2.96-1.2-4.92-4.1-4.92-3.97 0-5.52 2.91-5.52 6.12v13.13h-6.01V47.49h5.7v3.76h.1A7.64 7.64 0 0 1 77 46.89c3.71 0 6.27 1.45 7.52 4.46a8.37 8.37 0 0 1 7.92-4.46c3.93 0 6.28 1.71 7.53 4.36.01-.42.04-.83.04-1.25A50 50 0 0 0 50 0 50 50 0 0 0 0 50a50 50 0 0 0 50 50 49.96 49.96 0 0 0 42.16-23.15z"/>
 				</g>
 			</svg>
-		</a>
+		</a>-->
 
 		<div class="footer-col1">
-			<article>
+			<!--<article>
 				<a href="/project-inquiry">Project inquiries</a>
 				<p>Stephanie Wills</p>
 				<!--HubSpot Call-to-Action Code -->
-				<span class="hs-cta-wrapper" id="hs-cta-wrapper-83a3f126-b26c-4061-81d0-9079a980aa15">
+				<!--<span class="hs-cta-wrapper" id="hs-cta-wrapper-83a3f126-b26c-4061-81d0-9079a980aa15">
 					<span class="hs-cta-node hs-cta-83a3f126-b26c-4061-81d0-9079a980aa15" id="hs-cta-83a3f126-b26c-4061-81d0-9079a980aa15">
 						<!--[if lte IE 8]><div id="hs-cta-ie-element"></div><![endif]-->
-						<a href="https://cta-redirect.hubspot.com/cta/redirect/8650991/83a3f126-b26c-4061-81d0-9079a980aa15" >
+						<!--<a href="https://cta-redirect.hubspot.com/cta/redirect/8650991/83a3f126-b26c-4061-81d0-9079a980aa15" >
 							stephanie@rsmdesign.com
 						</a>
 					</span>
@@ -55,8 +55,16 @@
 					<script type="text/javascript"> hbspt.cta.load(8650991, '83a3f126-b26c-4061-81d0-9079a980aa15', {"region":"na1"}); </script>
 				</span>
 				<!-- end HubSpot Call-to-Action Code -->
-				<a href="tel:+13032239845">303.223.9845</a>
-			</article>
+				<!--<a href="tel:+13032239845">303.223.9845</a>
+			</article>-->
+
+			<a class="footer-logo" href="/">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+					<g class="logomark" fill-rule="nonzero">
+						<path d="M49.8 72.14c-3.72 0-6.92-.95-9.38-3.7l4.01-3.76c1.55 1.7 3.16 2.96 5.71 2.96 1.76 0 4.01-.86 4.01-2.76 0-4.96-12.98-1.05-12.98-10.23 0-5.36 4.81-7.76 9.67-7.76 3.21 0 6.62 1 8.57 3.66l-4 3.6a5.46 5.46 0 0 0-4.72-2.45c-1.6 0-3.5.75-3.5 2.55 0 4.31 12.97.8 12.97 10.18 0 5.7-5.46 7.71-10.37 7.71M38.72 53.05a12.07 12.07 0 0 0-2.9-.45 6.05 6.05 0 0 0-6.47 6.06v12.88h-6.02V47.5h6.02v3.8h.1a7.66 7.66 0 0 1 7.11-4.4 7.63 7.63 0 0 1 2.16.35zm53.46 23.8a54.3 54.3 0 0 0 1.8-3.02A13.87 13.87 0 0 0 95 70.12q.05-.37.1-.61V57.9c0-3-.9-5.6-4.46-5.6-3.76 0-5.16 3.1-5.16 6.2v13.03h-6.02V57.22c0-2.96-1.2-4.92-4.1-4.92-3.97 0-5.52 2.91-5.52 6.12v13.13h-6.01V47.49h5.7v3.76h.1A7.64 7.64 0 0 1 77 46.89c3.71 0 6.27 1.45 7.52 4.46a8.37 8.37 0 0 1 7.92-4.46c3.93 0 6.28 1.71 7.53 4.36.01-.42.04-.83.04-1.25A50 50 0 0 0 50 0 50 50 0 0 0 0 50a50 50 0 0 0 50 50 49.96 49.96 0 0 0 42.16-23.15z"/>
+					</g>
+				</svg>
+			</a>
 
 			<nav>
 				{#each navMenu.nav_menu_links.map((c) => c?.nav_menu_links_id).filter(item => !!item.link_shows_in_footer) as item}
@@ -245,6 +253,33 @@
 				}
 				> p:first-of-type {
 					margin: 0.75em 0 0.333em;
+				}
+			}
+
+			> a.footer-logo {
+				grid-column: main;
+
+				display: block;
+				width: var(--SPACE-LG);
+				height: var(--SPACE-LG);
+				//margin-bottom: var(--SPACE-LG);
+
+				@media (max-width: 46.875em) {
+					
+				}
+
+				> svg {
+					width: 100%;
+					height: 100%;
+					object-fit: contain;
+					> .logomark {
+						fill: var(--color-primary, var(--COLOR-WHITE));
+						transition: fill 0.3s ease;
+					}
+				}
+
+				&:hover > svg > .logomark {
+					fill: var(--COLOR-ORANGE);
 				}
 			}
 

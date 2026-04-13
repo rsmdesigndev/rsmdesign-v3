@@ -108,7 +108,7 @@
 		color: var(--color-cta, var(--color-primary, inherit));
 
 		opacity: 0;
-		transition: opacity 0.3s ease;
+		transition: opacity 0.3s ease, color 0.3s ease;
 		&.active {
 			opacity: 1;
 		}
@@ -138,7 +138,7 @@
 					line-height: calc(var(--font-size) * var(--line-height) / 2);
 					color: var(--color-accent, var(--COLOR-ORANGE));
 
-					transition: color 0.25s ease, background-color 0.25s ease;
+					transition: color 0.3s ease, background-color 0.3s ease;
 				}
 			}
 

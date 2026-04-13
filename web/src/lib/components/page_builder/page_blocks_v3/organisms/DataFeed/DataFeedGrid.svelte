@@ -254,6 +254,7 @@
 				}
 				> figcaption {
 					--color-heading: var(--color-accent, var(--COLOR-ORANGE));
+					transition: color 0.3s ease;
 				}
 			}
 		}
@@ -286,6 +287,7 @@
 				grid-column: 1 / -1;
 				margin: 0 0 var(--SPACE-SM);
 				overflow: hidden;
+				background-color: var(--COLOR-BG-LIGHT);
 
 				> img {
 					object-fit: cover;
@@ -393,6 +395,7 @@
 						align-self: end;
 						margin-bottom: var(--SPACE-LG);
 						--color-heading: var(--color-background, var(--COLOR-WHITE));
+						transition: color 0.3s ease;
 
 						@media (max-width: 62.5em) {
 							grid-column: half-start 1 / half-end 1;

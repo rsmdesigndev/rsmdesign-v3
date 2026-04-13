@@ -1,4 +1,4 @@
-@font-face {
+/*@font-face {
 	font-family: 'Proxima Nova';
 	font-style: normal;
 	font-weight: 400;
@@ -25,4 +25,12 @@
 	font-weight: 700;
 	font-display: swap;
 	src: url('/fonts/proximanova-bold.woff') format('woff');
+}*/
+
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('/fonts/inter-regular-arrows.woff2') format('woff2');
 }

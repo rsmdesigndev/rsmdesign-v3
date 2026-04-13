@@ -311,6 +311,7 @@
 	}
 	.table-item {
 		color: var(--color-tertiary, var(--COLOR-MID-GRAY));
+		transition: color 0.3s ease;
 
 		display: grid;
 		grid-template-columns: subgrid;
@@ -324,6 +325,7 @@
 
 		&.active {
 			color: var(--color-primary, var(--COLOR-BLACK));
+			transition: color 0.3s ease;
 
 			+ figure > picture,
 			+ figure > img {
@@ -417,6 +419,7 @@
 			}
 			
 			color: var(--color-secondary, var(--COLOR-MID-GRAY));
+			transition: color 0.3s ease;
 
 			font-size: var(--FONT-SIZE-MD);
 

@@ -52,6 +52,7 @@
 			p {
 				font-size: inherit;
 				color: var(--color-rich-text, var(--color-primary, inherit));
+				transition: color 0.3s ease;
 
 				&:last-of-type {
 					margin-bottom: 0;
@@ -68,12 +69,14 @@
 				text-transform: uppercase;
 				letter-spacing: 0.05em;
 				color: var(--color-rich-text, var(--color-primary, inherit));
+				transition: color 0.3s ease;
 				margin-bottom: 0.5em;
 			}
 			h4 {
 				font-size: inherit;
 				font-weight: 700;
 				color: var(--color-rich-text, var(--color-primary, inherit));
+				transition: color 0.3s ease;
 				margin-bottom: 1em;
 			}
 

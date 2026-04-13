@@ -462,6 +462,11 @@
 							quote_attribution_job_title
 							company_name
 							quote
+							banner_image {
+								filename_disk
+								title
+								description
+							}
 							associated_project {
 								slug
 								project_title
@@ -826,7 +831,9 @@
 			{/if}
 		{/if}
 		{#if data.feed_load_functionality === "carousel"}
-			<div class="button-container">
+			<div class="button-container"
+				 class:buttons-centered={data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
+			>
 				{#if current > 0}
 					<button class="carousel-button" aria-label="Previous group" on:click={prev}>←</button>
 				{/if}
@@ -979,12 +986,20 @@
 		display: flex;
 		justify-content: flex-end;
 		gap: var(--SPACE-MD);
+
+		&.buttons-centered {
+			grid-column: eighth-start 1 / eighth-end 4;
+			justify-content: flex-end;
+
+			margin-top: calc(-1.5 * var(--GRID-CELL));
+		}
 	}
 
 	button {
 		border: none;
 		box-shadow: none;
 		background: transparent;
+		font: "Inter", var(--FONT-FAMILY-PROXIMA-NOVA);
 
 		&.infinite-scroll {
 			height: 0;
