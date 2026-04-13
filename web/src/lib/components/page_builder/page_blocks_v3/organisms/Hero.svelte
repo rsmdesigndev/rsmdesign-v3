@@ -431,6 +431,13 @@
 				> .project-sector {
 					width: 100%;
 					grid-row: 1;
+					display: flex;
+					flex-direction: column;
+					row-gap: 0.5em;
+
+					> h3 {
+						margin-bottom: 0;
+					}
 				}
 
 				> .project-type {

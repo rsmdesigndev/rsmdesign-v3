@@ -157,14 +157,15 @@
 		column-gap: var(--SPACE-MD);
 		position: relative;
 		overflow: hidden;
+		align-items: start;
 
 		img {
 			grid-row: 1;
 			z-index: 0;
 
-			height: 100%;
 			width: 100%;
-			object-fit: cover;
+			height: auto;
+			object-fit: contain;
 
 			margin: 0;
 			padding: 0;
