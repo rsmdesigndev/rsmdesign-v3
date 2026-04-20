@@ -6,7 +6,9 @@
 	<section>
 		<div class="ticker-container">
 			{#each Array(99) as _, i}
-				<img src={`/img/logos-ticker-tape/Logo-${(i % 10) + 1}.png`} />
+				<img src={`/img/logos-ticker-tape/Logo-${(i % 10) + 1}.png`} 
+					 alt=""
+				/>
 			{/each}
 		</div>
 	</section>

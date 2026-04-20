@@ -619,7 +619,7 @@
 	function loadMoreOnIntersection(node: Element) {
 		const observer = new IntersectionObserver(([entry]) => {
 			if (entry.isIntersecting && loadOffset < loadTotalCount) {
-				console.log("load more on scroll");
+				//console.log("load more on scroll");
 				loadMore();
 			}
 		});
@@ -839,11 +839,15 @@
 		{#if loadOffset < loadTotalCount}
 			{#if data.feed_load_functionality === "scroll"}
 				<!-- When this div is reached in the DOM, more projects will be loaded. -->
-				<button class="infinite-scroll" on:click={loadMore} use:loadMoreOnIntersection>
+				<button class="infinite-scroll" on:click={loadMore} use:loadMoreOnIntersection
+						aria-label="Load more feed items" 
+				>
 					View More
 				</button>
 			{:else if data.feed_load_functionality === "button"}
-				<button on:click={loadMore}>
+				<button on:click={loadMore}
+						aria-label="Load more feed items" 
+				>
 					View More
 				</button>
 			{/if}
@@ -853,10 +857,10 @@
 				 class:buttons-centered={data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
 			>
 				{#if current > 0}
-					<button class="carousel-button" aria-label="Previous group" on:click={prev}>←</button>
+					<button class="carousel-button" aria-label="Load previous group of feed items" on:click={prev}>←</button>
 				{/if}
 				{#if current < pagesTotal}
-					<button class="carousel-button" aria-label="Next group" on:click={next}>→</button>
+					<button class="carousel-button" aria-label="Load next group of feed items" on:click={next}>→</button>
 				{/if}
 			</div>
 		{:else if data.feed_load_functionality === "all"}

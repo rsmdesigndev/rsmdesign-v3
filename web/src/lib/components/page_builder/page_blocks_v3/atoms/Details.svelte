@@ -96,7 +96,7 @@
 				padding-bottom: 0.25em;
 			}
 
-			border-bottom: 2px solid var(--color-secondary, var(--COLOR-MID-GRAY));
+			border-bottom: 1px solid var(--color-secondary, var(--COLOR-MID-GRAY));
 			
 			> summary {
 				justify-content: space-between;

@@ -17,13 +17,13 @@
 	import type { BleedData } from "../organisms/CardColumn.svelte";
 
 	export let data: CtaListData;
-	export let projectData: ProjectData;
-	export let bleed: BleedData;
+	export let projectData: ProjectData | null;
+	export let bleed: BleedData | null;
 
 	export let selectedItem: number;
 	// TODO: implement item selection data binding
 
-	console.log(projectData);
+	//console.log(projectData);
 
 	const sizeOverride: string = data.cta_list_size;
 	const hoverOverride: string = data.cta_list_hover_highlight;
@@ -212,7 +212,7 @@
 					{#each projectData.project_services?.slice(2) as service}
 						<Cta data={ {...collaboratorCta, 
 									 cta_text_light: service.services_id.name,
-									 cta_link: `/${service.services_id.slug}`
+									 cta_link: `/services/${service.services_id.slug}`
 								  } }
 							 {sizeOverride}
 							 {hoverOverride}
@@ -233,7 +233,7 @@
 					{#each projectData.project_markets?.slice(2) as market}
 						<Cta data={ {...collaboratorCta, 
 									 cta_text_light: market.markets_id.name,
-									 cta_link: `/${market.markets_id.slug}`
+									 cta_link: `/markets/${market.markets_id.slug}`
 								  } }
 							 {sizeOverride}
 							 {hoverOverride}
@@ -251,11 +251,12 @@
 		grid-column: var(--grid-column-start) / var(--grid-column-end);
 		display: flex;
 		flex-direction: column;
+		row-gap: var(--SPACE-MD);
 
 		color: var(--color-primary, inherit);
 
 		> article {
-			margin-bottom: var(--SPACE-MD);
+			//margin-bottom: var(--SPACE-MD);
 			display: flex;
 			flex-direction: column;
 			row-gap: 0.5em;

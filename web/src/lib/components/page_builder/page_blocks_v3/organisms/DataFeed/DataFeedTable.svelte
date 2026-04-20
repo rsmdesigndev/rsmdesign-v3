@@ -419,12 +419,17 @@
 			}
 			
 			color: var(--color-secondary, var(--COLOR-MID-GRAY));
-			transition: color 0.3s ease;
+			transition: color 0.3s ease, border-color 0.3s ease;
 
 			font-size: var(--FONT-SIZE-MD);
 
 			&.active {
 				color: var(--color-primary, var(--COLOR-BLACK));
+				border-color: var(--color-primary, var(--COLOR-BLACK));
+
+				+ figure + .table-style-detailed {
+					border-color: var(--color-primary, var(--COLOR-BLACK));
+				} 
 			}
 
 			> .table-item-cols-container {

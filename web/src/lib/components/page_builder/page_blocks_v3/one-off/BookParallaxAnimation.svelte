@@ -13,7 +13,9 @@
 				<div class="parallax-animation-trigger" 
 					 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#book-animation-item-${i}`, animClass: "book-parallax-animate" } }
 				/>
-				<img src={`/img/book-parallax-animation/Book-${i < 8 ? i+1 : 1}.png`} />
+				<img src={`/img/book-parallax-animation/Book-${i < 8 ? i+1 : 1}.png`}
+					 alt=""
+				/>
 			</figure>
 		{/each}
 	</section>

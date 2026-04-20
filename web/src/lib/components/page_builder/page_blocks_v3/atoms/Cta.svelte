@@ -58,7 +58,8 @@
 				href={data.cta_link ?? ""}
 				target={data.cta_link?.includes("https://") && !data.cta_link?.includes("rsmdesign.com")
 						? "_blank" : "_self"}
-				class={`cta ${!button && data.cta_type === "button" ? "button" : "link"}
+				class={`cta ${!button && data.cta_type === "button" ? "button" : 
+							 (data.cta_link ? "link" : "")}
 						hover-highlight-${hoverOverride != "" ? hoverOverride : data.cta_hover_highlight}`}
 				class:active={isActive}
 				style:justify-content={data.cta_text_align === "right" || 
@@ -142,7 +143,7 @@
 				}
 			}
 
-			&:hover {
+			&.link:hover {
 				color: var(--color-accent);
 
 				&.hover-highlight-none {

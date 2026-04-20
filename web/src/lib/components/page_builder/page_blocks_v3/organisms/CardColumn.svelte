@@ -234,7 +234,7 @@
 			--padding-right: 0;
 		}
 
-		overflow: hidden;
+		//overflow: hidden;
 
 		&.is-sticky {
 			@media (min-width: 31.25em) {
