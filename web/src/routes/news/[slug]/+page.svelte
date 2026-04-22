@@ -70,6 +70,7 @@
 			}
 
 			font-size: calc((var(--FONT-SIZE-XXXL) + var(--FONT-SIZE-XXL)) / 2);
+			font-weight: 300;
 			line-height: 1;
 		}
 		p.kicker {

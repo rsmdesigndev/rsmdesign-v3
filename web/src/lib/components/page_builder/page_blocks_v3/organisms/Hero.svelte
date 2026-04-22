@@ -114,7 +114,7 @@
 					/>
 				{:else}
 					{#if data.hero_video_native?.filename_disk}
-						<video bind:this={heroVideoNative} loop autoplay muted playsinline>
+						<video bind:this={heroVideoNative} loop autoplay muted playsinline preload="none">
 							<source src={assetUrl(data.hero_video_native?.filename_disk)} type={data.hero_video_native?.type} />
 							<track kind="captions" />
 						</video>
@@ -485,6 +485,7 @@
 				> h1 {
 					color: var(--color-background);
 					margin-bottom: 0.15em;
+					white-space: pre-line;
 				}
 			}
 		}

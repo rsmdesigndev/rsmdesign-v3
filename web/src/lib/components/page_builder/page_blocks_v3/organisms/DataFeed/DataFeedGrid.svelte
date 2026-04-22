@@ -25,7 +25,7 @@
 		heading_type: "feed-item",
 		heading_primary: "large",
 		heading_size: data.feed_grid_columns === 1 ? (data.feed_grid_style === "banner" ? "xxxl" : "xxl") : "lg",
-		heading_weight: data.feed_grid_style === "banner" ? "bold" : "regular",
+		heading_weight: "regular",
 		heading_has_small_text: data.feed_grid_columns === 1 ? false : true,
 		heading_has_large_text: true,
 		heading_has_superscript: false
@@ -82,7 +82,7 @@
 		{/each}
 	{:else}
 		{#each feedData as item, i}
-			{#if data.feed_source === "Team" && data.feed_grid_dynamic_images && imageIndexes.includes(i)}
+			{#if data.feed_source === "Team" && data.feed_grid_dynamic_images && imageIndexes.includes(i) && (data.feed_grid_dynamic_images.length > imageIndexes.indexOf(i))}
 				<div class={`grid-item 
 							${data.feed_grid_columns === 2 ? "half" : 
 							 (data.feed_grid_columns === 3 ? "third" : 

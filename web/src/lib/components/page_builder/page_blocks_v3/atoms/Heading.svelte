@@ -34,16 +34,22 @@
 			}
 			break;
 		case "xxl":
-			weightLarge = 400;
-			//weightSmall = 700;
+			if (data.heading_weight === "bold") {
+				weightLarge = 400;
+				weightSmall = 600;
+			} else {
+				weightSmall = 500;
+			}
 			break;
 		case "xl":
 			if (data.heading_weight === "bold") {
 				weightLarge = 500;
 			} else if (data.heading_weight === "light") {
 				weightLarge = 300;
+				weightSmall = 500;
 			} else {
 				weightLarge = 400;
+				weightSmall = 600;
 			}
 			break;
 		case "lg":
@@ -131,7 +137,12 @@
 			display: flex;
 			align-items: center;
 			column-gap: calc(var(--GRID-CELL) / 3);
-
+		}
+		.heading-large {
+			white-space: pre-line;
+			@media (max-width: 62.5em) {
+				white-space: normal;
+			}
 			> sup {
 				font-size: 50%;
 				font-weight: calc(var(--font-weight) + 100);
