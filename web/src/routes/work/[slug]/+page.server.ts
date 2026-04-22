@@ -112,8 +112,6 @@ export const _query = gql`
 				}
 			}
 			project_sign_painter_count
-			project_background_color
-			project_color_theme
 			project_use_page_blocks_v3
 			project_page_blocks_v3 {
 				item {
