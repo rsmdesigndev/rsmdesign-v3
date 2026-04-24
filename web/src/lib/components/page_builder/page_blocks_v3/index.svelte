@@ -61,6 +61,12 @@
 		project_other_collaborators_count?: number | null;
 		project_awards?: any | null;
 	} | null;
+
+	export type NewsPostData = {
+		post_slug?: string | null;
+		post_title?: string | null;
+
+	}
 </script>
 
 <script lang="ts">
@@ -73,14 +79,13 @@
 	import LogosTickerTape from "./one-off/LogosTickerTape.svelte";
 
 	export let blocks: ({ item?: PageBlockV3 | null } | null | undefined)[] | null | undefined;
-	export let project: boolean = false;
 	export let projectData: ProjectData | null | undefined = undefined;
 
 	const sectionColorThemes: string[] = blocks?.map((c) => c?.item?.section_color_theme ?? "light");
 	const sectionBackgroundColors: string[] = blocks?.map((c) => c?.item?.section_background_color ?? "white");
 
 	// add theme for NextEntry component on Projects
-	if (project) {
+	if (projectData) {
 		sectionColorThemes.push("dark");
 		sectionBackgroundColors.push("var(--COLOR-BLACK)");
 	}
@@ -209,9 +214,8 @@
 			No page content
 		{/if}
 	{/each}
-	{#if project}
+	{#if projectData}
 		<NextEntry 
-			project 
 			entryType={EntryType.Project} 
 			currentSlug={projectData.project_slug ?? ""} 
 			on:selectComponent={() => changeTheme(blocks.length)}

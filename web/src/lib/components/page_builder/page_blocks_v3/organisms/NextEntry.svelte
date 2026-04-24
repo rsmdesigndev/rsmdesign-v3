@@ -22,7 +22,7 @@
 	import Heading from "../atoms/Heading.svelte";
 	import Cta, { type CtaData } from "../atoms/Cta.svelte";
 
-	export let project: boolean = false;
+	//export let project: boolean = false;
 	export let entryType: EntryType;
 	export let currentSlug: string;
 

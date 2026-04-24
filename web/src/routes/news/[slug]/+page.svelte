@@ -15,43 +15,53 @@
 	noindex={data.news_post.visibility === "draft"}
 />
 
-<article>
-	<h1>{data.news_post.post_title ?? "News Post"}</h1>
-	<p class="kicker">
-		Posted {formatDate(data.news_post.published_date, { fullMonth: true })}
-		&emsp;·&emsp;
-		{#each data.news_post.topics as topic, i}
-			{#if data.news_post.topics.length === i + 1}
-				{topic.news_topics_id.name}
-			{:else}
-				{topic.news_topics_id.name},
+<template>
+	{#if data.news_post.news_post_use_page_blocks_v3}
+		{#if data.news_post.news_post_page_blocks_v3}
+			<PageBlocksV3 blocks={data.news_post.news_post_page_blocks_v3} />
+		{:else}
+			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
+		{/if}
+	{:else}
+		<article>
+			<h1>{data.news_post.post_title ?? "News Post"}</h1>
+			<p class="kicker">
+				Posted {formatDate(data.news_post.published_date, { fullMonth: true })}
+				&emsp;·&emsp;
+				{#each data.news_post.topics as topic, i}
+					{#if data.news_post.topics.length === i + 1}
+						{topic.news_topics_id.name}
+					{:else}
+						{topic.news_topics_id.name},
+					{/if}
+				{/each}
+			</p>
+			<figure class="hero-image">
+				<img
+					src={assetUrl(data.news_post.hero_image?.filename_disk)}
+					alt={data.news_post.hero_image?.description}
+					class={data.news_post.hero_image_crop_attachment === "left"
+						? "position-left"
+						: data.news_post.hero_image_crop_attachment === "center_left"
+						? "position-center-left"
+						: data.news_post.hero_image_crop_attachment === "center"
+						? ""
+						: data.news_post.hero_image_crop_attachment === "center_right"
+						? "position-center-right"
+						: data.news_post.hero_image_crop_attachment === "right"
+						? "position-right"
+						: ""}
+				/>
+			</figure>
+			{#if data.news_post.page_content}
+				<PageBlocks content={data.news_post.page_content} news />
 			{/if}
-		{/each}
-	</p>
-	<figure class="hero-image">
-		<img
-			src={assetUrl(data.news_post.hero_image?.filename_disk)}
-			alt={data.news_post.hero_image?.description}
-			class={data.news_post.hero_image_crop_attachment === "left"
-				? "position-left"
-				: data.news_post.hero_image_crop_attachment === "center_left"
-				? "position-center-left"
-				: data.news_post.hero_image_crop_attachment === "center"
-				? ""
-				: data.news_post.hero_image_crop_attachment === "center_right"
-				? "position-center-right"
-				: data.news_post.hero_image_crop_attachment === "right"
-				? "position-right"
-				: ""}
-		/>
-	</figure>
-	{#if data.news_post.page_content}
-		<PageBlocks content={data.news_post.page_content} news />
+			<div class="container">
+				<NextEntry currentSlug={data.news_post.slug ?? ""} entryType={EntryType.Article} />
+			</div>
+		</article>
 	{/if}
-	<div class="container">
-		<NextEntry currentSlug={data.news_post.slug ?? ""} entryType={EntryType.Article} />
-	</div>
-</article>
+</template>
 
 <style lang="scss">
 	article {

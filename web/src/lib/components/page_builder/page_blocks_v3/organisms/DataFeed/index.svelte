@@ -260,7 +260,7 @@
 							sort: [ "-published_date" ]
 							filter: {
 								_and: [
-									{ visibility: { _nin: ["draft", "archived"] } },
+									{ visibility: { _eq: "visible" } },
 									{
 										_${data.feed_filter_logic}: [
 											${filters.join(",\n")}
