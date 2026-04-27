@@ -124,6 +124,10 @@
 
 						&:last-of-type {
 							margin-bottom: 0;
+
+							+ ol, + ul {
+								margin-top: 1em;
+							}
 						}
 
 						strong {
@@ -146,6 +150,38 @@
 						color: var(--color-accordion, var(--color-primary, inherit));
 						transition: color 0.3s ease;
 						margin-bottom: 1em;
+					}
+
+					ul, ol {
+						list-style-position: outside;
+						list-style-type: none;
+						margin: 0 0 1em;
+						padding: 0;
+
+						> li {
+							margin-left: calc(var(--GRID-CELL) * 2 / 3);
+
+							&::before {
+								content: "·";
+								display: block;
+								height: 0;
+								font-weight: 500;
+								margin: 0 calc(var(--GRID-CELL) * 2 / 3) 0 calc(var(--GRID-CELL) * -2 / 3);
+							}
+						}
+					}
+
+					ol {
+						counter-reset: rsm-counter;
+
+						> li {
+							counter-increment: rsm-counter;
+
+							&::before {
+								content: counter(rsm-counter) ".";
+								font-weight: 400;
+							}
+						}
 					}
 				}
 			}
