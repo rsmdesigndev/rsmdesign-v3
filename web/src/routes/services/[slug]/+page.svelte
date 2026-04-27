@@ -15,9 +15,14 @@
 	import DottedArrowHover from "$lib/components/DottedArrowHover.svelte";
 	import { fade } from "svelte/transition";
 	import PageBlocks from "$lib/components/page_builder/page_blocks/index.svelte";
-	import PageBlocksV3, { type ProjectData } from "$lib/components/page_builder/page_blocks_v3/index.svelte";
+	import PageBlocksV3, { type ExpertiseData } from "$lib/components/page_builder/page_blocks_v3/index.svelte";
 
 	export let data: PageData;
+
+	const expertiseData: ExpertiseData = {
+		team_leaders?: data.service.team_leaders,
+		sub_services?: data.service.sub_services
+	};
 
 	setProjectGridContext({
 		projects: [...data.featuredProjects, ...data.projects],
@@ -36,7 +41,7 @@
 <template>
 	{#if data.service.services_use_page_blocks_v3}
 		{#if data.service.services_page_blocks_v3}
-			<PageBlocksV3 blocks={data.service.services_page_blocks_v3} />
+			<PageBlocksV3 blocks={data.service.services_page_blocks_v3} {expertiseData} />
 		{:else}
 			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
 		{/if}

@@ -13,11 +13,12 @@
 
 <script lang="ts">
 	import Cta, { type CtaData } from "../atoms/Cta.svelte";
-	import type { ProjectData } from "../index.svelte";
+	import type { ProjectData, ExpertiseData } from "../index.svelte";
 	import type { BleedData } from "../organisms/CardColumn.svelte";
 
 	export let data: CtaListData;
 	export let projectData: ProjectData | null;
+	export let expertiseData: ProjectData | null;
 	export let bleed: BleedData | null;
 
 	export let selectedItem: number;
@@ -34,6 +35,18 @@
 		cta_icon: "none",
 		cta_style: "both",
 		cta_hover_highlight: "light"
+	}
+	const personCta = {
+		cta_type: "link",
+		cta_size: "md",
+		cta_icon: "none",
+		cta_style: "light",
+		cta_hover_highlight: "light"
+	}
+	const buttonCta = {
+		cta_type: "button",
+		cta_icon: "arrow_right",
+		cta_icon_position: "right"
 	}
 </script>
 
@@ -60,6 +73,56 @@
 					{iconOverride} 
 				/>
 			{/each}
+		{:else if data.cta_list_source === "expertise"}
+			{#if expertiseData.team_leaders}
+				<article>
+					<h3 class={`heading heading-caps`}
+						style:--font-size="var(--FONT-SIZE-MD)"
+						style:--font-weight="700"
+						style:--line-height="1.333"
+					>
+						Team leaders
+					</h3>
+					{#each expertiseData.team_leaders as team}
+						<Cta data={ {...personCta, 
+									 cta_text_light: team.team_id.name,
+									 cta_link: `/team/${team.team_id.slug}`} 
+								  }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
+					{/each}
+				</article>
+			{/if}
+			{#if expertiseData.sub_services}
+				<article>
+					<h3 class={`heading heading-caps`}
+						style:--font-size="var(--FONT-SIZE-MD)"
+						style:--font-weight="700"
+						style:--line-height="1.333"
+					>
+						Sub-services
+					</h3>
+					{#each expertiseData.sub_services as item}
+						<Cta data={ {...personCta, 
+									 cta_text_light: item.name,
+									 cta_link: item.link ? item.link : ""
+								  } }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
+					{/each}
+				</article>
+			{/if}
+			{#if expertiseData}
+				<Cta data={ {...buttonCta,
+							 cta_text_bold: "Project inquiry",
+							 cta_link: "/contact"
+						  } }
+				/>
+			{/if}
 		{:else}
 			<article>
 				<h3 class={`heading heading-caps`}

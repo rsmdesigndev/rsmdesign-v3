@@ -181,6 +181,7 @@
 			border-radius: var(--SPACE-LG);
 			align-items: center;
 			justify-self: start;
+			align-self: start;
 
 			background: transparent;
 			transition: background-color 0.3s ease, color 0.3s ease;

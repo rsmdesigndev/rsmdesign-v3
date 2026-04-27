@@ -42,12 +42,13 @@
 	import ContactForm, { type ContactFormData } from "../molecules/ContactForm.svelte";
 	import CtaList, { type CtaListData } from "../molecules/CtaList.svelte";
 	import Spacer, { type SpacerData } from "../atoms/Spacer.svelte";
-	import type { ProjectData } from "../index.svelte";
+	import type { ProjectData, ExpertiseData } from "../index.svelte";
 	
 	export let data: CardColumnData;
 	export let row: number;
 	export let column: number;
 	export let projectData: ProjectData | null | undefined = undefined;
+	export let expertiseData: ExpertiseData | null | undefined = undefined;
 
 	type ColumnsData = {
 		numCols: number,
@@ -191,6 +192,7 @@
 				<CtaList 
 					{data}
 					{projectData}
+					{expertiseData}
 					{bleed}
 					bind:selectedItem
 				/>

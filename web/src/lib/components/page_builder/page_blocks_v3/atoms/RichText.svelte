@@ -61,6 +61,32 @@
 				strong {
 					font-weight: 700;
 				}
+
+				> a {
+					color: var(--color-accent, inherit);
+					text-decoration: var(--color-accent) underline solid 1px;
+					text-decoration-skip: ink;
+					position: relative;
+
+					&::before {
+						content: "";
+						position: absolute;
+						left: 0;
+						top: 0;
+						height: 100%;
+						background-color: var(--color-secondary);
+						mix-blend-mode: multiply;
+						width: 0;
+						opacity: 0.2;
+						transition: width 0.3s ease;
+					}
+
+					&:hover::before {
+						//margin-left: 100%;
+						width: 100%;
+						transition: width 0.3s ease;
+					}
+				}
 			}
 
 			h3 {
@@ -136,6 +162,14 @@
 	.rich-text-xl {
 		font-size: var(--FONT-SIZE-XL);
 		line-height: 1.133;
+	}
+	.rich-text-xxl {
+		font-size: var(--FONT-SIZE-XXL);
+		line-height: 1;
+	}
+	.rich-text-xxxl {
+		font-size: var(--FONT-SIZE-XXXL);
+		line-height: 1;
 	}
 	.rich-text-xxxxl {
 		font-size: 10vw;

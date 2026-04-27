@@ -15,10 +15,11 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import CardColumn, { type CardColumnData } from "./CardColumn.svelte";
-	import type { ProjectData } from "../index.svelte";
+	import type { ProjectData, ExpertiseData } from "../index.svelte";
 
 	export let data: CardRowData;
 	export let projectData: ProjectData | null | undefined = undefined;
+	export let expertiseData: ExpertiseData | null | undefined = undefined;
 	export let rowNumber: number;
 
 	// Color theme
@@ -56,7 +57,8 @@
 			<CardColumn {data} 
 						row={rowNumber}
 						column={i}
-						{projectData} 
+						{projectData}
+						{expertiseData}
 						columns={{numCols: numCols, currCol: i+1}}
 						bind:selectedItem
 			/>

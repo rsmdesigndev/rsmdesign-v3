@@ -31,6 +31,14 @@
 		} | null;
 	} | null;
 
+	type Person = {
+		team_id?: {
+			slug?: string | null;
+			name?: string | null;
+			short_title?: string | null;
+		} | null;
+	} | null;
+
 	export type ProjectData = {
 		project_slug?: string | null;
 		project_title?: string | null;
@@ -65,7 +73,12 @@
 	export type NewsPostData = {
 		post_slug?: string | null;
 		post_title?: string | null;
+		post_authors?: Person[] | null;
+	}
 
+	export type ExpertiseData = {
+		team_leaders?: Person[] | null;
+		sub_services?: any[] | null;
 	}
 </script>
 
@@ -80,6 +93,7 @@
 
 	export let blocks: ({ item?: PageBlockV3 | null } | null | undefined)[] | null | undefined;
 	export let projectData: ProjectData | null | undefined = undefined;
+	export let expertiseData: ExpertiseData | null | undefined = undefined;
 
 	const sectionColorThemes: string[] = blocks?.map((c) => c?.item?.section_color_theme ?? "light");
 	const sectionBackgroundColors: string[] = blocks?.map((c) => c?.item?.section_background_color ?? "white");
@@ -97,7 +111,6 @@
 	let colorBackground: string = "white";
 
 	function changeTheme(i: number) {
-		//interpolateBackgroundColor(sectionBackgroundColors[i-1] ?? "#FFFFFF", sectionBackgroundColors[i], 300);
 		colorBackground = sectionBackgroundColors[i];
 		switch (sectionColorThemes[i]) {
 			case "light":
@@ -105,70 +118,27 @@
 				colorSecondary = "var(--COLOR-MID-GRAY)";
 				colorTertiary = "var(--COLOR-DIM-GRAY)";
 				colorAccent = "var(--COLOR-ORANGE)";
-				//colorBackground = "white";
 				break;
 			case "dark":
 				colorPrimary = "white";
 				colorSecondary = "var(--COLOR-MID-GRAY)";
 				colorTertiary = "var(--COLOR-DIM-GRAY)";
 				colorAccent = "var(--COLOR-ORANGE)";
-				//colorBackground = "var(--COLOR-BLACK)";
 				break;
 			case "color":
 				colorPrimary = "white";
 				colorSecondary = "white";
 				colorTertiary = "var(--COLOR-DIM-GRAY)";
 				colorAccent = "var(--COLOR-BLACK)";
-				//colorBackground = "";
 				break;
 			case "neutral":
 				colorPrimary = "white";
 				colorSecondary = "var(--COLOR-BLACK)";
 				colorTertiary = "var(--COLOR-DIM-GRAY)";
 				colorAccent = "var(--COLOR-BLACK)";
-				//colorBackground = "";
 				break;
 		}
 	}
-
-	/*function hexToRGB(hex: string) {
-		let r: number = parseInt(hex.slice(1, 3), 16);
-		let g: number = parseInt(hex.slice(3, 5), 16);
-		let b: number = parseInt(hex.slice(5, 7), 16);
-		return { r, g, b };
-	}
-
-	function interpolateBackgroundColor(startHex: string, endHex: string, duration: number) {
-		const startRGB: any = hexToRGB(startHex);
-		const endRGB: any = hexToRGB(endHex);
-
-		const steps: number = duration / 8.333;
-		const stepR: number = (endRGB.r - startRGB.r) / steps;
-		const stepG: number = (endRGB.g - startRGB.g) / steps;
-		const stepB: number = (endRGB.b - startRGB.b) / steps;
-
-		let currentR: number = startRGB.r;
-		let currentG: number = startRGB.g;
-		let currentB: number = startRGB.b;
-
-		let currentStep: number = 0;
-
-		const interval = setInterval(() => {
-			if (currentStep >= steps) {
-				clearInterval(interval);
-				colorBackground = endHex;
-				return;
-			}
-
-			currentR += stepR;
-			currentG += stepG;
-			currentB += stepB;
-
-			const newColor: string = `rgb(${Math.round(currentR)}, ${Math.round(currentG)}, ${Math.round(currentB)})`;
-			colorBackground = newColor; // Change background color
-			currentStep++;
-		}, 8.333);
-	}*/
 </script>
 
 <svelte:head>
@@ -191,6 +161,7 @@
 			<CardRow 
 				{data} 
 				{projectData} 
+				{expertiseData}
 				rowNumber={i} 
 				on:selectRow={() => changeTheme(i)}
 			/>
