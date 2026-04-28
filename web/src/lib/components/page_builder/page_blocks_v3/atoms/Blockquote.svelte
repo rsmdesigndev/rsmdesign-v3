@@ -53,7 +53,7 @@
 					/>
 				{:else}
 					{#if data.blockquote_has_attribution && data.blockquote_attribution}
-						{data.blockquote_attribution}{#if !data.blockquote_citation_newline},{/if}
+						{data.blockquote_attribution}{#if data.blockquote_has_citation && !data.blockquote_citation_newline},{/if}
 					{/if}
 					{#if data.blockquote_has_citation && data.blockquote_citation}
 						<cite>{data.blockquote_citation}</cite>

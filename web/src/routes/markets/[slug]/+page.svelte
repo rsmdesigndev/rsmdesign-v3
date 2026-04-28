@@ -17,6 +17,12 @@
 
 	export let data: PageData;
 
+	const expertiseData: ExpertiseData = {
+		team_leaders?: data.market.team_leaders,
+		sub_services?: data.market.sub_services
+	};
+
+
 	setProjectGridContext({
 		filter: data.projectsFilter,
 		projects: [...data.featuredProjects, ...data.projects],
@@ -35,7 +41,7 @@
 <template>
 	{#if data.market.markets_use_page_blocks_v3}
 		{#if data.market.markets_page_blocks_v3}
-			<PageBlocksV3 blocks={data.market.markets_page_blocks_v3} />
+			<PageBlocksV3 blocks={data.market.markets_page_blocks_v3} {expertiseData} />
 		{:else}
 			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
 		{/if}
