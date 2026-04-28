@@ -147,6 +147,7 @@
 			 style:--carousel-card-width={`calc((${carouselWidth + "px"} - var(--SPACE-MD) * ${data.carousel_cards_per_slide - 1}) / ${data.carousel_cards_per_slide})`}
 			 style:--carousel-width={animation === "fade" ? "100%" : 
 			 	`calc(${carouselWidth + "px"} + (var(--carousel-card-width) + var(--SPACE-MD)) * ${cards?.length - 1})`}
+			 style:--animation-duration={animationDuration}
 			 style:transform={(animation === "slide")
 					? `translateX(calc(${selectedItem * -1} * (var(--carousel-card-width) + var(--SPACE-MD)))`
 					: "none"
@@ -156,7 +157,7 @@
 			{#each data.carousel_cards as data, i}
 				<div
 					class={`card-wrapper anim-${animation}`}
-					style={`transition: opacity ${animationDuration}ms ease`}
+					
 					class:slide-next={isNextSlide(i)}
 					class:slide-prev={isPrevSlide(i)}
 					class:slide-active={i === selectedItem}
@@ -193,6 +194,8 @@
 			column-gap: var(--SPACE-MD);
 			position: relative;
 
+			transition: transform calc(var(--animation-duration) * 1ms) ease;
+
 			//min-height: 500px;
 
 			> .card-wrapper {
@@ -209,8 +212,14 @@
 					grid-column: 1;
 					opacity: 0;
 					transform: 0;
+
+					transition: opacity calc(var(--animation-duration) * 1ms) ease;
+					transition-delay: calc(var(--animation-duration) * 1ms);
+
 					&.slide-active {
 						opacity: 1;
+						transition-delay: 0s;
+
 						z-index: 2;
 					}
 				}
