@@ -186,7 +186,8 @@
 					}
 				}
 
-				section.imageRow {
+				section.imageRow,
+				section.swiper {
 					grid-column: main;
 					+ section.richText,
 					+ section.blockQuote {

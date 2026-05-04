@@ -65,6 +65,7 @@
 <Section
     project={project}
     grid
+    swiper
     order={order}
     span_columns={data.span_columns ?? 1}
     col_units={data.col_units ?? "whole"}

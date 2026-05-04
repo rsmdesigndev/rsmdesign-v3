@@ -19,6 +19,7 @@
 	export let imageRow = false;
 	export let cards = false;
 	export let richText = false;
+	export let swiper = false;
 
 	export let nextEntry = false;	
 
@@ -112,6 +113,7 @@
 		class:richText
 		class:nextEntry
 		class:grid
+		class:swiper
 
 		class="{col_units === 'full' ? 'full-bleed' : ''}
 			   {col_start === 0 ? 'full-bleed-left' : ''}
