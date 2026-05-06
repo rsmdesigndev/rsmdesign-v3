@@ -79,6 +79,10 @@
 	export type ExpertiseData = {
 		team_leaders?: Person[] | null;
 		sub_services?: any[] | null;
+		office_director?: Person | null;
+		address?: string | null;
+		phone?: string | null;
+		email?: string | null;
 	}
 </script>
 

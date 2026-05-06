@@ -13,8 +13,16 @@
 	import DottedArrowHover from "$lib/components/DottedArrowHover.svelte";
 	import { fade } from "svelte/transition";
 	import PageBlocks from "$lib/components/page_builder/page_blocks/index.svelte";
+	import PageBlocksV3, { type ExpertiseData } from "$lib/components/page_builder/page_blocks_v3/index.svelte";
 
 	export let data: PageData;
+
+	const expertiseData: ExpertiseData = {
+		office_director?: data.studioLocation.office_director,
+		address?: data.studioLocation.address,
+		phone?: data.studioLocation.contact_phone,
+		email?: data.studioLocation.contact_email
+	};
 
 	setProjectGridContext({
 		filter: data.projectsFilter,
@@ -30,73 +38,81 @@
 	noindex={data.studioLocation.visibility === "draft"}
 />
 
-{#if data.studioLocation.use_page_blocks}
-	<PageBlocks content={data.studioLocation.page_content} />
-{:else}
-	<div class="container">
-		<section class="slideshow-section">
-			<Slideshow interval={5000} items={data.studioLocation.hero_images ?? []} let:item>
-				<figure in:fade out:fade>
-					<img
-						src={assetUrl(item?.directus_files_id?.filename_disk)}
-						alt={item?.directus_files_id?.description}
-					/>
-				</figure>
-			</Slideshow>
-		</section>
+<template>
+	{#if data.studioLocation.studios_use_page_blocks_v3}
+		{#if data.studioLocation.studios_page_blocks_v3}
+			<PageBlocksV3 blocks={data.studioLocation.studios_page_blocks_v3} {expertiseData} />
+		{:else}
+			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
+		{/if}
+	{:else if data.studioLocation.use_page_blocks}
+		<PageBlocks content={data.studioLocation.page_content} />
+	{:else}
+		<div class="container">
+			<section class="slideshow-section">
+				<Slideshow interval={5000} items={data.studioLocation.hero_images ?? []} let:item>
+					<figure in:fade out:fade>
+						<img
+							src={assetUrl(item?.directus_files_id?.filename_disk)}
+							alt={item?.directus_files_id?.description}
+						/>
+					</figure>
+				</Slideshow>
+			</section>
 
-		<h2 class="md gray">RSM Design Studio Location</h2>
-		<h1 class="xxxl">{data.studioLocation.location_full}</h1>
-		<article class="overview">
-			{@html data.studioLocation.overview}
-		</article>
-		<section class="lists">
-			{#if data.studioLocation.office_director}
-				<h3 class="md">Office Director</h3>
-				<a href="/team/{data.studioLocation.office_director.slug}">{data.studioLocation.office_director.name}, {data.studioLocation.office_director.short_title}</a>
-			{/if}
-			{#if data.studioLocation.address}
-				<h3 class="md">Address</h3>
-				<div>{@html data.studioLocation.address}</div>
-			{/if}
-			<h3 class="md">Contact</h3>
-			{#if data.studioLocation.contact_phone}
-				<a href="tel:{data.studioLocation.contact_phone}" target="_blank">
-					{data.studioLocation.contact_phone}
-				</a>
-			{/if}
-			{#if data.studioLocation.contact_email}
-				<a href={data.studioLocation.hubspot_tracking_url} target="_blank">
-					{data.studioLocation.contact_email}
-				</a>
-			{/if}
-			<h3 class="md">Project Inquiry</h3>
-			<DottedArrowHover
-				href="/contact"
-			>
-				<p class="font-weight-400">Contact Us <DottedArrow /></p>
-			</DottedArrowHover>
-		</section>
+			<h2 class="md gray">RSM Design Studio Location</h2>
+			<h1 class="xxxl">{data.studioLocation.location_full}</h1>
+			<article class="overview">
+				{@html data.studioLocation.overview}
+			</article>
+			<section class="lists">
+				{#if data.studioLocation.office_director}
+					<h3 class="md">Office Director</h3>
+					<a href="/team/{data.studioLocation.office_director.slug}">{data.studioLocation.office_director.name}, {data.studioLocation.office_director.short_title}</a>
+				{/if}
+				{#if data.studioLocation.address}
+					<h3 class="md">Address</h3>
+					<div>{@html data.studioLocation.address}</div>
+				{/if}
+				<h3 class="md">Contact</h3>
+				{#if data.studioLocation.contact_phone}
+					<a href="tel:{data.studioLocation.contact_phone}" target="_blank">
+						{data.studioLocation.contact_phone}
+					</a>
+				{/if}
+				{#if data.studioLocation.contact_email}
+					<a href={data.studioLocation.hubspot_tracking_url} target="_blank">
+						{data.studioLocation.contact_email}
+					</a>
+				{/if}
+				<h3 class="md">Project Inquiry</h3>
+				<DottedArrowHover
+					href="/contact"
+				>
+					<p class="font-weight-400">Contact Us <DottedArrow /></p>
+				</DottedArrowHover>
+			</section>
 
-		<section class="projects-section">
-			<ProjectsGrid
-				data={{
-					grid_type: ProjectsGridType.Uniform,
-					num_projects: 9,
-					show_filters: false,
-					load_functionality: ProjectsLoadFunctionality.LoadMoreButton
-				}}
-			/>
-		</section>
+			<section class="projects-section">
+				<ProjectsGrid
+					data={{
+						grid_type: ProjectsGridType.Uniform,
+						num_projects: 9,
+						show_filters: false,
+						load_functionality: ProjectsLoadFunctionality.LoadMoreButton
+					}}
+				/>
+			</section>
 
-		<section class="cta-section">
-			<DottedArrowHover href="/contact">
-				<h4 class="xxxl heading">Get in touch.</h4>
-				<p>Contact Us <DottedArrow /></p>
-			</DottedArrowHover>
-		</section>
-	</div>
-{/if}
+			<section class="cta-section">
+				<DottedArrowHover href="/contact">
+					<h4 class="xxxl heading">Get in touch.</h4>
+					<p>Contact Us <DottedArrow /></p>
+				</DottedArrowHover>
+			</section>
+		</div>
+	{/if}
+</template>
 
 <style lang="scss">
 	.container {

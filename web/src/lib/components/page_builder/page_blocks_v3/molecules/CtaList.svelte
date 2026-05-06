@@ -86,13 +86,59 @@
 					{#each expertiseData.team_leaders as team}
 						<Cta data={ {...personCta, 
 									 cta_text_light: team.team_id.name,
-									 cta_link: `/team/${team.team_id.slug}`} 
-								  }
+									 cta_link: `/team/${team.team_id.slug}`
+								  } }
 							 {sizeOverride}
 							 {hoverOverride}
 							 {iconOverride}
 						/>
 					{/each}
+				</article>
+			{/if}
+			{#if expertiseData.office_director}
+				<article>
+					<h3 class={`heading heading-caps`}
+						style:--font-size="var(--FONT-SIZE-MD)"
+						style:--font-weight="700"
+						style:--line-height="1.333"
+					>
+						Office director
+					</h3>
+					<Cta data={ {...personCta, 
+								 cta_text_light: office_director.name,
+								 cta_link: `/team/${office_director.slug}`
+							  } }
+						 {sizeOverride}
+						 {hoverOverride}
+						 {iconOverride}
+					/>
+				</article>
+			{/if}
+			{#if expertiseData.address || expertiseData.phone || expertiseData.email}
+				<article>
+					<h3 class={`heading heading-caps`}
+						style:--font-size="var(--FONT-SIZE-MD)"
+						style:--font-weight="700"
+						style:--line-height="1.333"
+					>
+						Contact
+					</h3>
+					{#if expertiseData.address}
+						{@html expertiseData.address}
+					{/if}
+					{#if expertiseData.phone}
+						<p>{expertiseData.phone}</p>
+					{/if}
+					{#if expertiseData.email}
+						<Cta data={ {...personCta, 
+									 cta_text_light: expertiseData.email,
+									 cta_link: `mailto:${expertiseData.email}`
+								  } }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
+					{/if}
 				</article>
 			{/if}
 			{#if expertiseData.sub_services}
@@ -137,8 +183,8 @@
 						<Cta data={ {...collaboratorCta, 
 									 cta_text_bold: "Client", 
 									 cta_text_light: collaborator.collaborators_id.collaborator_name,
-									 cta_link: collaborator.collaborators_id.collaborator_website} 
-								  }
+									 cta_link: collaborator.collaborators_id.collaborator_website
+								  } }
 							 {sizeOverride}
 							 {hoverOverride}
 							 {iconOverride}
@@ -150,8 +196,8 @@
 						<Cta data={ {...collaboratorCta, 
 									 cta_text_bold: "Developer", 
 									 cta_text_light: collaborator.collaborators_id.collaborator_name,
-									 cta_link: collaborator.collaborators_id.collaborator_website} 
-								  }
+									 cta_link: collaborator.collaborators_id.collaborator_website
+								  } }
 							 {sizeOverride}
 							 {hoverOverride}
 							 {iconOverride}
@@ -163,8 +209,8 @@
 						<Cta data={ {...collaboratorCta, 
 									 cta_text_bold: "Architect", 
 									 cta_text_light: collaborator.collaborators_id.collaborator_name,
-									 cta_link: collaborator.collaborators_id.collaborator_website} 
-								  }
+									 cta_link: collaborator.collaborators_id.collaborator_website
+								  } }
 							 {sizeOverride}
 							 {hoverOverride}
 							 {iconOverride}
@@ -176,8 +222,8 @@
 						<Cta data={ {...collaboratorCta, 
 									 cta_text_bold: "Landscape", 
 									 cta_text_light: collaborator.collaborators_id.collaborator_name,
-									 cta_link: collaborator.collaborators_id.collaborator_website} 
-								  }
+									 cta_link: collaborator.collaborators_id.collaborator_website
+								  } }
 							 {sizeOverride}
 							 {hoverOverride}
 							 {iconOverride}
@@ -189,8 +235,8 @@
 						<Cta data={ {...collaboratorCta, 
 									 cta_text_bold: "Lighting", 
 									 cta_text_light: collaborator.collaborators_id.collaborator_name,
-									 cta_link: collaborator.collaborators_id.collaborator_website} 
-								  }
+									 cta_link: collaborator.collaborators_id.collaborator_website
+								  } }
 							 {sizeOverride}
 							 {hoverOverride}
 							 {iconOverride}
@@ -202,8 +248,8 @@
 						<Cta data={ {...collaboratorCta, 
 									 cta_text_bold: "Fabricator", 
 									 cta_text_light: collaborator.collaborators_id.collaborator_name,
-									 cta_link: collaborator.collaborators_id.collaborator_website} 
-								  }
+									 cta_link: collaborator.collaborators_id.collaborator_website
+								  } }
 							 {sizeOverride}
 							 {hoverOverride}
 							 {iconOverride}
@@ -215,8 +261,8 @@
 						<Cta data={ {...collaboratorCta, 
 									 cta_text_bold: "Painter", 
 									 cta_text_light: collaborator.collaborators_id.collaborator_name,
-									 cta_link: collaborator.collaborators_id.collaborator_website} 
-								  }
+									 cta_link: collaborator.collaborators_id.collaborator_website
+								  } }
 							 {sizeOverride}
 							 {hoverOverride}
 							 {iconOverride}
@@ -228,8 +274,8 @@
 						<Cta data={ {...collaboratorCta, 
 									 cta_text_bold: "Sign Painter", 
 									 cta_text_light: collaborator.collaborators_id.collaborator_name,
-									 cta_link: collaborator.collaborators_id.collaborator_website} 
-								  }
+									 cta_link: collaborator.collaborators_id.collaborator_website
+								  } }
 							 {sizeOverride}
 							 {hoverOverride}
 							 {iconOverride}
@@ -241,8 +287,8 @@
 						<Cta data={ {...collaboratorCta, 
 									 cta_text_bold: "Photographer", 
 									 cta_text_light: collaborator.collaborators_id.collaborator_name,
-									 cta_link: collaborator.collaborators_id.collaborator_website} 
-								  }
+									 cta_link: collaborator.collaborators_id.collaborator_website
+								  } }
 							 {sizeOverride}
 							 {hoverOverride}
 							 {iconOverride}
@@ -254,8 +300,8 @@
 						<Cta data={ {...collaboratorCta, 
 									 cta_text_bold: "Other", 
 									 cta_text_light: collaborator.collaborators_id.collaborator_name,
-									 cta_link: collaborator.collaborators_id.collaborator_website} 
-								  }
+									 cta_link: collaborator.collaborators_id.collaborator_website
+								  } }
 							 {sizeOverride}
 							 {hoverOverride}
 							 {iconOverride}

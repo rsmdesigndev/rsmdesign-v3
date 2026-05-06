@@ -13,7 +13,7 @@
 	import { fade } from "svelte/transition";
 	import type { PageData } from "./$types";
 	import PageBlocks from "$lib/components/page_builder/page_blocks/index.svelte";
-	import PageBlocksV3, { type ProjectData } from "$lib/components/page_builder/page_blocks_v3/index.svelte";
+	import PageBlocksV3, { type ExpertiseData } from "$lib/components/page_builder/page_blocks_v3/index.svelte";
 
 	export let data: PageData;
 

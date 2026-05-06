@@ -56,6 +56,10 @@
 
 				&:last-of-type {
 					margin-bottom: 0;
+
+					+ ol, + ul {
+						margin-top: 1em;
+					}
 				}
 
 				strong {

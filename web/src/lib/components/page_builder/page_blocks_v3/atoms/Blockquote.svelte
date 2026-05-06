@@ -20,6 +20,37 @@
 		right: false
 	};
 	export let isActive: boolean = true;
+
+	let ctaStyle: string;
+	let ctaTextBold: string;
+	let ctaTextLight: string;
+
+	if (data.blockquote_has_attribution && data.blockquote_has_citation) {
+		ctaStyle = "both";
+	} else {
+		ctaStyle = "bold";
+	}
+
+	if (data.blockquote_has_attribution && data.blockquote_attribution) {
+		ctaTextBold = data.blockquote_attribution;
+	}
+
+	if (data.blockquote_has_citation && data.blockquote_citation) {
+		if (ctaTextBold) {
+			ctaTextLight = data.blockquote_citation;
+		} else {
+			ctaTextBold = data.blockquote_citation;
+		}
+	}
+
+	const ctaData: CtaData = {
+		cta_type: "link",
+		cta_icon: "arrow_right", 
+		cta_style: ctaStyle,
+		cta_text_bold: ctaTextBold,
+		cta_text_light: ctaTextLight,
+		cta_link: data.blockquote_link
+	}
 </script>
 
 <template>
@@ -37,20 +68,7 @@
 		{#if (data.blockquote_has_attribution && data.blockquote_attribution) || (data.blockquote_has_citation && data.blockquote_citation)}
 			<figcaption>
 				{#if data.blockquote_link}
-					<Cta data={ { cta_type: "link",
-								  cta_icon: "arrow_right", 
-								  cta_style: `${(data.blockquote_has_attribution && data.blockquote_has_citation) ? "both" : "bold"}`,
-								  cta_text_bold: `${(data.blockquote_has_attribution && data.blockquote_attribution) ? 
-													 data.blockquote_attribution : 
-													 ((data.blockquote_has_citation && data.blockquote_citation) ? 
-													 data.blockquote_citation : "Quote source")}`,
-								  cta_text_light: `${(!data.blockquote_has_attribution && 
-													   data.blockquote_has_citation && 
-													   data.blockquote_citation) ? 
-													   data.blockquote_citation : "Quote source"}`,
-								  cta_link: data.blockquote_link
-							  } }
-					/>
+					<Cta data={ { ...ctaData } } />
 				{:else}
 					{#if data.blockquote_has_attribution && data.blockquote_attribution}
 						{data.blockquote_attribution}{#if data.blockquote_has_citation && !data.blockquote_citation_newline},{/if}
