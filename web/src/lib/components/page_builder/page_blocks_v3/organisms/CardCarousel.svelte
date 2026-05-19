@@ -160,7 +160,7 @@
 					
 					class:slide-next={isNextSlide(i)}
 					class:slide-prev={isPrevSlide(i)}
-					class:slide-active={i === selectedItem}
+					class:slide-active={i === selectedItem || (i === 0 && selectedItem === -1)}
 					style:z-index={calcZIndex(i)}
 				>
 					<Card {data} 
@@ -216,11 +216,23 @@
 					transition: opacity calc(var(--animation-duration) * 1ms) ease;
 					transition-delay: calc(var(--animation-duration) * 1ms);
 
+					:global {
+						* {
+							color: rgba(0,0,0,0);
+						}
+					}
+
 					&.slide-active {
 						opacity: 1;
 						transition-delay: 0s;
 
 						z-index: 2;
+
+						:global {
+							* {
+								color: unset;
+							}
+						}
 					}
 				}
 			}
