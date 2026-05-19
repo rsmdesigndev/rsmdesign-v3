@@ -66,6 +66,8 @@
 					  `}
 				style:--grid-item={i}
 				style:--grid-columns={data.feed_grid_columns}
+				style:--position-in-grid-row={data.feed_grid_parallax_direction === "unidirectional" ? `calc(mod(${i}, ${data.feed_grid_columns}))` : (Math.floor(i / data.feed_grid_columns) % 2 == 0 ? `calc(mod(${i}, ${data.feed_grid_columns}))` : `calc(${data.feed_grid_columns} - mod(${i}, ${data.feed_grid_columns}))`)}
+				style:--animation-direction={data.feed_grid_parallax_direction === "unidirectional" ? 1 : (Math.floor(i / data.feed_grid_columns) % 2 == 0 ? 1 : -1)}
 			>
 				{#if data.feed_grid_style === "parallax"}
 					<div class="parallax-animation-trigger"
