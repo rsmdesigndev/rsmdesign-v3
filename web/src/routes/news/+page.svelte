@@ -255,7 +255,7 @@
 
 		button {
 			margin: 0;
-			font-weight: 700;
+			font-weight: 600;
 			position: relative;
 
 			&::after {
@@ -281,7 +281,7 @@
 
 		li.filter-item {
 			font-size: var(--FONT-SIZE-XS);
-			font-weight: 700;
+			font-weight: 600;
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
 

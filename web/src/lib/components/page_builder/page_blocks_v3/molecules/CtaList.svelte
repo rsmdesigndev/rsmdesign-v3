@@ -59,7 +59,7 @@
 			{#if data.cta_list_has_heading}
 				<h3 class={`heading heading-${data.cta_list_heading_style}`}
 					style:--font-size={sizeOverride === "xxxl" ? "var(--FONT-SIZE-XL)" : `var(--FONT-SIZE-${sizeOverride?.toUpperCase()})`}
-					style:--font-weight={sizeOverride === "xxxl" ? "500" : "700"}
+					style:--font-weight={sizeOverride === "xxxl" ? "500" : "600"}
 					style:--line-height={sizeOverride === "lg" ? "1.167" : "1.333"}
 				>
 					{data.cta_list_heading}
@@ -78,7 +78,7 @@
 				<article>
 					<h3 class={`heading heading-caps`}
 						style:--font-size="var(--FONT-SIZE-MD)"
-						style:--font-weight="700"
+						style:--font-weight="600"
 						style:--line-height="1.333"
 					>
 						Team leaders
@@ -99,7 +99,7 @@
 				<article>
 					<h3 class={`heading heading-caps`}
 						style:--font-size="var(--FONT-SIZE-MD)"
-						style:--font-weight="700"
+						style:--font-weight="600"
 						style:--line-height="1.333"
 					>
 						Office director
@@ -118,7 +118,7 @@
 				<article class="remove-p-margin">
 					<h3 class={`heading heading-caps`}
 						style:--font-size="var(--FONT-SIZE-MD)"
-						style:--font-weight="700"
+						style:--font-weight="600"
 						style:--line-height="1.333"
 					>
 						Address
@@ -132,7 +132,7 @@
 				<article>
 					<h3 class={`heading heading-caps`}
 						style:--font-size="var(--FONT-SIZE-MD)"
-						style:--font-weight="700"
+						style:--font-weight="600"
 						style:--line-height="1.333"
 					>
 						Phone
@@ -153,7 +153,7 @@
 				<article>
 					<h3 class={`heading heading-caps`}
 						style:--font-size="var(--FONT-SIZE-MD)"
-						style:--font-weight="700"
+						style:--font-weight="600"
 						style:--line-height="1.333"
 					>
 						Project inquiries
@@ -174,7 +174,7 @@
 				<article>
 					<h3 class={`heading heading-caps`}
 						style:--font-size="var(--FONT-SIZE-MD)"
-						style:--font-weight="700"
+						style:--font-weight="600"
 						style:--line-height="1.333"
 					>
 						Sub-services
@@ -202,7 +202,7 @@
 			<article>
 				<h3 class={`heading heading-caps`}
 					style:--font-size="var(--FONT-SIZE-MD)"
-					style:--font-weight="700"
+					style:--font-weight="600"
 					style:--line-height="1.333"
 				>
 					Project info
@@ -342,7 +342,7 @@
 				<article>
 					<h3 class={`heading heading-caps`}
 						style:--font-size="var(--FONT-SIZE-MD)"
-						style:--font-weight="700"
+						style:--font-weight="600"
 						style:--line-height="1.333"
 					>
 						Additional services
@@ -363,7 +363,7 @@
 				<article>
 					<h3 class={`heading heading-caps`}
 						style:--font-size="var(--FONT-SIZE-MD)"
-						style:--font-weight="700"
+						style:--font-weight="600"
 						style:--line-height="1.333"
 					>
 						Additional markets

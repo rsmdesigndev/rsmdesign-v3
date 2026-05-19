@@ -118,7 +118,7 @@
 		}
 
 		> figcaption {
-			font-weight: 700;
+			font-weight: 600;
 			white-space: pre-line;
 
 			> cite {

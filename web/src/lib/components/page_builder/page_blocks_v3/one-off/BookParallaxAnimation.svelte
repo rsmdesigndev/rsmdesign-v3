@@ -4,7 +4,7 @@
 
 <template>
 	<section>
-		{#each Array(9) as _, i}
+		{#each Array(6) as _, i}
 			<figure
 				id={`book-animation-item-${i}`}
 				style:--position-in-grid-row={i < 3 || i > 5 ? `calc(mod(${i}, 3))` : `calc(3 - mod(${i}, 3))`}

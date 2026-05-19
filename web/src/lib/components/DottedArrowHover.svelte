@@ -166,7 +166,7 @@
 		justify-content: space-between;
 
 		&.list-item {
-			font-weight: 700;
+			font-weight: 600;
 			padding-bottom: 0.333em;
 			border-bottom: 1px solid var(--COLOR-BLACK);
 
@@ -199,7 +199,7 @@
 			p:last-child {
 				flex-shrink: 0;
 				display: flex;
-				font-weight: 700;
+				font-weight: 600;
 				margin-bottom: 0;
 
 				&:not(:only-child) {

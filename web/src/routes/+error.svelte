@@ -62,7 +62,7 @@
 
 		&__heading {
 			font-size: 160px;
-			font-weight: 700;
+			font-weight: 600;
 			color: rgba(255, 255, 255, 0.8);
 			line-height: 0.9;
 			margin: 0;
@@ -92,7 +92,7 @@
 		&__link {
 			display: flex;
 			font-size: 20px;
-			font-weight: 700;
+			font-weight: 600;
 			letter-spacing: 1px;
 
 			@media screen and (min-width: 768px) {

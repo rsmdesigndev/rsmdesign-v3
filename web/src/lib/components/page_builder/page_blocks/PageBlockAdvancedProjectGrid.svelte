@@ -339,7 +339,7 @@
               width: 100%;
               text-align: left;
               font-size: var(--FONT-SIZE-MD);
-              font-weight: 700;
+              font-weight: 600;
               margin-bottom: 0;
 
               @media (max-width: 46.875em) {

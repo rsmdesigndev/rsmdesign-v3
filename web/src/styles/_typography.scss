@@ -109,7 +109,7 @@ $BREAKPOINT-LG: 125em;
 
 			&.xxs, &.xs, &.sm, &.md, &.lg {
 				@extend .caps;
-				font-weight: 700;
+				font-weight: 600;
 				line-height: 1.333;
 				margin-bottom: 0.5em;
 
@@ -202,7 +202,7 @@ $BREAKPOINT-LG: 125em;
 	section.rich-text {
 		h2, h3, h4, h5 {
 			font-size: var(--FONT-SIZE-MD);
-			font-weight: 700;
+			font-weight: 600;
 			line-height: 1.333;
 			margin-bottom: 0.5em;
 		}

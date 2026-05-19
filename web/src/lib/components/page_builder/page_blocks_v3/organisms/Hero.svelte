@@ -573,14 +573,14 @@
 			66.7% {
 				top: calc((var(--h1-container-height) - var(--h1-height)) * 1px);
 				font-size: var(--FONT-SIZE-LG);
-				font-weight: 700;
+				font-weight: 600;
 				color: var(--color-primary);
 				transform: translate(0rem, 0rem);
 			}
 			100% {
 				top: calc((var(--h1-container-height) - var(--h1-height)) * 1px);
 				font-size: var(--FONT-SIZE-LG);
-				font-weight: 700;
+				font-weight: 600;
 				color: var(--color-primary);
 				transform: translate(0rem, calc(var(--SPACE-LG) * -1));
 			}

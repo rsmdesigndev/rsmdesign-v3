@@ -114,7 +114,7 @@
 					margin-bottom: 0.5em;
 				}
 				a {
-					font-weight: 700;
+					font-weight: 600;
 				}
 			}
 		}

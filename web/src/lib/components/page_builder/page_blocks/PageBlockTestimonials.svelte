@@ -253,7 +253,7 @@
         }
 
         > figcaption {
-          font-weight: 700;
+          font-weight: 600;
 
           > cite {
             font-weight: 400;

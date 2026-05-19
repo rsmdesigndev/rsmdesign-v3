@@ -13,12 +13,12 @@
 	export let isAccordionItem: boolean = false;
 	export let headingSize: string = "md";
 
-	let headingWeight: number = 700;
+	let headingWeight: number = 600;
 
 	switch (headingSize) {
-		case "lg":
+		/*case "lg":
 			headingWeight = 600;
-			break;
+			break;*/
 		case "xl":
 			headingWeight = 500;
 			break;
@@ -132,7 +132,7 @@
 						}
 
 						strong {
-							font-weight: 700;
+							font-weight: 600;
 						}
 
 						> a {
@@ -164,7 +164,7 @@
 
 					h3 {
 						font-size: inherit;
-						font-weight: 700;
+						font-weight: 600;
 						text-transform: uppercase;
 						letter-spacing: 0.05em;
 						color: var(--color-accordion, var(--color-primary, inherit));
@@ -173,7 +173,7 @@
 					}
 					h4 {
 						font-size: inherit;
-						font-weight: 700;
+						font-weight: 600;
 						color: var(--color-accordion, var(--color-primary, inherit));
 						transition: color 0.3s ease;
 						margin-bottom: 1em;
@@ -230,7 +230,7 @@
 
 			font-size: var(--heading-size, var(--FONT-SIZE-MD));
 			line-height: 1.333;
-			font-weight: var(--heading-weight, 700);
+			font-weight: var(--heading-weight, 600);
 
 			> span.icon {
 				margin-left: calc(var(--GRID-CELL) / 3);

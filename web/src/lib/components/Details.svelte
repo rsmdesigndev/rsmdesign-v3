@@ -74,7 +74,7 @@
 
 			font-size: var(--FONT-SIZE-LG);
 			line-height: 1;
-			font-weight: 700;
+			font-weight: 600;
 
 			> img {
 				width: var(--GRID-CELL);

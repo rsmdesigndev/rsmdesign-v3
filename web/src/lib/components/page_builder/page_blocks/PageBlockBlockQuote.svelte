@@ -66,7 +66,7 @@
 			display: block;
 			position: relative;
 			font-size: calc(var(--FONT-SIZE-XXXL) * 1.618);
-			font-weight: 700;
+			font-weight: 600;
 			line-height: 0.333;
 		}
 		&::before {
@@ -90,7 +90,7 @@
 
 		> figcaption {
 			margin: var(--GRID-CELL) 0 -0.667em;
-			font-weight: 700;
+			font-weight: 600;
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
 

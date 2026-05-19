@@ -81,7 +81,7 @@
 
 		&.tracklist {
 			margin-top: var(--GRID-CELL);
-			font-weight: 700;
+			font-weight: 600;
 
 			> li {
 				margin-bottom: 0.5em;

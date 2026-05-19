@@ -63,7 +63,7 @@
 				}
 
 				strong {
-					font-weight: 700;
+					font-weight: 600;
 				}
 
 				> a {
@@ -104,7 +104,7 @@
 			}
 			h4 {
 				font-size: inherit;
-				font-weight: 700;
+				font-weight: 600;
 				color: var(--color-rich-text, var(--color-primary, inherit));
 				transition: color 0.3s ease;
 				margin-bottom: 1em;

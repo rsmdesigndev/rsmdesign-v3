@@ -332,7 +332,7 @@
 				}
 				> p {
 					font-size: var(--FONT-SIZE-SM);
-					font-weight: 700;
+					font-weight: 600;
 					color: var(--COLOR-MID-GRAY);
 				}
 			}

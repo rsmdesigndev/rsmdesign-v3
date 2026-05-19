@@ -480,7 +480,7 @@
 			margin-bottom: 0;
 
 			color: white;
-			font-weight: 700;
+			font-weight: 600;
 		}
 	}
 	section.collaborator-logos {
@@ -584,7 +584,7 @@
 					margin-bottom: 0.5em;
 				}
 				a {
-					font-weight: 700;
+					font-weight: 600;
 				}
 			}
 		}
@@ -732,7 +732,7 @@
 			}
 
 			> figcaption {
-				font-weight: 700;
+				font-weight: 600;
 
 				> cite {
 					font-weight: 400;

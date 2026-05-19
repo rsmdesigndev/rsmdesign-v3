@@ -25,7 +25,7 @@
 	export let isScrollItem: boolean = false;
 
 	let weightLarge: number = 300;
-	let weightSmall: number = 700;
+	let weightSmall: number = 600;
 	switch (data.heading_size) {
 		case "xxxl":
 			if (data.heading_weight === "bold") {
@@ -36,7 +36,7 @@
 		case "xxl":
 			if (data.heading_weight === "bold") {
 				weightLarge = 400;
-				weightSmall = 600;
+				//weightSmall = 600;
 			} else {
 				weightSmall = 500;
 			}
@@ -55,7 +55,7 @@
 		case "lg":
 			weightSmall = 500;
 			if (data.heading_weight === "bold") {
-				weightLarge = 700;
+				weightLarge = 600;
 			} else {
 				weightLarge = 500;
 			}
@@ -129,7 +129,7 @@
 		.heading-large, 
 		.heading-small {
 			font-size: var(--font-size);
-			font-weight: var(--font-weight, 700);
+			font-weight: var(--font-weight, 600);
 			line-height: var(--line-height);
 
 			transition: color 0.3s ease;

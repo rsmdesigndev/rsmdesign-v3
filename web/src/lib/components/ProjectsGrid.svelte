@@ -388,7 +388,7 @@
 
 		button {
 			margin: 0 0 0 calc(var(--GRID-CELL) * 3);
-			font-weight: 700;
+			font-weight: 600;
 			position: relative;
 
 			&:first-of-type:not(:last-of-type)::after {
@@ -440,7 +440,7 @@
 
 		ul > li {
 			font-size: var(--FONT-SIZE-XS);
-			font-weight: 700;
+			font-weight: 600;
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
 			color: var(--COLOR-MID-GRAY);
@@ -578,7 +578,7 @@
 						width: 100%;
 						text-align: left;
 						font-size: var(--FONT-SIZE-MD);
-						font-weight: 700;
+						font-weight: 600;
 						margin-bottom: 0;
 
 						@media (max-width: 46.875em) {

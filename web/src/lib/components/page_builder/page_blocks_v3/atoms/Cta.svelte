@@ -121,7 +121,7 @@
 
 		&:not(.button) {
 			strong {
-				font-weight: 700;
+				font-weight: 600;
 			}
 
 			span.icon {
