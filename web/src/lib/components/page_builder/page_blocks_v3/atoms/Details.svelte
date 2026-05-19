@@ -243,7 +243,6 @@
 					display: inline;
 					box-sizing: border-box;
 					line-height: calc(var(--FONT-SIZE-MD) * 1.333);
-					pointer-events: none;
 				}
 
 				&[data-icon="arrow_down"]::after {
@@ -289,6 +288,7 @@
 				height: var(--SPACE-XXL);
 				background: linear-gradient(transparent, var(--color-background, white));
 				transition: opacity 0.3s ease;
+				pointer-events: none;
 			}
 
 			&.open {
