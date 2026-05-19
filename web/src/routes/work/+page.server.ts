@@ -278,6 +278,7 @@ export const _query = gql`
 								description
 							}
 						}
+						feed_grid_parallax_direction
 						feed_table_style
 						feed_table_image_position
 						feed_table_items_per_load

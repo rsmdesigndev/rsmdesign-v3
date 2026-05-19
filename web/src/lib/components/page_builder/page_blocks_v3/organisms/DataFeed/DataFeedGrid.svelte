@@ -11,6 +11,7 @@
 		feed_source?: string | null;
 		feed_grid_columns?: number | null;
 		feed_grid_style?: string | null;
+		feed_grid_parallax_direction?: string | null;
 		feed_grid_dynamic_start_position?: boolean | null;
 		feed_grid_dynamic_images?: ImageAssetRelation[] | null;
 		feed_cards?: CardData[] | null;
@@ -117,6 +118,8 @@
 					  `}
 				style:--grid-item={i}
 				style:--grid-columns={data.feed_grid_columns}
+				style:--position-in-grid-row={data.feed_grid_parallax_direction === "unidirectional" ? `calc(mod(${i}, ${data.feed_grid_columns}))` : (Math.floor(i / data.feed_grid_columns) % 2 == 0 ? `calc(mod(${i}, ${data.feed_grid_columns}))` : `calc(${data.feed_grid_columns} - mod(${i}, ${data.feed_grid_columns}))`)}
+				style:--animation-direction={data.feed_grid_parallax_direction === "unidirectional" ? 1 : (Math.floor(i / data.feed_grid_columns) % 2 == 0 ? 1 : -1)}
 			>
 				{#if data.feed_grid_style === "parallax"}
 					<div class="parallax-animation-trigger"
@@ -734,10 +737,6 @@
 
 	:global {
 		.feed-grid-parallax-animate {
-			--position-in-grid-row: calc(mod(var(--grid-item), var(--grid-columns)));
-			@media (max-width: 62.5em) {
-				--position-in-grid-row: calc(mod(var(--grid-item), 3));
-			}
 			@media (min-width: 31.25em) {
 				animation: feed-grid-parallax-animate 1s linear forwards;
 			}
@@ -745,10 +744,10 @@
 
 		@keyframes feed-grid-parallax-animate {
 			0% {
-				transform: translate(calc(var(--SPACE-XL) * (1 + var(--position-in-grid-row))), 0rem);
+				transform: translate(calc(var(--SPACE-XL) * (1 + var(--position-in-grid-row)) * var(--animation-direction)), 0rem);
 			}
 			100% {
-				transform: translate(calc(-1 * var(--SPACE-LG) * (var(--grid-columns) - var(--position-in-grid-row))), 0rem);
+				transform: translate(calc(-1 * var(--SPACE-LG) * (var(--grid-columns) - var(--position-in-grid-row)) * var(--animation-direction)), 0rem);
 			}
 		}
 	}

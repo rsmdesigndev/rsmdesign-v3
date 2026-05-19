@@ -113,6 +113,7 @@
 			}
 			
 			> .details-body {
+				max-width: 80ch;
 				&.open {
 					padding-bottom: var(--SPACE-MD);
 				}

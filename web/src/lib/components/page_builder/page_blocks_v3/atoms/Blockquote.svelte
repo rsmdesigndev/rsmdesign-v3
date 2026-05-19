@@ -58,7 +58,8 @@
 			style:--grid-column-start={bleed.left ? "2" : "1"}
 			style:--grid-column-end={bleed.right ? "-2" : "-1"}
 	>
-		<blockquote style:--font-size={`var(--FONT-SIZE-${data.blockquote_size?.toUpperCase()})`}
+		<blockquote class:quotation={(data.blockquote_has_attribution && data.blockquote_attribution) || (data.blockquote_has_citation && data.blockquote_citation)}
+					style:--font-size={`var(--FONT-SIZE-${data.blockquote_size?.toUpperCase()})`}
 					style:--font-weight={data.blockquote_size === "lg" ? "300" : "400"}
 					style:--line-height={data.blockquote_size === "lg" ? "1.167" : 
 										(data.blockquote_size === "xl" ? "1.133" : "1")}
@@ -103,13 +104,15 @@
 			font-weight: var(--font-weight);
 			line-height: var(--line-height);
 
-			:global {
-				p:first-child::before {
-					content: "“";
-					margin-left: -0.4em;
-				}
-				p:last-child::after {
-					content: "”";
+			&.quotation {
+				:global {
+					p:first-child::before {
+						content: "“";
+						margin-left: -0.4em;
+					}
+					p:last-child::after {
+						content: "”";
+					}
 				}
 			}
 		}

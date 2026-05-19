@@ -18,7 +18,7 @@
 
 	export let data: CtaListData;
 	export let projectData: ProjectData | null;
-	export let expertiseData: ProjectData | null;
+	export let expertiseData: ExpertiseData | null;
 	export let bleed: BleedData | null;
 
 	export let selectedItem: number;
@@ -105,8 +105,8 @@
 						Office director
 					</h3>
 					<Cta data={ {...personCta, 
-								 cta_text_light: office_director.name,
-								 cta_link: `/team/${office_director.slug}`
+								 cta_text_light: expertiseData.office_director.name,
+								 cta_link: `/team/${expertiseData.office_director.slug}`
 							  } }
 						 {sizeOverride}
 						 {hoverOverride}
@@ -114,21 +114,50 @@
 					/>
 				</article>
 			{/if}
-			{#if expertiseData.address || expertiseData.phone || expertiseData.email}
+			{#if expertiseData.address}
+				<article class="remove-p-margin">
+					<h3 class={`heading heading-caps`}
+						style:--font-size="var(--FONT-SIZE-MD)"
+						style:--font-weight="700"
+						style:--line-height="1.333"
+					>
+						Address
+					</h3>
+					{#if expertiseData.address}
+						{@html expertiseData.address}
+					{/if}
+				</article>
+			{/if}
+			{#if expertiseData.phone}
 				<article>
 					<h3 class={`heading heading-caps`}
 						style:--font-size="var(--FONT-SIZE-MD)"
 						style:--font-weight="700"
 						style:--line-height="1.333"
 					>
-						Contact
+						Phone
 					</h3>
-					{#if expertiseData.address}
-						{@html expertiseData.address}
-					{/if}
 					{#if expertiseData.phone}
-						<p>{expertiseData.phone}</p>
+						<Cta data={ {...personCta, 
+									 cta_text_light: expertiseData.phone,
+									 cta_link: `tel:+1${expertiseData.phone.replace(/[^0-9]/g, '')}`
+								  } }
+							 {sizeOverride}
+							 {hoverOverride}
+							 {iconOverride}
+						/>
 					{/if}
+				</article>
+			{/if}
+			{#if expertiseData.email}
+				<article>
+					<h3 class={`heading heading-caps`}
+						style:--font-size="var(--FONT-SIZE-MD)"
+						style:--font-weight="700"
+						style:--line-height="1.333"
+					>
+						Project inquiries
+					</h3>
 					{#if expertiseData.email}
 						<Cta data={ {...personCta, 
 									 cta_text_light: expertiseData.email,
@@ -380,6 +409,14 @@
 				&.heading-caps {
 					text-transform: uppercase;
 					letter-spacing: 0.05em;
+				}
+			}
+
+			&.remove-p-margin {
+				:global {
+					p {
+						margin-bottom: 0;
+					}
 				}
 			}
 		}

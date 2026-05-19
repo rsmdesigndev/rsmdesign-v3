@@ -7,6 +7,7 @@
 
 	import DataFeedGrid from "./DataFeedGrid.svelte";
 	import DataFeedTable from "./DataFeedTable.svelte";
+	import DataFeedTickerTape from "./DataFeedTickerTape.svelte";
 	import type { CardData } from "../../molecules/Card.svelte";
 	import Heading from "../../atoms/Heading.svelte";
 
@@ -49,6 +50,7 @@
 		feed_grid_style?: string | null;
 		feed_grid_dynamic_start_position?: boolean | null;
 		feed_grid_dynamic_images?: ImageAssetRelation[] | null;
+		feed_grid_parallax_direction?: string | null;
 		feed_table_style?: string | null;
 		feed_table_image_position?: string | null;
 		feed_table_items_per_load?: number | null;
@@ -752,7 +754,9 @@
 			{:else if feedData.length === 0 && data.feed_source != "Manual"}
 				<p>No results match your query. Try another search or set of filters.</p>
 			{:else}
-				{#if (data.feed_view === "Grid" || data.feed_source === "Manual" || data.feed_source === "Team" || data.feed_source === "Testimonials") && (data.feed_source != "Awards" && data.feed_source != "Careers")}
+				{#if data.feed_view === "Ticker Tape" && data.feed_source === "Manual"}
+					<DataFeedTickerTape data={ { feed_cards: data.feed_cards } } />
+				{:else if (data.feed_view === "Grid" || data.feed_source === "Manual" || data.feed_source === "Team" || data.feed_source === "Testimonials") && (data.feed_source != "Awards" && data.feed_source != "Careers")}
 					{#if data.feed_source === "Manual"}
 						<div class="grid-container">
 							<DataFeedGrid 
@@ -761,6 +765,7 @@
 										 feed_cards: data.feed_cards,
 										 feed_grid_columns: data.feed_grid_columns,
 										 feed_grid_style: data.feed_grid_style,
+										 feed_grid_parallax_direction: data.feed_grid_parallax_direction,
 										 feed_grid_dynamic_start_position: 
 										 	((data.feed_grid_columns === 4) && Boolean(data.feed_grid_rows_per_load % 4))
 										 	? 
@@ -803,6 +808,7 @@
 									data={ { feed_source: data.feed_source,
 											 feed_grid_columns: data.feed_grid_columns,
 											 feed_grid_style: data.feed_grid_style,
+											 feed_grid_parallax_direction: data.feed_grid_parallax_direction,
 											 feed_grid_dynamic_images: data.feed_grid_dynamic_images,
 											 feed_grid_dynamic_start_position: 
 											 	((data.feed_grid_columns === 4) && Boolean(data.feed_grid_rows_per_load % 4) && (i % 2))
