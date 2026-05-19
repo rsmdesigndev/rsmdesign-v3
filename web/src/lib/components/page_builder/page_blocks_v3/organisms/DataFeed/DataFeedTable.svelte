@@ -22,14 +22,21 @@
 
 	let selectedItem: number;
 	let selectOnScroll: boolean = true;
+	let selectOnHover: boolean = false;
 
 	function selectItemOnMouseover(i: number) {
-		if (innerWidth > 1000) {
+		if (selectOnHover && innerWidth > 1000) {
 			selectedItem = i; // only fire on screen width > 62.5em
+
+			selectOnScroll = false;
+
+			setTimeout(() => {
+				selectOnScroll = true;
+			}, 5000);
 		}
 	}
 	function deselectItemOnMouseout() {
-		if (innerWidth > 1000) {
+		if (selectOnHover && innerWidth > 1000) {
 			selectedItem = -1; // only fire on screen width > 62.5em
 		}
 	}
@@ -47,9 +54,18 @@
 		const observer = new IntersectionObserver(([entry]) => {
 			if (selectOnScroll && entry.isIntersecting) {
 				selectedItem = i;
+
 				if (innerWidth > 1000) {
-					selectOnScroll = false; // only set to false if screen width < 62.5em
+					selectOnHover = true; // only set to false if screen width < 62.5em
 				}
+
+				/*if (innerWidth > 1000) {
+					selectOnScroll = false; // only set to false if screen width < 62.5em
+				}*/
+
+				/*setTimeout(() => {
+					selectOnScroll = true;
+				}, 1000);*/
 			}
 		}, { rootMargin: '-50% 0% -50% 0%' });
 		observer.observe(node);
@@ -64,6 +80,7 @@
 			if (entry.isIntersecting) {
 				selectedItem = -1;
 				selectOnScroll = true;
+				selectOnHover = false;
 				console.log("deselect on scroll");
 			}
 		}, { rootMargin: '-50% 0% -50% 0%' });
@@ -377,7 +394,7 @@
 				> strong {
 					display: block;
 					font-size: var(--FONT-SIZE-LG);
-					font-weight: 700;
+					font-weight: 600;
 					text-transform: none;
 					letter-spacing: 0;
 				}
