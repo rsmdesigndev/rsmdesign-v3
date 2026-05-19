@@ -147,6 +147,17 @@
 					filters.push(`{ project_location_city: { city_name: { _in: [${cities.join(",")}] } } }`);
 				}
 
+				// Extract studios
+				if (data.feed_filter_studio_locations && data.feed_filter_studio_locations.length > 0) {
+					let studios = [];
+					for (let item of data.feed_filter_studio_locations) {
+						if (item?.studio_locations_id?.location) {
+							studios.push(`"${item.studio_locations_id.location}"`);
+						}
+					}
+					filters.push(`{ studio_locations: { studio_locations_id: { location: { _in: [${studios.join(",")}] } } } }`);
+				}
+
 				let query = `
 					query Projects($limit: Int, $offset: Int) {
 						projects(

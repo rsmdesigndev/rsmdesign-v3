@@ -263,6 +263,11 @@ export const _query = gql`
 								city_name
 							}
 						}
+						feed_filter_studio_locations {
+							studio_locations_id {
+								location
+							}
+						}
 						feed_filter_topics {
 							news_topics_id {
 								name
