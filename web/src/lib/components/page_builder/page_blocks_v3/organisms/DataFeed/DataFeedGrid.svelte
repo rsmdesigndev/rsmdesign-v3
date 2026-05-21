@@ -25,7 +25,7 @@
 	const itemHeading = {
 		heading_type: "feed-item",
 		heading_primary: "large",
-		heading_size: data.feed_grid_columns === 1 ? (data.feed_grid_style === "banner" ? "xxxl" : "xxl") : "lg",
+		heading_size: data.feed_grid_columns === 1 ? (data.feed_grid_style === "banner" ? "xxl" : "xxl") : "lg",
 		heading_weight: "regular",
 		heading_has_small_text: data.feed_grid_columns === 1 ? false : true,
 		heading_has_large_text: true,
@@ -128,16 +128,16 @@
 						 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#row-${rowNumber}-grid-${gridNumber}-item-${i}`, animClass: "feed-grid-parallax-animate" } }
 					/>
 				{/if}
-				<figure class:testimonial={data.feed_source === "Testimonials"}>
+				<figure><!-- class:testimonial={data.feed_source === "Testimonials"}>-->
 					<picture>
 						{#if data.feed_source === "Team"}
 							<img src={assetUrl(item.headshot?.filename_disk)}
 								 alt={item.headshot?.title}
 							/>
-						{:else if data.feed_source === "Testimonials"}
+						<!--{:else if data.feed_source === "Testimonials"}
 							<img src={assetUrl(item.banner_image?.filename_disk)}
 								 alt={item.banner_image?.title}
-							/>
+							/>-->
 						{:else if data.feed_grid_style === "dynamic"}
 							<source media="(max-width: 31.25em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
 							{#if data.feed_grid_columns === 3 && (i % 14 === 0 || i % 14 === 10)}
@@ -213,7 +213,7 @@
 										heading_large: item.name
 									 } }
 							/>
-						{:else if data.feed_source === "Testimonials"}
+						<!--{:else if data.feed_source === "Testimonials"}
 							<Blockquote 
 								data={ { blockquote_size: "md",
 										 blockquote_text: item.quote ?? "",
@@ -224,7 +224,7 @@
 										 blockquote_citation: `${item.quote_attribution_job_title ?? ""} \n${item.company_name ?? ""}`,
 										 blockquote_link: null
 									 } }
-							/>
+							/>-->
 						{/if}
 						{#if data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
 							<!--<p class="headline">[Insert hero headline here lorem ipsum dolor sit amet.]</p>-->
@@ -378,9 +378,9 @@
 					> figcaption {
 						z-index: 2;
 						grid-row: 1;
-						grid-column: sixth-start 1 / sixth-end 4;
-						align-self: end;
-						margin-bottom: var(--SPACE-LG);
+						grid-column: sixth-start 1 / sixth-end 5;
+						align-self: start;
+						margin-top: var(--SPACE-LG);
 						--color-heading: var(--color-background, var(--COLOR-WHITE));
 						transition: color 0.3s ease;
 
@@ -399,17 +399,17 @@
 					width: 100%;
 					height: 100%;
 					background: linear-gradient(
-						rgba(26,24,24,0) 0%,
-						rgba(26,24,24,0.005) 10%,
-						rgba(26,24,24,0.02) 20%,
-						rgba(26,24,24,0.045) 30%,
-						rgba(26,24,24,0.08) 40%,
+						rgba(26,24,24,0.5) 0%,
+						rgba(26,24,24,0.405) 10%,
+						rgba(26,24,24,0.32) 20%,
+						rgba(26,24,24,0.245) 30%,
+						rgba(26,24,24,0.18) 40%,
 						rgba(26,24,24,0.125) 50%,
-						rgba(26,24,24,0.18) 60%,
-						rgba(26,24,24,0.245) 70%,
-						rgba(26,24,24,0.32) 80%,
-						rgba(26,24,24,0.405) 90%,
-						rgba(26,24,24,0.5) 100%
+						rgba(26,24,24,0.08) 60%,
+						rgba(26,24,24,0.045) 70%,
+						rgba(26,24,24,0.02) 80%,
+						rgba(26,24,24,0.005) 90%,
+						rgba(26,24,24,0) 100%
 					);
 					mix-blend-mode: hard-light;
 				}
