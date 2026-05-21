@@ -12,7 +12,7 @@
 />
 
 <template>
-	{#if data.homepage?.home_use_page_blocks_v3}
+	{#if data.homepage.home_use_page_blocks_v3}
 		{#if data.homepage.home_page_blocks_v3}
 			<PageBlocksV3 blocks={data.homepage.home_page_blocks_v3} />
 		{:else}

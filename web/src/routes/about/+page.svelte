@@ -12,7 +12,7 @@
 />
 
 <template>
-	{#if data.about?.about_use_page_blocks_v3}
+	{#if data.about.about_use_page_blocks_v3}
 		{#if data.about.about_page_blocks_v3}
 			<PageBlocksV3 blocks={data.about.about_page_blocks_v3} />
 		{:else}

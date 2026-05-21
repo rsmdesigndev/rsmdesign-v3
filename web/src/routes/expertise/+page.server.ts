@@ -392,29 +392,6 @@ export const _query = gql`
 			}
 			expertise_use_page_blocks_v3
 		}
-		services(
-			filter: { visibility: { _eq: "visible" } },
-			sort: ["sort_priority"],
-			limit: 9
-		) {
-			slug
-			medium_name
-			sub_services_truncated
-		}
-
-		markets(
-			filter: { visibility: { _eq: "visible" } },
-			sort: ["sort_priority"],
-			limit: 18
-		) {
-			slug
-			medium_name
-			grid_image {
-				title
-				description
-				filename_disk
-			}
-		}
 	}
 `;
 
@@ -422,8 +399,6 @@ export const load: PageServerLoad = async ({ params }) => {
 	const res = await cmsClient.ExpertisePage();
 	
 	return {
-		expertise_page: res.expertise_page,
-		services: res.services,
-		markets: res.markets
+		expertise_page: res.expertise_page
 	}
 };
