@@ -40,32 +40,14 @@
 			selectedItem = -1; // only fire on screen width > 62.5em
 		}
 	}
-	/*function selectItemOnClick(node: Element, i: number) {
-		if (innerWidth > 1000 || selectedItem === i) {
-			//goto(node.href);
-			console.log("go to item " + i);
-		}
-		else {
-			//node.scrollIntoView({ block: "center", behavior: "smooth" });
-			console.log("scroll to item " + i);
-		}
-	}*/
 	function selectItemOnIntersection(node: Element, i: number) {
 		const observer = new IntersectionObserver(([entry]) => {
 			if (selectOnScroll && entry.isIntersecting) {
 				selectedItem = i;
 
 				if (innerWidth > 1000) {
-					selectOnHover = true; // only set to false if screen width < 62.5em
+					selectOnHover = true; // only set to true if screen width < 62.5em
 				}
-
-				/*if (innerWidth > 1000) {
-					selectOnScroll = false; // only set to false if screen width < 62.5em
-				}*/
-
-				/*setTimeout(() => {
-					selectOnScroll = true;
-				}, 1000);*/
 			}
 		}, { rootMargin: '-50% 0% -50% 0%' });
 		observer.observe(node);
@@ -81,7 +63,7 @@
 				selectedItem = -1;
 				selectOnScroll = true;
 				selectOnHover = false;
-				console.log("deselect on scroll");
+				//console.log("deselect on scroll");
 			}
 		}, { rootMargin: '-50% 0% -50% 0%' });
 		observer.observe(node);
