@@ -26,6 +26,7 @@
 		z-index: 2;
 		position: relative;
 		margin-top: var(--SPACE-XXL);
+		padding-bottom: var(--SPACE-XXL);
 
 		grid-column: viewport;
 		max-width: 100vw;
