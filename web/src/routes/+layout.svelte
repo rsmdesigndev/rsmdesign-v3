@@ -11,7 +11,7 @@
 
 	export let data: PageData;
 
-	//$: console.log("layout data", data);
+	//$: console.log("page data", data);
 
 	let headerHeight = "75px";
 	let navigationTimeout: NodeJS.Timeout | null = null;
