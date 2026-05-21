@@ -275,6 +275,7 @@
 
 <style lang="scss">
 	.deselectionTrigger {
+		grid-column: viewport;
 		width: 100%;
 		height: 100vh;
 		pointer-events: none;
