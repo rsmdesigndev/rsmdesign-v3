@@ -12,7 +12,10 @@
 	import Details from "./Details.svelte";
 
 	export let data: RichTextData;
-	export let bleed: BleedData;
+	export let bleed: BleedData = {
+		left: false,
+		right: false
+	};
 	export let isActive: boolean = true;
 </script>
 

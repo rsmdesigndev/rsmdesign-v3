@@ -22,9 +22,15 @@
 	import Slider from "./Slider.svelte";
 	import Swiper from "./Swiper.svelte";
 	import Video from "./Video.svelte";
+	import RichText, { type RichTextData } from "../RichText.svelte";
 
 	export let data: MediaData;
 	export let isActive: boolean = true;
+
+	const captionData: RichTextData = {
+		rich_text_size: "sm",
+		rich_text_content: data.media_caption
+	}
 </script>
 
 <figure 
@@ -74,7 +80,7 @@
 	{/if}
 	{#if data.media_caption}
 		<figcaption>
-			{@html data.media_caption}
+			<RichText data={captionData} />
 		</figcaption>
 	{/if}
 </figure>

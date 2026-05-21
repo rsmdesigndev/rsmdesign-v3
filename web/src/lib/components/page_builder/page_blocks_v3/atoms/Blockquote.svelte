@@ -60,9 +60,9 @@
 	>
 		<blockquote class:quotation={(data.blockquote_has_attribution && data.blockquote_attribution) || (data.blockquote_has_citation && data.blockquote_citation)}
 					style:--font-size={`var(--FONT-SIZE-${data.blockquote_size?.toUpperCase()})`}
-					style:--font-weight={data.blockquote_size === "lg" ? "300" : "400"}
-					style:--line-height={data.blockquote_size === "lg" ? "1.167" : 
-										(data.blockquote_size === "xl" ? "1.133" : "1")}
+					style:--font-weight={data.blockquote_size === "md" ? "300" : ("lg" ? "300" : "400")}
+					style:--line-height={data.blockquote_size === "md" ? "1.333" : ("lg" ? "1.167" : 
+										(data.blockquote_size === "xl" ? "1.133" : "1"))}
 					cite={data.blockquote_link ?? ""}>
 			{@html data.blockquote_text}
 		</blockquote>
