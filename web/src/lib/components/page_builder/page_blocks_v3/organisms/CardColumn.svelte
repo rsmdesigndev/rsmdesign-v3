@@ -145,7 +145,7 @@
 		 id={data.column_sticky === "top" ? `sticky-row-${row}-col-${column}` : ""}
 		 class:is-sticky={data.column_sticky != "false"}
 		 style:--display-on-mobile={data.column_hidden_on_mobile ? "none" : "grid"}
-		 style:--top={data.column_sticky === "top" ? "var(--SPACE-LG)" :
+		 style:--top={data.column_sticky === "top" ? "calc(var(--GRID-CELL) * 1.75)" :
 		 			 (data.column_sticky === "center" ? `calc(50vh - 1px * ${columnHeight} / 2)` :
 		 			  `calc(100vh - 1px * ${columnHeight} - var(--SPACE-MD))`
 		 			 )}
