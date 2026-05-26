@@ -86,7 +86,7 @@
 					{#each expertiseData.team_leaders as team}
 						<Cta data={ {...personCta, 
 									 cta_text_light: team.team_id.name,
-									 cta_link: `/team/${team.team_id.slug}`
+									 cta_link: `${team.team_id.has_profile_page ? `/team/${team.team_id.slug}` : "/team"}`
 								  } }
 							 {sizeOverride}
 							 {hoverOverride}
