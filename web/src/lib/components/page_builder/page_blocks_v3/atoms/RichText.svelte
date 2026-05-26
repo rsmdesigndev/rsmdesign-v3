@@ -17,9 +17,10 @@
 		right: false
 	};
 	export let isActive: boolean = true;
+	export let linkColor: "accent" | "primary" = "accent";
 </script>
 
-<div class={`rich-text-v3 rich-text-${data.rich_text_size}`}
+<div class={`rich-text-v3 rich-text-${data.rich_text_size} rich-text-links-${linkColor}`}
 	 class:read-more={data.rich_text_has_read_more}
 	 class:active={isActive}
 	 style:--grid-column-start={bleed.left ? "2" : "1"}
@@ -49,6 +50,15 @@
 		transition: opacity 0.3s ease;
 		&.active {
 			opacity: 1;
+		}
+
+		&.rich-text-links-primary {
+			:global {
+				p > a {
+					color: var(--color-primary, inherit);
+					text-decoration-color: var(--color-primary);
+				}
+			}
 		}
 
 		:global {
@@ -137,6 +147,7 @@
 
 				> li {
 					counter-increment: rsm-counter;
+					margin-bottom: 1em;
 
 					&::before {
 						content: counter(rsm-counter) ".";

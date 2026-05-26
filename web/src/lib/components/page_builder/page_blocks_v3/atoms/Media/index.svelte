@@ -80,7 +80,7 @@
 	{/if}
 	{#if data.media_caption}
 		<figcaption>
-			<RichText data={captionData} />
+			<RichText data={captionData} linkColor={"primary"} />
 		</figcaption>
 	{/if}
 </figure>

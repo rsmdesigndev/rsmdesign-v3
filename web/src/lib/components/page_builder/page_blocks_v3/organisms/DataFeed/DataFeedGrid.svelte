@@ -368,6 +368,7 @@
 					grid-column: viewport;
 					display: grid;
 					grid-template-columns: subgrid;
+					position: relative;
 
 					> picture {
 						grid-row: 1;
@@ -376,11 +377,13 @@
 					}
 
 					> figcaption {
+						position: sticky;
+						bottom: var(--SPACE-MD);
 						z-index: 2;
 						grid-row: 1;
 						grid-column: sixth-start 1 / sixth-end 5;
-						align-self: start;
-						margin-top: var(--SPACE-LG);
+						align-self: end;
+						margin-bottom: var(--SPACE-LG);
 						--color-heading: var(--color-background, var(--COLOR-WHITE));
 						transition: color 0.3s ease;
 
@@ -399,17 +402,17 @@
 					width: 100%;
 					height: 100%;
 					background: linear-gradient(
-						rgba(26,24,24,0.5) 0%,
-						rgba(26,24,24,0.405) 10%,
-						rgba(26,24,24,0.32) 20%,
-						rgba(26,24,24,0.245) 30%,
-						rgba(26,24,24,0.18) 40%,
+						rgba(26,24,24,0) 0%,
+						rgba(26,24,24,0.005) 10%,
+						rgba(26,24,24,0.02) 20%,
+						rgba(26,24,24,0.045) 30%,
+						rgba(26,24,24,0.08) 40%,
 						rgba(26,24,24,0.125) 50%,
-						rgba(26,24,24,0.08) 60%,
-						rgba(26,24,24,0.045) 70%,
-						rgba(26,24,24,0.02) 80%,
-						rgba(26,24,24,0.005) 90%,
-						rgba(26,24,24,0) 100%
+						rgba(26,24,24,0.18) 60%,
+						rgba(26,24,24,0.245) 70%,
+						rgba(26,24,24,0.32) 80%,
+						rgba(26,24,24,0.405) 90%,
+						rgba(26,24,24,0.5) 100%
 					);
 					mix-blend-mode: hard-light;
 				}
@@ -511,6 +514,20 @@
 				}
 
 				&.grid-style-dynamic {
+					position: relative;
+
+					&:nth-child(14n+2),
+					&:nth-child(14n+3),
+					&:nth-child(14n+9),
+					&:nth-child(14n+10) {
+						align-self: stretch;
+						figure {
+							align-self: start;
+							position: sticky;
+							top: calc(var(--GRID-CELL) * 1.75);
+						}
+					}
+
 					&:nth-child(14n+1) {
 						grid-column: viewport-start / sixth-end 4;
 
