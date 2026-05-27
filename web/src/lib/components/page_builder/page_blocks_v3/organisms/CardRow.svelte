@@ -88,7 +88,7 @@
 		align-items: var(--columns-alignment);
 
 		@media (max-width: 31.25em) {
-			row-gap: var(--SPACE-LG);
+			row-gap: var(--SPACE-XL);
 		}
 
 		&.padding-top-sm {
