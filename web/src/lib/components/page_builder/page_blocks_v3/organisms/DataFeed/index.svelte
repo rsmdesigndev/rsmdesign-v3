@@ -907,6 +907,9 @@
 		grid-template-columns: subgrid;
 		align-content: start;
 
+		max-width: 100vw;
+		overflow-x: hidden;
+
 		&.Grid {
 			row-gap: var(--SPACE-XL);
 		}

@@ -87,6 +87,9 @@
 		grid-template-columns: subgrid;
 		align-items: var(--columns-alignment);
 
+		max-width: 100vw;
+		overflow-x: hidden;
+
 		@media (max-width: 31.25em) {
 			row-gap: var(--SPACE-XL);
 		}

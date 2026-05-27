@@ -328,7 +328,7 @@ $BREAKPOINT-LG: 125em;
 	min-height: 100vh;
 	width: 100vw;
 	max-width: 100vw;
-	overflow-x: hidden;
+	overflow-x: clip;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
