@@ -137,7 +137,7 @@
 
 <template>
 	<div id={`colItem-row-${row}-col-${column}-item-${colItem}`}
-		 class="carousel-wrapper"
+		 class={`carousel-wrapper ${fullBleed ? "carousel-width-full-bleed" : ""}`}
 		 style:--grid-column-start={fullBleed ? "1" : (bleed.left ? "2" : "1")}
 		 style:--grid-column-end={fullBleed ? "-1" : (bleed.right ? "-2" : "-1")}
 		 bind:offsetWidth={carouselWidth}
@@ -184,8 +184,15 @@
 	.carousel-wrapper {
 		grid-column: var(--grid-column-start) / var(--grid-column-end);
 		grid-row: 1 / span 1;
-		width: var(--carousel-card-width);
-		max-width: 100vw;
+		width: 100%;
+		
+		@media (max-width: 31.25em) {
+			max-width: 92vw;
+
+			&.carousel-width-full-bleed {
+				max-width: 100vw;
+			}
+		}
 
 		> .carousel-container {
 			width: var(--carousel-width);

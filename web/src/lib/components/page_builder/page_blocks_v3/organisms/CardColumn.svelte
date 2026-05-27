@@ -232,8 +232,8 @@
 		padding-bottom: 0.25em;
 		
 		@media (max-width: 62.5em) {
-			--padding-left: 0;
-			--padding-right: 0;
+			padding-left: 0;
+			padding-right: 0;
 		}
 
 		//overflow: hidden;
