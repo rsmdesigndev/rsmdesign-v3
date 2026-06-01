@@ -129,6 +129,7 @@
 		//console.log("selected: " + i);
 	}
 
+	let isProject: boolean = !!(projectData);
 	let isScrollItem: boolean = data.column_interaction_on_scroll;
 	let excludeFirstItem: boolean = data.column_interaction_exclude_first_item;
 	let activeHighlight: string = data.column_interaction_active_highlight;
@@ -172,6 +173,7 @@
 					{excludeFirstItem}
 					isActive={!isScrollItem || (excludeFirstItem && i === 0) || (selectedItem === (excludeFirstItem ? i - 1 : i))}
 					{activeHighlight}
+					{isProject}
 					on:selectItem={(e) => selectItem(i - e.detail.subtrahend)}
 				/>
 			{:else if data?.__typename === "page_blocks_v3_organism_card_carousel"}

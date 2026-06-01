@@ -26,6 +26,7 @@
 
 	export let data: MediaData;
 	export let isActive: boolean = true;
+	export let isProject: boolean = false;
 
 	const captionData: RichTextData = {
 		rich_text_size: "sm",
@@ -39,7 +40,7 @@
 >
 	{#if data.media_type === "image"}
 		{#if data.media_image}
-			<Image source={data.media_image} />
+			<Image source={data.media_image} {isProject} />
 		{:else}
 			Media type “image” selected, but no image was uploaded
 		{/if}

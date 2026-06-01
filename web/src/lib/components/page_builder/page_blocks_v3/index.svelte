@@ -4,7 +4,6 @@
 		| ({ __typename: "page_blocks_v3_organism_data_feed" } 	& DataFeedData)
 		| ({ __typename: "page_blocks_v3_organism_card_row" } 	& CardRowData)
 		| ({ __typename: "page_blocks_v3_organism_hero" } 		& HeroData)
-		| ({ __typename: "homepage_v3_book_animation" })
 		| ({ __typename: "about_v3_logos_animation" })
 		;
 
@@ -181,8 +180,6 @@
 				{projectData} 
 				on:selectHero={() => changeTheme(i)}
 			/>
-		{:else if data?.__typename === "homepage_v3_book_animation"}
-			<BookParallaxAnimation />
 		{:else if data?.__typename === "about_v3_logos_animation"}
 			<LogosTickerTape />
 		{:else}

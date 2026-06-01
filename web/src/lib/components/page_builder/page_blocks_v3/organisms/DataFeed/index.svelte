@@ -51,6 +51,7 @@
 		feed_grid_dynamic_start_position?: boolean | null;
 		feed_grid_dynamic_images?: ImageAssetRelation[] | null;
 		feed_grid_parallax_direction?: string | null;
+		feed_grid_image_drop_shadow?: boolean | null;
 		feed_table_style?: string | null;
 		feed_table_image_position?: string | null;
 		feed_table_items_per_load?: number | null;
@@ -777,6 +778,7 @@
 										 feed_grid_columns: data.feed_grid_columns,
 										 feed_grid_style: data.feed_grid_style,
 										 feed_grid_parallax_direction: data.feed_grid_parallax_direction,
+										 feed_grid_image_drop_shadow: data.feed_grid_image_drop_shadow,
 										 feed_grid_dynamic_start_position: 
 										 	((data.feed_grid_columns === 4) && Boolean(data.feed_grid_rows_per_load % 4))
 										 	? 
@@ -980,6 +982,23 @@
 				&.slide-active {
 					opacity: 1;
 					z-index: 2;
+				}
+			}
+
+			@media (max-width: 31.25em) {
+				&:not(.carousel-slide) {
+					display: grid;
+					grid-column: main;
+					grid-template-columns: 
+						[column-start] 
+						 1fr 
+						[column-end] 
+						 4vw
+						[column-start] 
+						 1fr 
+						[column-end]
+					;
+					row-gap: var(--SPACE-LG);
 				}
 			}
 		}

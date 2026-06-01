@@ -11,9 +11,6 @@ export const _query = gql`
 			home_page_blocks_v3 {
 				item {
 					__typename
-					... on homepage_v3_book_animation {
-						id
-					}
 					... on page_blocks_v3_organism_card_row {
 						section_background_color
 						section_color_theme
@@ -286,6 +283,7 @@ export const _query = gql`
 							}
 						}
 						feed_grid_parallax_direction
+						feed_grid_image_drop_shadow
 						feed_table_style
 						feed_table_image_position
 						feed_table_items_per_load

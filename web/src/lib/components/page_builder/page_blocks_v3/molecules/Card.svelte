@@ -31,6 +31,8 @@
 	export let excludeFirstItem: boolean;
 	export let isActive: boolean = true;
 	export let activeHighlight: string = "accent";
+	export let hasDropShadow: boolean = false;
+	export let isProject: boolean = false;
 
 	let card: HTMLElement;
 
@@ -71,7 +73,7 @@
 		use:conditionalSelectItemOnIntersection
 		bind:this={card}
 		on:click|preventDefault={handleClick}
-		class={`card ${isActive ? "active" : ""}`}
+		class={`card ${isActive ? "active" : ""} ${hasDropShadow ? "drop-shadow" : ""}`}
 		style:--row-gap={`var(--SPACE-${data.card_item_spacing?.toUpperCase()}`}
 	>
 		{#each data.card_atoms?.map((c) => c?.item) ?? [] as data}
@@ -82,7 +84,7 @@
 			{:else if data?.__typename === "page_blocks_v3_atom_heading"}
 				<Heading {data} {bleed} {isActive} {activeHighlight} {isScrollItem} />
 			{:else if data?.__typename === "page_blocks_v3_atom_media"}
-				<Media {data} {isActive} />
+				<Media {data} {isActive} {isProject} />
 			{:else if data?.__typename === "page_blocks_v3_atom_rich_text"}
 				<RichText {data} {bleed} {isActive} />
 			{:else if data?.__typename === "page_blocks_v3_atom_spacer"}
@@ -100,6 +102,10 @@
 		display: grid;
 		grid-template-columns: subgrid;
 		row-gap: var(--row-gap);
+
+		&.drop-shadow {
+			filter: drop-shadow(rgba(0,0,0,0.618) var(--SPACE-SM) var(--SPACE-SM) var(--SPACE-SM));
+		}
 	}
 
 	@property --column-scroll-transition-opacity {

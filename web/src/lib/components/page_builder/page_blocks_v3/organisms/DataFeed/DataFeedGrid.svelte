@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import type { ImageAssetRelation } from "$lib/cms";
 	import { assetUrl } from "$lib/cms/assets";
 	import { animate, AnimateTrigger } from "$lib/animate";
@@ -12,6 +13,7 @@
 		feed_grid_columns?: number | null;
 		feed_grid_style?: string | null;
 		feed_grid_parallax_direction?: string | null;
+		feed_grid_image_drop_shadow?: boolean | null;
 		feed_grid_dynamic_start_position?: boolean | null;
 		feed_grid_dynamic_images?: ImageAssetRelation[] | null;
 		feed_cards?: CardData[] | null;
@@ -32,6 +34,9 @@
 		heading_has_superscript: false
 	}
 
+	let innerWidth: number;
+	let gridColumns: number = data.feed_grid_columns;
+
 	const imageIndexes: number[] = [2, 6, 14, 18, 26, 30, 38, 42, 51];
 
 	function chooseImage(i: number) {
@@ -50,7 +55,14 @@
 	function chooseImageMobile(i: number) {
 		// TODO
 	}
+	onMount(() => {
+		if (innerWidth <= 500) {
+			gridColumns = 2;
+		};
+	});
 </script>
+
+<svelte:window bind:innerWidth />
 
 <template>
 	{#if data.feed_source === "Manual"}
@@ -65,9 +77,9 @@
 						${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
 					  `}
 				style:--grid-item={i}
-				style:--grid-columns={data.feed_grid_columns}
-				style:--position-in-grid-row={data.feed_grid_parallax_direction === "unidirectional" ? `calc(mod(${i}, ${data.feed_grid_columns}))` : (Math.floor(i / data.feed_grid_columns) % 2 == 0 ? `calc(mod(${i}, ${data.feed_grid_columns}))` : `calc(${data.feed_grid_columns} - mod(${i}, ${data.feed_grid_columns}))`)}
-				style:--animation-direction={data.feed_grid_parallax_direction === "unidirectional" ? 1 : (Math.floor(i / data.feed_grid_columns) % 2 == 0 ? 1 : -1)}
+				style:--grid-columns={gridColumns}
+				style:--position-in-grid-row={data.feed_grid_parallax_direction === "unidirectional" ? `calc(mod(${i}, var(--grid-columns)))` : (Math.floor(i / gridColumns) % 2 == 0 ? `calc(mod(${i}, var(--grid-columns)))` : `calc(var(--grid-columns) - mod(${i}, var(--grid-columns)))`)}
+				style:--animation-direction={data.feed_grid_parallax_direction === "unidirectional" ? 1 : (Math.floor(i / gridColumns) % 2 == 0 ? 1 : -1)}
 			>
 				{#if data.feed_grid_style === "parallax"}
 					<div class="parallax-animation-trigger"
@@ -80,6 +92,7 @@
 							} } 
 					  isScrollItem={false}
 					  isActive={true}
+					  hasDropShadow={data.feed_grid_image_drop_shadow}
 				/>
 			</div>
 		{/each}
@@ -119,9 +132,9 @@
 						${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
 					  `}
 				style:--grid-item={i}
-				style:--grid-columns={data.feed_grid_columns}
-				style:--position-in-grid-row={data.feed_grid_parallax_direction === "unidirectional" ? `calc(mod(${i}, ${data.feed_grid_columns}))` : (Math.floor(i / data.feed_grid_columns) % 2 == 0 ? `calc(mod(${i}, ${data.feed_grid_columns}))` : `calc(${data.feed_grid_columns} - mod(${i}, ${data.feed_grid_columns}))`)}
-				style:--animation-direction={data.feed_grid_parallax_direction === "unidirectional" ? 1 : (Math.floor(i / data.feed_grid_columns) % 2 == 0 ? 1 : -1)}
+				style:--grid-columns={gridColumns}
+				style:--position-in-grid-row={data.feed_grid_parallax_direction === "unidirectional" ? `calc(mod(${i}, var(--grid-columns)))` : (Math.floor(i / gridColumns) % 2 == 0 ? `calc(mod(${i}, var(--grid-columns)))` : `calc(var(--grid-columns) - mod(${i}, var(--grid-columns)))`)}
+				style:--animation-direction={data.feed_grid_parallax_direction === "unidirectional" ? 1 : (Math.floor(i / gridColumns) % 2 == 0 ? 1 : -1)}
 			>
 				{#if data.feed_grid_style === "parallax"}
 					<div class="parallax-animation-trigger"
@@ -737,9 +750,13 @@
 			&.half,
 			&.third,
 			&.fourth {
-				&:nth-child(n),
-				&.grid-style-dynamic:nth-child(n) {
-					grid-column: main;
+				&:nth-child(2n+1),
+				&.grid-style-dynamic:nth-child(2n+1) {
+					grid-column: column-start 1 / column-end 1;
+				}
+				&:nth-child(2n),
+				&.grid-style-dynamic:nth-child(2n) {
+					grid-column: column-start 2 / column-end 2;
 				}
 			}
 		}
@@ -756,17 +773,23 @@
 
 	:global {
 		.feed-grid-parallax-animate {
-			@media (min-width: 31.25em) {
-				animation: feed-grid-parallax-animate 1s linear forwards;
+			animation: feed-grid-parallax-animate 1s linear forwards;
+
+			--space-start: var(--SPACE-XL);
+			--space-end: var(--SPACE-LG);
+
+			@media (max-width: 31.25em) {
+				--space-start: var(--SPACE-LG);
+				--space-end: var(--SPACE-MD);
 			}
 		}
 
 		@keyframes feed-grid-parallax-animate {
 			0% {
-				transform: translate(calc(var(--SPACE-XL) * (1 + var(--position-in-grid-row)) * var(--animation-direction)), 0rem);
+				transform: translate(calc(var(--space-start) * (1 + var(--position-in-grid-row)) * var(--animation-direction)), 0rem);
 			}
 			100% {
-				transform: translate(calc(-1 * var(--SPACE-LG) * (var(--grid-columns) - var(--position-in-grid-row)) * var(--animation-direction)), 0rem);
+				transform: translate(calc(-1 * var(--space-end) * (var(--grid-columns) - var(--position-in-grid-row)) * var(--animation-direction)), 0rem);
 			}
 		}
 	}

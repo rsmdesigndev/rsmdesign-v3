@@ -610,7 +610,7 @@
 			&.image-position-right > picture {
 				@media (max-width: 31.25em) {
 					grid-column: viewport;
-					width: calc(50% - var(--SPACE-SM));
+					width: calc(50% - 2vw);
 					justify-self: end;
 				}
 			}

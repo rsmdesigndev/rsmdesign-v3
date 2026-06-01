@@ -4,11 +4,11 @@
 
 <template>
 	<section>
-		{#each Array(6) as _, i}
+		{#each Array(4) as _, i}
 			<figure
 				id={`book-animation-item-${i}`}
-				style:--position-in-grid-row={i < 3 || i > 5 ? `calc(mod(${i}, 3))` : `calc(3 - mod(${i}, 3))`}
-				style:--animation-direction={i < 3 || i > 5 ? 1 : -1}
+				style:--position-in-grid-row={i < 2 || i > 4 ? `calc(mod(${i}, 2))` : `calc(2 - mod(${i}, 2))`}
+				style:--animation-direction={i < 2 || i > 4 ? 1 : -1}
 			>
 				<div class="parallax-animation-trigger" 
 					 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#book-animation-item-${i}`, animClass: "book-parallax-animate" } }
@@ -49,6 +49,17 @@
 								   [third-start]
 								    10fr
 								   [third-end]
+								    2%
+								   [viewport-end];
+			grid-template-columns: [viewport-start]
+								    2%
+								   [half-start]
+								    15fr
+								   [half-end]
+								    2fr
+								   [half-start]
+								    15fr
+								   [half-end]
 								    2%
 								   [viewport-end];
 		}
@@ -94,6 +105,12 @@
 
 			@media (max-width: 31.25em) {
 				grid-column: main;
+				&:nth-of-type(2n+1) {
+					grid-column: half-start 1 / half-end 1;
+				}
+				&:nth-of-type(2n) {
+					grid-column: half-start 2 / half-end 2;
+				}
 			}
 
 			> img {
