@@ -125,15 +125,21 @@
 		}
 	}
 
+	let innerWidth: number;
+	let cardsPerSlide: number = data.carousel_cards_per_slide;
+
 	onMount(() => {
 		if (autoplay) {
 			restartInterval();
 			return () => clearInterval(intervalId);
 		}
+		if (cardsPerSlide > 2 && innerWidth <= 500) {
+			cardsPerSlide = 2;
+		};
 	});
 </script>
 
-<svelte:window on:resize={() => setTimeout(updateCarouselWidth, 600)} />
+<svelte:window bind:innerWidth on:resize={() => setTimeout(updateCarouselWidth, 600)} />
 
 <template>
 	<div id={`colItem-row-${row}-col-${column}-item-${colItem}`}
@@ -142,9 +148,13 @@
 		 style:--grid-column-end={fullBleed ? "-1" : (bleed.right ? "-2" : "-1")}
 		 bind:offsetWidth={carouselWidth}
 	>
+		<div class={`button-container ${data.carousel_show_arrows ? "visible" : ""} ${data.carousel_show_arrows && (data.carousel_arrow_style === "button" || data.carousel_arrow_style === "both") ? "visible-on-desktop" : ""}`}>
+			<button class="arrow" aria-label="Load previous slide" on:click={prev}>←</button>
+			<button class="arrow" aria-label="Load next slide" on:click={next}>→</button>
+		</div>
 		<div class="carousel-container"
 			 style:--grid-template-columns={animation === "fade" ? "1fr" : `repeat(${cards?.length ?? 1}, var(--carousel-card-width))`}
-			 style:--carousel-card-width={`calc((${carouselWidth + "px"} - var(--SPACE-MD) * ${data.carousel_cards_per_slide - 1}) / ${data.carousel_cards_per_slide})`}
+			 style:--carousel-card-width={`calc((${carouselWidth + "px"} - var(--SPACE-MD) * ${cardsPerSlide - 1}) / ${cardsPerSlide})`}
 			 style:--carousel-width={animation === "fade" ? "100%" : 
 			 	`calc(${carouselWidth + "px"} + (var(--carousel-card-width) + var(--SPACE-MD)) * ${cards?.length - 1})`}
 			 style:--animation-duration={animationDuration}
@@ -174,9 +184,9 @@
 			{/each}
 		</div>
 	</div>
-	{#if data.carousel_show_arrows}
-		<button aria-label="Previous slide" on:click={prev}></button>
-		<button aria-label="Next slide" on:click={next}></button>
+	{#if data.carousel_show_arrows && (data.carousel_arrow_style === "cursor" || data.carousel_arrow_style === "both")}
+		<button class="cursor-arrow" aria-label="Load previous slide" on:click={prev}></button>
+		<button class="cursor-arrow" aria-label="Load next slide" on:click={next}></button>
 	{/if}
 </template>
 
@@ -244,9 +254,60 @@
 				}
 			}
 		}
+
+		> .button-container {
+			display: none;
+			&.visible {
+				display: flex;
+			}
+
+			margin-top: calc(-1 * var(--SPACE-SM));
+			margin-bottom: var(--SPACE-SM);
+			justify-content: flex-end;
+			gap: var(--SPACE-MD);
+
+			@media (min-width: 62.5em) {
+				&.visible-on-desktop {
+					position: absolute;
+					width: 100%;
+					margin-top: calc(-1.5 * var(--GRID-CELL));
+				}
+				&:not(.visible-on-desktop) {
+					display: none;
+				}
+			}
+
+			> .arrow {
+				border: none;
+				box-shadow: none;
+				background: transparent;
+				padding: 0;
+				align-self: start;
+				&:first-of-type:not(:last-of-type) {
+					padding-right: var(--SPACE-SM)
+				}
+				&:last-of-type {
+					padding-left: var(--SPACE-SM)
+				}
+
+				font: "Inter", var(--FONT-FAMILY-PROXIMA-NOVA);
+				font-size: var(--FONT-SIZE-LG);
+				color: var(--color-secondary);
+				transition: color 0.3s ease;
+
+				&:hover {
+					color: var(--color-accent);
+					cursor: pointer;
+				}
+			}
+		}
 	}
 
-	button {
+	.cursor-arrow {
+		display: none;
+		@media (min-width: 62.5em) {
+			display: inline;
+		}
 		/* 
 			Z-Indexes
 			1: Background color
