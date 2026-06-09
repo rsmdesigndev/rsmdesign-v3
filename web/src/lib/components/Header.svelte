@@ -11,7 +11,7 @@
 	import { request } from "graphql-request";
 	import { setContext, afterUpdate, onMount, tick } from 'svelte';
 	import { env } from "$env/dynamic/public";
-	import { afterNavigate, beforeNavigate, goto } from "$app/navigation";
+	import { afterNavigate, beforeNavigate, goto, invalidateAll } from "$app/navigation";
 	import { cmsClient, type ImageAsset } from "$lib/cms";
 	import { assetUrl } from "$lib/cms/assets";
 
@@ -87,7 +87,7 @@
 			let totalFilterCount = serviceSlugs.length + marketSlugs.length;
 			if (totalFilterCount == 0) {
 				navParentLink = "/work";
-				navParentText = "Work";
+				navParentText = "work";
 			} else if (totalFilterCount == 1) {
 				if (serviceSlugs.length > 0) {
 					let serviceSlug = serviceSlugs[0];
@@ -118,20 +118,20 @@
 				}
 			} else {
 				navParentLink = `/work${makeProjectFilterUrlParams(urlFilters.serviceFilterSlugs, urlFilters.marketFilterSlugs)}`;
-				navParentText = "Work";
+				navParentText = "work";
 			}
 		}
 
 		if ($page.url.pathname.startsWith("/services")) {
 			navParentLink = "/expertise";
 			navParentCta = "View more";
-			navParentText = "Services";
+			navParentText = "services";
 		}
 
 		if ($page.url.pathname.startsWith("/markets")) {
 			navParentLink = "/expertise#markets";
 			navParentCta = "View more";
-			navParentText = "Markets";
+			navParentText = "markets";
 		}
 	});
 
@@ -146,6 +146,7 @@
 	}
 	function selectItemOnClick(i: number, link: string, linkDirectly: boolean) {
 		if (selectedItem === i || linkDirectly) {
+			invalidateAll();
 			goto(link);
 			closeMenu();
 		} else {
