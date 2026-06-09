@@ -83,6 +83,7 @@
 		position: relative;
 		overflow: hidden;
 		user-select: none;
+		max-height: calc(100% - 1em / 3);
 	}
 
 	.before, .after {
@@ -95,7 +96,7 @@
 			object-fit: cover;
 			object-position: left center;
 			width: 100%;
-			height: 100%;
+			height: 100%; //calc(100% - 5.3px);
 		}
 	}
 
@@ -139,14 +140,14 @@
 		width: var(--GRID-CELL);
 		height: var(--GRID-CELL);
 		box-sizing: border-box;
-		font-size: var(--FONT-SIZE-XL);
+		font-size: var(--FONT-SIZE-LG);
 		font-weight: 300;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		color: white;
 		cursor: grab;
-		padding-bottom: 5px;
+		padding-bottom: 0.25em;
 		box-shadow: 0 0 10px rgba(12, 12, 12, 0.2);
 
 		background-color: rgba(26,24,24,0.5);
