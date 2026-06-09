@@ -24,11 +24,11 @@
 	{#if source === "youtube" && youtube}
 		<iframe
 			title="Video"
-			src="https://www.youtube.com/embed/{youtube}"
+			src="https://www.youtube.com/embed/{youtube}&autoplay=0&color=white&loop=1"
 			width="100%"
 			height="100%"
 			frameborder="0"
-			allow="autoplay; fullscreen"
+			allow="fullscreen"
 			allowfullscreen
 			loading="lazy"
 		/>
@@ -45,8 +45,18 @@
 		/>
 	{:else if source === "native" && native}
 		{#if native?.filename_disk}
-			<video bind:this={videoNative} loop autoplay muted playsinline>
+			<video 
+				bind:this={videoNative} 
+				autoplay
+				loop 
+				muted 
+				playsinline 
+				controls 
+				preload="auto"
+				poster={assetUrl(fallback?.filename_disk)}
+			>
 				<source src={assetUrl(native?.filename_disk)} type={native?.type} />
+				<img src={assetUrl(fallback?.filename_disk)} title="Your browser does not support the <video> tag">
 				<track kind="captions" />
 			</video>
 		{/if}
