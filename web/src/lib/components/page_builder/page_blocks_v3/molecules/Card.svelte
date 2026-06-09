@@ -68,6 +68,7 @@
 	<svelte:element 
 		this={data.card_link ? "a" : "div"} 
 		href={data.card_link ?? ""}
+		data-sveltekit-preload-data="tap"
 		target={data.card_link?.includes("https://") && !data.cta_link?.includes("rsmdesign.com")
 				? "_blank" : "_self"}
 		use:conditionalSelectItemOnIntersection

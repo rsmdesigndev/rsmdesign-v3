@@ -49,6 +49,7 @@
 	//let showBreadcrumbs: boolean = true;
 
 	afterNavigate(async () => {
+		closeMenu();
 		/*if ($page.url.pathname != "" && $page.url.pathname != "/") {
 			root_links: for (let item of navMenu.nav_menu_links) {
 				let link = item.nav_menu_links_id;
@@ -357,16 +358,25 @@
 					{#each navMenu.nav_menu_links.map((c) => c?.nav_menu_links_id).filter(item => !!item.link_shows_in_menu) as item, i}
 						<a
 							href={item.link_path}
+							data-sveltekit-preload-data="off"
+							data-sveltekit-reload
+							rel="external"
 							class:active={selectedItem === i}
 							on:mouseover|preventDefault={() => selectItemOnMouseover(i)}
-							on:click|preventDefault={() => selectItemOnClick(i, item.link_path, !item.link_children.length)}
 						>
+						<!--	on:click|preventDefault={() => selectItemOnClick(i, item.link_path, !item.link_children.length)}
+						>-->
 							{item.link_text}
 						</a>
 						{#if item.link_children.length}
 							<aside>
 								{#each item.link_children.map((c) => c?.nav_menu_links_child_id) as child}
-									<a href={child.link_path}>
+									<a 
+										href={child.link_path}
+										data-sveltekit-preload-data="off"
+										data-sveltekit-reload
+										rel="external"
+									>
 										{child.link_text}
 									</a>
 									{#if child.link_media_image}
