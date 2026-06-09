@@ -15,6 +15,7 @@
 <a href="/work/great-park-neighborhoods">Great Park Neighborhoods</a>
 <a href="/markets/hotel-signage">Hotel Signage</a>
 <a href="/markets/resort-signage">Resort Signage</a>
+<a href="/team/suzanne-redmond-schwartz">Suzanne Redmond Schwartz</a>
 
 {#each data.newsPosts as newsPost}
     <a href="/news/{newsPost.slug}">{newsPost.slug}</a>
