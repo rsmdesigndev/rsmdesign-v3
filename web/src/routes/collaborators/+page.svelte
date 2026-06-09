@@ -14,7 +14,7 @@
 <template>
 	<div class="container clients">
 		<figure>
-			<img src="/img/clients/RSM-Design_Experiential-Graphic-Design-Installation.jpg" alt="Noma Gateway colorful art installation." />
+			<img src="/img/clients/CollaboratorSlider-C.jpg" alt="Pavilion with a manmade lake surrounded by native grass landscaping, custom sculptural concrete benches, and colorful industrial beam lampposts." />
 		</figure>
 		<section class="rich-text">
 			<h1 class="xxxl">Clients & Collaborators.</h1>
