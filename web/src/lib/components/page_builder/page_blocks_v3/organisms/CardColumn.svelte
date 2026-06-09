@@ -246,6 +246,16 @@
 				top: var(--top);
 			}
 		}
+
+		// hide scrollbar
+		-ms-overflow-style: none;  /* IE and Edge */
+		scrollbar-width: none;  /* Firefox */
+
+		&::-webkit-scrollbar {
+		  display: none;
+		  width: 0px;
+		  background: transparent;
+		}
 	}
 
 	:global {
