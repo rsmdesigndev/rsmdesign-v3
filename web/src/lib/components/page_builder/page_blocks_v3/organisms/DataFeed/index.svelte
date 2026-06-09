@@ -1081,6 +1081,7 @@
 			height: 0;
 			overflow: hidden;
 			margin-top: -100vh;
+			margin-bottom: 1000vh;
 		}
 		&.carousel-button {
 			padding: 0;
