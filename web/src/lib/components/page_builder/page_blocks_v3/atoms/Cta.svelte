@@ -58,8 +58,7 @@
 				href={data.cta_link ?? ""}
 				target={data.cta_link?.includes("https://") && !data.cta_link?.includes("rsmdesign.com")
 						? "_blank" : "_self"}
-				class={`cta ${!button && data.cta_type === "button" ? "button" : 
-							 (data.cta_link ? "link" : "")}
+				class={`cta ${!button && data.cta_type === "button" ? "button" : "link"}
 						hover-highlight-${hoverOverride != "" ? hoverOverride : data.cta_hover_highlight}`}
 				class:active={isActive}
 				style:justify-content={data.cta_text_align === "right" || 
@@ -71,7 +70,7 @@
 				style:--font-size={`var(--FONT-SIZE-${sizeOverride != "" ? sizeOverride?.toUpperCase() : "MD"})`}
 				style:--line-height={sizeOverride === "lg" ? "1.167" : "1.333"}
 >
-	<span>
+	<span class:margin-right={data.cta_icon === "arrow_down" || data.cta_icon === "arrow_up"}>
 		{#if data.cta_style != "light" && data.cta_text_bold}
 			<strong bind:this={boldText}>
 				{@html data.cta_text_bold}
@@ -94,6 +93,13 @@
 </svelte:element>
 
 <style lang="scss">
+	button {
+		border: none;
+		border-radius: 0;
+		background: transparent;
+		padding: 0;
+		font-family: var(--FONT-FAMILY-PROXIMA-NOVA);
+	}
 	.cta {
 		grid-column: var(--grid-column-start) / var(--grid-column-end);
 		display: flex;
@@ -112,6 +118,10 @@
 		transition: opacity 0.3s ease, color 0.3s ease;
 		&.active {
 			opacity: 1;
+		}
+
+		span.margin-right {
+			margin-right: calc(var(--GRID-CELL) / 4);
 		}
 
 		strong,
@@ -238,13 +248,17 @@
 			}
 			&[data-icon="arrow_up"]::after,
 			&[data-icon="arrow_down"]::after {
+				font-size: 162%;
+				line-height: 0;
+				font-weight: 300;
+				color: var(--color-accent);
 				rotate: 90deg;
-				transform: translate(0.167em, 0);
+				transform: translate(0.222em, 0);
 				transition: transform 0.3s ease-in-out;
 			}
 			&[data-icon="arrow_up"].open::after,
 			&[data-icon="arrow_down"].open::after {
-				transform: rotateY(180deg) translate(-0.167em, 0);
+				transform: rotateY(180deg) translate(-0.222em, 0);
 			}
 		}
 	}

@@ -5,6 +5,7 @@
 	import { request } from "graphql-request";
 	import { env } from "$env/dynamic/public";
 
+	import ProjectFilterMenu from "./ProjectFilterMenu.svelte";
 	import DataFeedGrid from "./DataFeedGrid.svelte";
 	import DataFeedTable from "./DataFeedTable.svelte";
 	import DataFeedTickerTape from "./DataFeedTickerTape.svelte";
@@ -759,7 +760,26 @@
 			 style:--z-index={data.feed_view === "Table" && data.feed_table_style === "simple" ? "3" : "2"}
 			 use:selectFeedOnIntersection
 	>
-
+		{#if data.feed_show_filter_menu && data.feed_source === "Projects"}
+			<div class="project-filter-menu-wrapper">
+				<div class="project-filter-menu-heading">
+					<Heading 
+						data={ { heading_type: "page",
+								 heading_primary: "large",
+								 heading_size: "xxxl",
+								 heading_weight: "regular",
+								 heading_has_small_text: false,
+								 heading_has_large_text: true,
+								 heading_has_superscript: true, 
+								 heading_large: data.feed_source,
+								 heading_superscript: loadTotalCount
+							 } }
+					/>
+				</div>
+				<ProjectFilterMenu />
+			</div>
+		{:else if data.feed_show_filter_menu && data.feed_source === "Articles"}
+		{/if}
 		{#key loaded}
 			{#if !loaded && data.feed_source != "Manual"}
 				<p>Loading...</p>
@@ -789,22 +809,6 @@
 							/>
 						</div>
 					{:else}
-						{#if data.feed_view === "Grid" && data.feed_grid_style === "dynamic" && data.feed_grid_columns === 3}
-							<div class="grid-heading">
-								<Heading 
-									data={ { heading_type: "page",
-											 heading_primary: "large",
-											 heading_size: "xxxl",
-											 heading_weight: "regular",
-											 heading_has_small_text: false,
-											 heading_has_large_text: true,
-											 heading_has_superscript: true, 
-											 heading_large: data.feed_source,
-											 heading_superscript: loadTotalCount
-										 } }
-								/>
-							</div>
-						{/if}
 						{#each Array(pagesLoaded) as page, i}
 							<div class="grid-container"
 								 class:carousel-slide={data.feed_load_functionality === "carousel"}
@@ -961,9 +965,17 @@
 			grid-column: main;
 		}
 
-		.grid-heading {
-			grid-column: main;
-			margin-bottom: var(--SPACE-MD);
+		.project-filter-menu-wrapper {
+			grid-column: viewport;
+			margin-bottom: calc(-1 * var(--SPACE-LG));
+
+			display: grid;
+			grid-template-columns: subgrid;
+			row-gap: var(--SPACE-MD);
+
+			> .project-filter-menu-heading {
+				grid-column: main;
+			}
 		}
 
 		.grid-container {
