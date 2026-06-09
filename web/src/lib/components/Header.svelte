@@ -282,7 +282,14 @@
 		<div class="menu-bar" />
 
 		<div class="logo-container" bind:offsetHeight={logoHeight} bind:offsetWidth={innerWidth}>
-			<a class="logo" href="/" aria-label="Navigate to RSM Design homepage" on:click={closeMenu}>
+			<a class="logo" 
+			   href="/" 
+			   aria-label="Navigate to RSM Design homepage" 
+			   on:click={closeMenu}
+			   data-sveltekit-preload-data="off"
+			   data-sveltekit-reload
+			   rel="external"
+			>
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 22.572">
 					<title>RSM Design logotype</title>
 					<g class="logotype" fill-rule="nonzero">
