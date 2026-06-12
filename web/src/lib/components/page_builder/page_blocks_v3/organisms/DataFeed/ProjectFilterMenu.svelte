@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { slide } from "svelte/transition";
+	import { request } from "graphql-request";
+	import { env } from "$env/dynamic/public";
+	import { slide, fade } from "svelte/transition";
 	import Cta, { type CtaData } from "../../atoms/Cta.svelte";
 
 	let filterView: "Grid" | "Table" = "Grid";
-	let filterMenuOpen: string = "none";
+	$: filterMenuOpen = "none";
 	const filterCta = {
 		cta_type: "link",
 		cta_size: "md",
@@ -16,6 +18,7 @@
 			filterMenuOpen = "none";
 		} else {
 			filterMenuOpen = item;
+			loadFilters();
 		}
 	}
 
@@ -23,6 +26,63 @@
 		if (event.code === "Space" || event.code === "Enter") {
 			event.preventDefault();
 			toggleFilterMenu(item);
+		}
+	}
+
+	// Load more functionality
+	$: services = [];
+	let servicesLoaded: boolean = false;
+	let servicesQuery = `
+		query Services {
+			services(filter: { visibility: { _nin: ["draft", "archived", "visibleExceptFilters"] } }) {
+				filter_button_name
+			}
+		}
+	`;
+
+	$: markets = [];
+	let marketsLoaded: boolean = false;
+	let marketsQuery = `
+		query Markets {
+			markets(filter: { visibility: { _nin: ["draft", "archived", "visibleExceptFilters"] } }) {
+				filter_button_name
+			}
+		}
+	`;
+
+	$: locations = [];
+	$: collaborators = [];
+
+	const loadFilters = async () => {
+		switch (filterMenuOpen) {
+			case "services": {
+				if (!servicesLoaded) {
+					let response = await request(env.PUBLIC_DIRECTUS_API_URL, servicesQuery);
+
+					if (response) {
+						services.push(...response.services);
+						services = services;
+					}
+
+					servicesLoaded = true;
+				}
+				break;
+			}
+			case "markets": {
+				if (!marketsLoaded) {
+					let response = await request(env.PUBLIC_DIRECTUS_API_URL, marketsQuery);
+
+					if (response) {
+						markets.push(...response.markets);
+						markets = markets;
+					}
+
+					marketsLoaded = true;
+				}
+				break;
+			}
+			case "locations": {}
+			case "collaborators": {}
 		}
 	}
 
@@ -58,35 +118,31 @@
 				<Cta button
 					 data={ {...filterCta, 
 							 cta_text_light: "Service",
-							 cta_icon: `${filterMenuOpen === "service" ? "arrow_up" : "arrow_down"}`
+							 cta_icon: `${filterMenuOpen === "services" ? "arrow_up" : "arrow_down"}`
 						  } }
-					 on:click={toggleFilterMenu("service")}
-					 on:keypress={onFilterMenuKeypress("service")}
+					 on:click={() => toggleFilterMenu("services")}
 				/>
 				<Cta button
 					 data={ {...filterCta, 
 							 cta_text_light: "Market",
-							 cta_icon: `${filterMenuOpen === "market" ? "arrow_up" : "arrow_down"}`
+							 cta_icon: `${filterMenuOpen === "markets" ? "arrow_up" : "arrow_down"}`
 						  } }
-					 on:click={toggleFilterMenu("market")}
-					 on:keypress={onFilterMenuKeypress("market")}
+					 on:click={() => toggleFilterMenu("markets")}
 				/>
-				<Cta button
+				<!--<Cta button
 					 data={ {...filterCta, 
 							 cta_text_light: "Location",
-							 cta_icon: `${filterMenuOpen === "location" ? "arrow_up" : "arrow_down"}`
+							 cta_icon: `${filterMenuOpen === "locations" ? "arrow_up" : "arrow_down"}`
 						  } }
-					 on:click={toggleFilterMenu("location")}
-					 on:keypress={onFilterMenuKeypress("location")}
+					 on:click={() => toggleFilterMenu("locations")}
 				/>
 				<Cta button
 					 data={ {...filterCta, 
 							 cta_text_light: "Collaborator",
-							 cta_icon: `${filterMenuOpen === "collaborator" ? "arrow_up" : "arrow_down"}`
+							 cta_icon: `${filterMenuOpen === "collaborators" ? "arrow_up" : "arrow_down"}`
 						  } }
-					 on:click={toggleFilterMenu("collaborator")}
-					 on:keypress={onFilterMenuKeypress("collaborator")}
-				/>
+					 on:click={() => toggleFilterMenu("collaborators")}
+				/>-->
 			</div>
 		</div>
 		<form on:submit|preventDefault={search}>
@@ -99,12 +155,46 @@
 			</button>
 		</form>
 	</div>
-	<div class="project-filters" transition:slide={{ duration: 400 }}>
-	</div>
+	{#if filterMenuOpen != "none"}
+		<div class="project-filters-wrapper" transition:slide={{ duration: 400 }}>
+			<div class="project-filters-container">
+				<div class="project-filters"
+					 class:active={filterMenuOpen === "markets"}				 
+				>
+					{#if filterMenuOpen === "services"}
+						{#if servicesLoaded}
+							<div in:fade={{ duration: 100, delay: 101 }}
+								 out:fade={{ duration: 100 }}
+							>
+								{#each services as item}
+									<p>{item.filter_button_name}</p>
+								{/each}
+							</div>
+						{:else}
+							<p>Loading…</p>
+						{/if}
+					{:else if filterMenuOpen === "markets"}
+						{#if marketsLoaded}
+							<div in:fade={{ duration: 100, delay: 101 }}
+								 out:fade={{ duration: 100 }}
+							>
+								{#each markets as item}
+									<p>{item.filter_button_name}</p>
+								{/each}
+							</div>
+						{:else}
+							<p>Loading…</p>
+						{/if}
+					{/if}
+				</div>
+			</div>
+		</div>
+	{/if}
 </template>
 
 <style lang="scss">
 	.project-filter-menu-container {
+		margin-top: var(--SPACE-MD);
 		grid-column: main;
 		display: flex;
 		justify-content: space-between;
@@ -268,6 +358,47 @@
 
 				&.active {
 					color: var(--COLOR-ORANGE);
+				}
+			}
+		}
+	}
+	.project-filters-wrapper {
+		grid-column: viewport;
+
+		display: grid;
+		grid-template-columns: subgrid;
+
+		> .project-filters-container {
+			margin-top: var(--SPACE-MD);
+			padding: var(--SPACE-MD) 0;
+			grid-column: viewport;
+			background-color: #f2f2f3;
+
+			display: grid;
+			grid-template-columns: subgrid;
+
+			> p {
+				grid-column: main;
+			}
+
+			> .project-filters {
+				grid-column: main;
+				display: grid;
+				grid-template-columns: subgrid;
+				
+				> div {
+					grid-column: 1 / -1;
+					display: grid;
+					grid-template-columns: repeat(4, 1fr);
+					grid-auto-flow: row dense;
+					column-gap: var(--SPACE-MD);
+					row-gap: 1rem;
+
+					> p {
+						font-size: var(--FONT-SIZE-SM);
+						line-height: 1.333;
+						margin-bottom: 0;
+					}
 				}
 			}
 		}

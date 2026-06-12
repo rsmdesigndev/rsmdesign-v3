@@ -13,7 +13,7 @@
 </script>
 
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, createEventDispatcher } from 'svelte';
 	import type { BleedData } from "../organisms/CardColumn.svelte";
 
 	export let data: CtaData;
@@ -51,10 +51,16 @@
 			}
 		}
 	});
+
+	const dispatch = createEventDispatcher();
+	function handleClick() {
+		dispatch('click');
+	}
 </script>
 
 <svelte:element this={button ? "button" : 
 					 (data.cta_link ? "a" : "p")}
+				on:click={handleClick}
 				href={data.cta_link ?? ""}
 				target={data.cta_link?.includes("https://") && !data.cta_link?.includes("rsmdesign.com")
 						? "_blank" : "_self"}

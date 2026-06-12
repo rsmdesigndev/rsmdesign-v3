@@ -772,7 +772,7 @@
 								 heading_has_large_text: true,
 								 heading_has_superscript: true, 
 								 heading_large: data.feed_source,
-								 heading_superscript: loadTotalCount
+								 heading_superscript: `${loadTotalCount > 20 ? loadTotalCount : ""}`
 							 } }
 					/>
 				</div>
@@ -971,7 +971,6 @@
 
 			display: grid;
 			grid-template-columns: subgrid;
-			row-gap: var(--SPACE-MD);
 
 			> .project-filter-menu-heading {
 				grid-column: main;
