@@ -91,11 +91,22 @@
 		grid-column: 1 / -1;
 		margin: 0;
 		padding: 0;
-		overflow-x: hidden;
+		overflow: hidden;
 		color: var(--color-media, var(--color-primary, inherit));
 
 		opacity: 0;
 		transition: opacity 0.3s ease, color 0.3s ease;
+
+		// hide scrollbar
+		-ms-overflow-style: none;  /* IE and Edge */
+		scrollbar-width: none;  /* Firefox */
+
+		&::-webkit-scrollbar {
+		  display: none;
+		  width: 0px;
+		  background: transparent;
+		}
+		
 		&.active {
 			opacity: 1;
 		}
