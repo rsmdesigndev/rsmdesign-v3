@@ -6,11 +6,19 @@
 
 	let filterView: "Grid" | "Table" = "Grid";
 	$: filterMenuOpen = "none";
-	const filterCta = {
+	const filterMenuCta = {
 		cta_type: "link",
 		cta_size: "md",
 		cta_style: "light",
 		cta_hover_highlight: "light"
+	}
+
+	const filterCta = {
+		cta_type: "link",
+		cta_size: "sm",
+		cta_style: "light",
+		cta_hover_highlight: "light",
+		cta_icon_position: "left"
 	}
 
 	function toggleFilterMenu(item: string) {
@@ -22,10 +30,29 @@
 		}
 	}
 
-	function onFilterMenuKeypress(item: string) {
-		if (event.code === "Space" || event.code === "Enter") {
-			event.preventDefault();
-			toggleFilterMenu(item);
+	let serviceFilters: string[] = [];
+	let marketFilters: string[] = [];
+	function toggleFilter(type: string, item: string) {
+		if (!item) {
+			return;
+		} else {
+			if (type === "service") {
+				const index = serviceFilters.indexOf(item);
+				if (index > -1) {
+					serviceFilters.splice(index, 1);
+				} else {
+					serviceFilters.push(item);
+				}
+				serviceFilters = serviceFilters;
+			} else if (type === "market") {
+				const index = marketFilters.indexOf(item);
+				if (index > -1) {
+					marketFilters.splice(index, 1);
+				} else {
+					marketFilters.push(item);
+				}
+				marketFilters = marketFilters;
+			}
 		}
 	}
 
@@ -116,14 +143,14 @@
 			</div>
 			<div>
 				<Cta button
-					 data={ {...filterCta, 
+					 data={ {...filterMenuCta, 
 							 cta_text_light: "Service",
 							 cta_icon: `${filterMenuOpen === "services" ? "arrow_up" : "arrow_down"}`
 						  } }
 					 on:click={() => toggleFilterMenu("services")}
 				/>
 				<Cta button
-					 data={ {...filterCta, 
+					 data={ {...filterMenuCta, 
 							 cta_text_light: "Market",
 							 cta_icon: `${filterMenuOpen === "markets" ? "arrow_up" : "arrow_down"}`
 						  } }
@@ -167,7 +194,15 @@
 								 out:fade={{ duration: 100 }}
 							>
 								{#each services as item}
-									<p>{item.filter_button_name}</p>
+									<div>
+										<Cta button
+											 data={ {...filterCta, 
+													 cta_text_light: item.filter_button_name,
+													 cta_icon: `${serviceFilters.indexOf(item.filter_button_name) > -1 ? "dot_solid" : "dot_empty"}`
+												  } }
+											 on:click={() => toggleFilter("service", item.filter_button_name)}
+										/>
+									</div>
 								{/each}
 							</div>
 						{:else}
@@ -179,7 +214,15 @@
 								 out:fade={{ duration: 100 }}
 							>
 								{#each markets as item}
-									<p>{item.filter_button_name}</p>
+									<div>
+										<Cta button
+											 data={ {...filterCta, 
+													 cta_text_light: item.filter_button_name,
+													 cta_icon: `${marketFilters.indexOf(item.filter_button_name) > -1 ? "dot_solid" : "dot_empty"}`
+												  } }
+											 on:click={() => toggleFilter("market", item.filter_button_name)}
+										/>
+									</div>
 								{/each}
 							</div>
 						{:else}

@@ -1074,7 +1074,7 @@
 		border: none;
 		box-shadow: none;
 		background: transparent;
-		font: "Inter", var(--FONT-FAMILY-PROXIMA-NOVA);
+		font-family: "Inter", var(--FONT-FAMILY-PROXIMA-NOVA);
 
 		&.infinite-scroll {
 			height: 0;

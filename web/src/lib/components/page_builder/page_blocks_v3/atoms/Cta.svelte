@@ -2,6 +2,7 @@
 	export type CtaData = {
 		cta_type?: string | null;
 		cta_icon?: string | null;
+		cta_icon_hover?: string | null;
 		cta_icon_position?: string | null;
 		cta_style?: string | null;
 		cta_hover_highlight?: string | null;
@@ -92,7 +93,11 @@
 	</span>
 	{#if data.cta_icon != "none"}
 		<span data-icon={iconOverride != "" ? iconOverride : data.cta_icon}
-			  class={`icon ${data.cta_icon_position === "left" ? "margin-right" : "margin-left"}`}
+			  data-icon-hover={data.cta_icon_hover}
+			  class={`icon
+			  		  ${data.cta_icon_position === "left" ? (data.cta_icon != "dot_solid" && data.cta_icon != "dot_empty" ? "margin-right" : "") : "margin-left"}
+			  		  ${data.cta_icon_hover ? "icon-hover" : ""}
+			  		`}
 			  aria-hidden="true"
 		/>
 	{/if}
@@ -107,6 +112,7 @@
 		font-family: var(--FONT-FAMILY-PROXIMA-NOVA);
 	}
 	.cta {
+		position: relative;
 		grid-column: var(--grid-column-start) / var(--grid-column-end);
 		display: flex;
 		flex-direction: var(--flex-direction);
@@ -226,9 +232,6 @@
 		}
 
 		span.icon {
-			&.margin-right {
-				margin-right: calc(var(--GRID-CELL) / 4);
-			}
 			&.margin-left {
 				margin-left: calc(var(--GRID-CELL) / 4);
 			}
@@ -265,6 +268,37 @@
 			&[data-icon="arrow_up"].open::after,
 			&[data-icon="arrow_down"].open::after {
 				transform: rotateY(180deg) translate(-0.222em, 0);
+			}
+			&[data-icon="dot_solid"]::after,
+			&[data-icon="dot_outline"]::after,
+			&[data-icon="dot_empty"]::after {
+				position: absolute;
+				top: calc(50% - 0.1rem);
+				left: -1rem;
+				margin-right: 0;
+				
+				content: "";
+				width: 0.25rem;
+				height: 0.25rem;
+				border-radius: 50%;
+				border: 1px solid var(--color-primary);
+				transition: border-color 0.3s ease, background-color 0.3s ease;
+			}
+			&[data-icon="dot_solid"]::after {
+				background-color: var(--color-primary);
+			}
+			&[data-icon="dot_outline"]::after {
+			}
+			&[data-icon="dot_empty"]::after {
+				border-color: transparent;
+			}
+		}
+
+		&:hover {
+			span.icon[data-icon="dot_solid"]::after,
+			span.icon[data-icon="dot_empty"]::after {
+				border: 1px solid var(--color-primary);
+				background-color: transparent;
 			}
 		}
 	}
