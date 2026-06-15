@@ -286,10 +286,11 @@
 			   href="/" 
 			   aria-label="Navigate to RSM Design homepage" 
 			   on:click={closeMenu}
+			><!--
 			   data-sveltekit-preload-data="off"
 			   data-sveltekit-reload
 			   rel="external"
-			>
+			>-->
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 22.572">
 					<title>RSM Design logotype</title>
 					<g class="logotype" fill-rule="nonzero">
@@ -365,13 +366,13 @@
 					{#each navMenu.nav_menu_links.map((c) => c?.nav_menu_links_id).filter(item => !!item.link_shows_in_menu) as item, i}
 						<a
 							href={item.link_path}
+							class:active={selectedItem === i}
+							on:mouseover|preventDefault={() => selectItemOnMouseover(i)}
+						><!--
+							on:click|preventDefault={() => selectItemOnClick(i, item.link_path, !item.link_children.length)}
 							data-sveltekit-preload-data="off"
 							data-sveltekit-reload
 							rel="external"
-							class:active={selectedItem === i}
-							on:mouseover|preventDefault={() => selectItemOnMouseover(i)}
-						>
-						<!--	on:click|preventDefault={() => selectItemOnClick(i, item.link_path, !item.link_children.length)}
 						>-->
 							{item.link_text}
 						</a>
@@ -380,9 +381,11 @@
 								{#each item.link_children.map((c) => c?.nav_menu_links_child_id) as child}
 									<a 
 										href={child.link_path}
+									><!--
 										data-sveltekit-preload-data="off"
 										data-sveltekit-reload
 										rel="external"
+									>-->
 									>
 										{child.link_text}
 									</a>
