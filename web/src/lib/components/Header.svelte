@@ -386,7 +386,6 @@
 										data-sveltekit-reload
 										rel="external"
 									>-->
-									>
 										{child.link_text}
 									</a>
 									{#if child.link_media_image}
