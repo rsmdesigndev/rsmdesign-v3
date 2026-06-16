@@ -278,8 +278,8 @@
 				margin-right: 0;
 				
 				content: "";
-				width: 0.25rem;
-				height: 0.25rem;
+				width: 0.33rem;
+				height: 0.33rem;
 				border-radius: 50%;
 				border: 1px solid var(--color-primary);
 				transition: border-color 0.3s ease, background-color 0.3s ease;

@@ -148,7 +148,7 @@
 	function selectItemOnClick(i: number, link: string, linkDirectly: boolean) {
 		if (selectedItem === i || linkDirectly) {
 			//invalidateAll(); // force page reload
-			goto(link, { invalidateAll: true });
+			goto(link);
 			closeMenu();
 		} else {
 			selectedItem = i;

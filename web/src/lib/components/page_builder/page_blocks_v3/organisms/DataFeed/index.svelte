@@ -26,12 +26,12 @@
 		feed_filter_logic?: string | null;
 		feed_filter_markets?: {
 			markets_id?: {
-				name?: string | null
+				filter_button_name?: string | null
 			}
 		}[]
 		feed_filter_services?: {
 			services_id?: {
-				name?: string | null
+				filter_button_name?: string | null
 			}
 		}[]
 		feed_filter_location_cities?: {
@@ -106,6 +106,11 @@
 
 	let firstFilter: string;
 
+	let serviceFilters: any[] = [];
+	let marketFilters: any[] = [];
+	let locationFilters: any[] = [];
+	let studioFilters: any[] = [];
+
 	// Load more functionality
 	const loadMore = async () => {
 		switch (data.feed_source) {
@@ -113,51 +118,55 @@
 				let filters = [];
 
 				// Extract services
-				if (data.feed_filter_services && data.feed_filter_services.length > 0) {
-					let services = [];
+				if (serviceFilters && serviceFilters.length > 0) {
+					filters.push(`{ services: { services_id: { filter_button_name: { _in: [${serviceFilters.join(",")}] } } } }`);
+				} else if (data.feed_filter_services && data.feed_filter_services.length > 0) {
 					for (let [i, item] of data.feed_filter_services.entries()) {
-						if (item?.services_id?.name) {
-							services.push(`"${item.services_id.name}"`);
+						if (item?.services_id?.filter_button_name) {
+							serviceFilters.push(`"${item.services_id.filter_button_name}"`);
 
 							if (i === 0) {
-								firstFilter = item.services_id.name;
+								firstFilter = item.services_id.filter_button_name;
 							}
 						}
 					}
-					filters.push(`{ services: { services_id: { name: { _in: [${services.join(",")}] } } } }`);
+					filters.push(`{ services: { services_id: { filter_button_name: { _in: [${serviceFilters.join(",")}] } } } }`);
 				}
 
 				// Extract markets
-				if (data.feed_filter_markets && data.feed_filter_markets.length > 0) {
-					let markets = [];
+				if (marketFilters && marketFilters.length > 0) {
+					filters.push(`{ markets: { markets_id: { filter_button_name: { _in: [${marketFilters.join(",")}] } } } }`);
+				} else if (data.feed_filter_markets && data.feed_filter_markets.length > 0) {
 					for (let item of data.feed_filter_markets) {
-						if (item?.markets_id?.name) {
-							markets.push(`"${item.markets_id.name}"`);
+						if (item?.markets_id?.filter_button_name) {
+							marketFilters.push(`"${item.markets_id.filter_button_name}"`);
 						}
 					}
-					filters.push(`{ markets: { markets_id: { name: { _in: [${markets.join(",")}] } } } }`);
+					filters.push(`{ markets: { markets_id: { filter_button_name: { _in: [${marketFilters.join(",")}] } } } }`);
 				}
 
 				// Extract cities
-				if (data.feed_filter_location_cities && data.feed_filter_location_cities.length > 0) {
-					let cities = [];
+				if (locationFilters && locationFilters.length > 0) {
+					filters.push(`{ project_location_city: { city_name: { _in: [${locationFilters.join(",")}] } } }`);
+				} else if (data.feed_filter_location_cities && data.feed_filter_location_cities.length > 0) {
 					for (let item of data.feed_filter_location_cities) {
 						if (item?.locations_cities_id?.city_name) {
-							cities.push(`"${item.locations_cities_id.city_name}"`);
+							locationFilters.push(`"${item.locations_cities_id.city_name}"`);
 						}
 					}
-					filters.push(`{ project_location_city: { city_name: { _in: [${cities.join(",")}] } } }`);
+					filters.push(`{ project_location_city: { city_name: { _in: [${locationFilters.join(",")}] } } }`);
 				}
 
 				// Extract studios
-				if (data.feed_filter_studio_locations && data.feed_filter_studio_locations.length > 0) {
-					let studios = [];
+				if (studioFilters && studioFilters.length > 0) {
+					filters.push(`{ studio_locations: { studio_locations_id: { location: { _in: [${studioFilters.join(",")}] } } } }`);
+				} else if (data.feed_filter_studio_locations && data.feed_filter_studio_locations.length > 0) {
 					for (let item of data.feed_filter_studio_locations) {
 						if (item?.studio_locations_id?.location) {
-							studios.push(`"${item.studio_locations_id.location}"`);
+							studioFilters.push(`"${item.studio_locations_id.location}"`);
 						}
 					}
-					filters.push(`{ studio_locations: { studio_locations_id: { location: { _in: [${studios.join(",")}] } } } }`);
+					filters.push(`{ studio_locations: { studio_locations_id: { location: { _in: [${studioFilters.join(",")}] } } } }`);
 				}
 
 				let query = `
@@ -624,7 +633,14 @@
 		}
 
 		loadOffset += numItems;
-		//console.log("load more")
+	}
+
+	function reload() {
+		feedData = [];
+		loaded = false;
+		loadOffset = 0;
+		loadTotalCount = 0;
+		loadMore();
 	}
 
 	/**
@@ -634,7 +650,6 @@
 	function loadMoreOnIntersection(node: Element) {
 		const observer = new IntersectionObserver(([entry]) => {
 			if (entry.isIntersecting && loadOffset < loadTotalCount) {
-				//console.log("load more on scroll");
 				loadMore();
 			}
 		});
@@ -776,7 +791,13 @@
 							 } }
 					/>
 				</div>
-				<ProjectFilterMenu />
+				<ProjectFilterMenu 
+					on:updateFilters={reload}
+					bind:serviceFilters
+					bind:marketFilters
+					bind:locationFilters
+					bind:studioFilters
+				/>
 			</div>
 		{:else if data.feed_show_filter_menu && data.feed_source === "Articles"}
 		{/if}
@@ -962,6 +983,10 @@
 		}
 
 		button {
+			grid-column: main;
+		}
+
+		> p {
 			grid-column: main;
 		}
 

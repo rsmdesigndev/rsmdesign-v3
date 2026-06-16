@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { createEventDispatcher } from 'svelte';
 	import { request } from "graphql-request";
 	import { env } from "$env/dynamic/public";
 	import { slide, fade } from "svelte/transition";
@@ -30,28 +31,33 @@
 		}
 	}
 
-	let serviceFilters: string[] = [];
-	let marketFilters: string[] = [];
+	export let serviceFilters: string[] = [];
+	export let marketFilters: string[] = [];
+
+	const dispatch = createEventDispatcher();
 	function toggleFilter(type: string, item: string) {
 		if (!item) {
 			return;
 		} else {
+			const itemString: string = `"${item}"`;
 			if (type === "service") {
-				const index = serviceFilters.indexOf(item);
+				const index = serviceFilters.indexOf(itemString);
 				if (index > -1) {
 					serviceFilters.splice(index, 1);
 				} else {
-					serviceFilters.push(item);
+					serviceFilters.push(itemString);
 				}
 				serviceFilters = serviceFilters;
+				dispatch('updateFilters');
 			} else if (type === "market") {
-				const index = marketFilters.indexOf(item);
+				const index = marketFilters.indexOf(itemString);
 				if (index > -1) {
 					marketFilters.splice(index, 1);
 				} else {
-					marketFilters.push(item);
+					marketFilters.push(itemString);
 				}
 				marketFilters = marketFilters;
+				dispatch('updateFilters');
 			}
 		}
 	}
@@ -198,7 +204,7 @@
 										<Cta button
 											 data={ {...filterCta, 
 													 cta_text_light: item.filter_button_name,
-													 cta_icon: `${serviceFilters.indexOf(item.filter_button_name) > -1 ? "dot_solid" : "dot_empty"}`
+													 cta_icon: `${serviceFilters.indexOf(`"${item.filter_button_name}"`) > -1 ? "dot_solid" : "dot_empty"}`
 												  } }
 											 on:click={() => toggleFilter("service", item.filter_button_name)}
 										/>
@@ -218,7 +224,7 @@
 										<Cta button
 											 data={ {...filterCta, 
 													 cta_text_light: item.filter_button_name,
-													 cta_icon: `${marketFilters.indexOf(item.filter_button_name) > -1 ? "dot_solid" : "dot_empty"}`
+													 cta_icon: `${marketFilters.indexOf(`"${item.filter_button_name}"`) > -1 ? "dot_solid" : "dot_empty"}`
 												  } }
 											 on:click={() => toggleFilter("market", item.filter_button_name)}
 										/>

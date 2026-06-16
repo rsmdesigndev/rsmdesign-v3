@@ -261,12 +261,12 @@ export const _query = gql`
 						feed_filter_logic
 						feed_filter_markets {
 							markets_id {
-								name
+								filter_button_name
 							}
 						}
 						feed_filter_services {
 							services_id {
-								name
+								filter_button_name
 							}
 						}
 						feed_filter_location_cities {
