@@ -86,8 +86,9 @@
 	let numItems: number;
 	$: loadOffset = 0;
 	let loadTotalCount: number = 0;
+	let feedView: "Grid" | "Table" | "Ticker Tape" = data.feed_view;
 
-	if (data.feed_view === "Grid") {
+	if (feedView === "Grid") {
 		if (data.feed_grid_style === "dynamic") {
 			if (data.feed_grid_columns === 4) {
 				let quotient: number = Math.floor(data.feed_grid_rows_per_load / 2);
@@ -104,12 +105,11 @@
 		numItems = data.feed_table_items_per_load;
 	}
 
-	let firstFilter: string;
-
 	let serviceFilters: any[] = [];
 	let marketFilters: any[] = [];
 	let locationFilters: any[] = [];
 	let studioFilters: any[] = [];
+	let firstFilter: string;
 
 	// Load more functionality
 	const loadMore = async () => {
@@ -769,10 +769,10 @@
 	<section id={`row-${rowNumber}`}
 			 class={`padding-top-${data.section_padding_top}
 					 padding-bottom-${data.section_padding_bottom}
-					 ${data.feed_view}
+					 ${feedView}
 				   `}
-			 class:tall={data.feed_view === "Grid" && data.feed_grid_style === "dynamic" && data.feed_grid_columns === 3}
-			 style:--z-index={data.feed_view === "Table" && data.feed_table_style === "simple" ? "3" : "2"}
+			 class:tall={feedView === "Grid" && data.feed_grid_style === "dynamic" && data.feed_grid_columns === 3}
+			 style:--z-index={feedView === "Table" && data.feed_table_style === "simple" ? "3" : "2"}
 			 use:selectFeedOnIntersection
 	>
 		{#if data.feed_show_filter_menu && data.feed_source === "Projects"}
@@ -797,6 +797,7 @@
 					bind:marketFilters
 					bind:locationFilters
 					bind:studioFilters
+					bind:feedView
 				/>
 			</div>
 		{:else if data.feed_show_filter_menu && data.feed_source === "Articles"}
@@ -807,9 +808,9 @@
 			{:else if feedData.length === 0 && data.feed_source != "Manual"}
 				<p>No results match your query. Try another search or set of filters.</p>
 			{:else}
-				{#if data.feed_view === "Ticker Tape" && data.feed_source === "Manual"}
+				{#if feedView === "Ticker Tape" && data.feed_source === "Manual"}
 					<DataFeedTickerTape data={ { feed_cards: data.feed_cards } } />
-				{:else if (data.feed_view === "Grid" || data.feed_source === "Manual" || data.feed_source === "Team" || data.feed_source === "Testimonials") && (data.feed_source != "Awards" && data.feed_source != "Careers")}
+				{:else if (feedView === "Grid" || data.feed_source === "Manual" || data.feed_source === "Team" || data.feed_source === "Testimonials") && (data.feed_source != "Awards" && data.feed_source != "Careers")}
 					{#if data.feed_source === "Manual"}
 						<div class="grid-container">
 							<DataFeedGrid 
@@ -936,11 +937,30 @@
 
 		&.Grid {
 			row-gap: var(--SPACE-XL);
+
+			> .project-filter-menu-wrapper {
+				margin-bottom: calc(-1 * var(--SPACE-LG));
+			}
 		}
 		&.Table {
 			row-gap: 0;
-			//min-height: 100vh;
+
+			> .project-filter-menu-wrapper {
+				margin-bottom: var(--SPACE-MD);
+			}
 		}
+		.project-filter-menu-wrapper {
+			grid-column: viewport;
+			
+
+			display: grid;
+			grid-template-columns: subgrid;
+
+			> .project-filter-menu-heading {
+				grid-column: main;
+			}
+		}
+
 		&.tall {
 			min-height: 200vh;
 		}
@@ -988,18 +1008,6 @@
 
 		> p {
 			grid-column: main;
-		}
-
-		.project-filter-menu-wrapper {
-			grid-column: viewport;
-			margin-bottom: calc(-1 * var(--SPACE-LG));
-
-			display: grid;
-			grid-template-columns: subgrid;
-
-			> .project-filter-menu-heading {
-				grid-column: main;
-			}
 		}
 
 		.grid-container {

@@ -5,7 +5,17 @@
 	import { slide, fade } from "svelte/transition";
 	import Cta, { type CtaData } from "../../atoms/Cta.svelte";
 
-	let filterView: "Grid" | "Table" = "Grid";
+	export let serviceFilters: string[] = [];
+	export let marketFilters: string[] = [];
+	export let feedView: "Grid" | "Table" | "Ticker Tape" = "Grid";
+
+	function toggleFeedView(view: string) {
+		if (view != feedView) {
+			feedView = view;
+			dispatch('updateFilters');
+		}
+	}
+
 	$: filterMenuOpen = "none";
 	const filterMenuCta = {
 		cta_type: "link",
@@ -30,9 +40,6 @@
 			loadFilters();
 		}
 	}
-
-	export let serviceFilters: string[] = [];
-	export let marketFilters: string[] = [];
 
 	const dispatch = createEventDispatcher();
 	function toggleFilter(type: string, item: string) {
@@ -125,13 +132,16 @@
 </script>
 
 <template>
-	<div class="project-filter-menu-container">
+	<div 
+		class="project-filter-menu-container"
+	>
 		<div>
 			<div>
 				<button 
 					class="button-icon button-grid"
-					class:active={filterView === "Grid"}
+					class:active={feedView === "Grid"}
 					aria-label="Display results as a grid"
+					on:click={() => toggleFeedView("Grid")}
 				>
 					<div />
 					<div />
@@ -139,8 +149,9 @@
 				</button>
 				<button 
 					class="button-icon button-table"
-					class:active={filterView === "Table"}
+					class:active={feedView === "Table"}
 					aria-label="Display results as a table"
+					on:click={() => toggleFeedView("Table")}
 				>
 					<div />
 					<div />
