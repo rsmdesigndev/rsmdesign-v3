@@ -16,6 +16,9 @@ export const _query = gql`
 		services(limit: -1, filter: { visibility: { _neq: "archived" } }) {
 			slug
 		}
+		team(limit: -1, filter: { visibility: { _neq: "archived" }, has_profile_page: { _eq: true } }) {
+			slug
+		}
 	}
 `;
 
@@ -25,6 +28,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		projects: res.projects,
 		newsPosts: res.news_posts,
 		markets: res.markets,
-		services: res.services
+		services: res.services,
+		team: res.team
 	};
 };
