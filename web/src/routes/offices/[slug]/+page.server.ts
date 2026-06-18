@@ -629,6 +629,11 @@ export const _query = gql`
 								name
 							}
 						}
+						feed_filter_authors {
+							team_id {
+								name
+							}
+						}
 						feed_view
 						feed_load_functionality
 						feed_grid_columns

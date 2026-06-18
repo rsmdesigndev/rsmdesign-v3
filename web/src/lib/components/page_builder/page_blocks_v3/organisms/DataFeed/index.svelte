@@ -44,6 +44,11 @@
 				name?: string | null
 			}
 		}[]
+		feed_filter_authors?: {
+			team_id?: {
+				name?: string | null
+			}
+		}[]
 		feed_view?: string | null;
 		feed_load_functionality?: string | null;
 		feed_grid_columns?: number | null;
@@ -109,7 +114,10 @@
 	let marketFilters: any[] = [];
 	let locationFilters: any[] = [];
 	let studioFilters: any[] = [];
+	let topicFilters: any[] = [];
+	let authorFilters: any[] = [];
 	let firstFilter: string;
+	let searchText: string;
 
 	// Load more functionality
 	const loadMore = async () => {
@@ -167,6 +175,10 @@
 						}
 					}
 					filters.push(`{ studio_locations: { studio_locations_id: { location: { _in: [${studioFilters.join(",")}] } } } }`);
+				}
+
+				if (searchText) {
+					filters.push(``)
 				}
 
 				let query = `
@@ -262,18 +274,36 @@
 			case "Articles": {
 				let filters = [];
 
-				if (data.feed_filter_topics && data.feed_filter_topics.length > 0) {
-					let topics = [];
+				// Extract topics
+				if (topicFilters && topicFilters.length > 0) {
+					filters.push(`{ topics: { news_topics_id: { name: { _in: [${topicFilters.join(",")}] } } } }`);
+				} else if (data.feed_filter_topics && data.feed_filter_topics.length > 0) {
 					for (let [i, item] of data.feed_filter_topics.entries()) {
 						if (item?.news_topics_id?.name) {
-							topics.push(`"${item.news_topics_id.name}"`);
+							topicFilters.push(`"${item.news_topics_id.name}"`);
 
 							if (i === 0) {
 								firstFilter = item.news_topics_id.name;
 							}
 						}
 					}
-					filters.push(`{ topics_list: { _eq: ${topics.join(" ")} } }`);
+					filters.push(`{ topics: { news_topics_id: { name: { _in: [${topicFilters.join(",")}] } } } }`);
+				}
+
+				// Extract authors
+				if (authorFilters && authorFilters.length > 0) {
+					filters.push(`{ authors: { team_id: { name: { _in: [${authorFilters.join(",")}] } } } }`);
+				} else if (data.feed_filter_authors && data.feed_filter_authors.length > 0) {
+					for (let [i, item] of data.feed_filter_authors.entries()) {
+						if (item?.team_id?.name) {
+							authorFilters.push(`"${item.team_id.name}"`);
+
+							if (i === 0) {
+								firstFilter = item.team_id.name;
+							}
+						}
+					}
+					filters.push(`{ authors: { team_id: { name: { _in: [${authorFilters.join(",")}] } } } }`);
 				}
 
 				let query = `
