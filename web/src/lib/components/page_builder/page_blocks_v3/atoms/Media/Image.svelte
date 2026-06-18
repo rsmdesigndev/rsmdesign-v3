@@ -20,6 +20,7 @@
 <style lang="scss">
 	img {
 		width: 100%;
+		background-color: var(--background-color);
 
 		@media (max-width: 31.25em) {
 			max-height: calc(100vh / 3);
