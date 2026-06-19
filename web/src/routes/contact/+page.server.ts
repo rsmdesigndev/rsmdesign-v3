@@ -269,6 +269,11 @@ export const _query = gql`
 								location
 							}
 						}
+						feed_filter_design_team {
+							team_id {
+								name
+							}
+						}
 						feed_filter_topics {
 							news_topics_id {
 								name

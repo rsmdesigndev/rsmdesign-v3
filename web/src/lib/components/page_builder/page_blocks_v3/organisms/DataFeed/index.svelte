@@ -114,6 +114,7 @@
 	let marketFilters: any[] = [];
 	let locationFilters: any[] = [];
 	let studioFilters: any[] = [];
+	let designTeamFilters: any[] = [];
 	let topicFilters: any[] = [];
 	let authorFilters: any[] = [];
 	let firstFilter: string;
@@ -177,6 +178,19 @@
 					filters.push(`{ studio_locations: { studio_locations_id: { location: { _in: [${studioFilters.join(",")}] } } } }`);
 				}
 
+				// Extract design team
+				if (designTeamFilters && designTeamFilters.length > 0) {
+					filters.push(`{ project_design_team: { team_id: { name: { _in: [${designTeamFilters.join(",")}] } } } }`);
+				} else if (data.feed_filter_design_team && data.feed_filter_design_team.length > 0) {
+					for (let item of data.feed_filter_design_team) {
+						if (item?.team_id?.name) {
+							designTeamFilters.push(`"${item.team_id.name}"`);
+						}
+					}
+					filters.push(`{ project_design_team: { team_id: { name: { _in: [${designTeamFilters.join(",")}] } } } }`);
+				}
+
+				// Extract search text
 				if (searchText) {
 					filters.push(``)
 				}
