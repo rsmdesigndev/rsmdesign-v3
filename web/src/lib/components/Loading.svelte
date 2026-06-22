@@ -10,8 +10,8 @@
 </script>
 
 <div
-	class="loader loader--{variant}"
-	class:loader--active={isActive}
+	class="loader loader-{variant}"
+	class:loader-active={isActive}
 	aria-hidden={!isActive}
 >
 	{#if variant === "home"}
@@ -48,7 +48,7 @@
 		transition: opacity 400ms ease, visibility 0s linear 400ms;
 	}
 
-	.loader--active {
+	.loader-active {
 		// Active: fade in over 150ms. Visibility flips immediately.
 		opacity: 1;
 		visibility: visible;
@@ -56,11 +56,11 @@
 		transition: opacity 150ms ease, visibility 0s;
 	}
 
-	.loader--home {
+	.loader-home {
 		background: var(--COLOR-BLACK);
 	}
 
-	.loader--default {
+	.loader-default {
 		background: white;
 	}
 

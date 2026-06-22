@@ -75,15 +75,17 @@
 
 <svelte:window on:resize={() => setTimeout(updateHeaderSize, 600)} />
 
-<Loading />
-<Header {headerHeight} navMenu={data.nav_menu} />
-<main
-	style:--header-height={headerHeight}
-	class:is-loading={$loading.status === "active"}
->
-	<slot />
-</main>
-<Footer navMenu={data.nav_menu} />
+<template>
+	<Loading />
+	<Header {headerHeight} navMenu={data.nav_menu} />
+	<main
+		style:--header-height={headerHeight}
+		class:is-loading={$loading.status === "active"}
+	>
+		<slot />
+	</main>
+	<Footer navMenu={data.nav_menu} />
+</template>
 
 <style lang="scss">
 	@use "../styles/theme";
