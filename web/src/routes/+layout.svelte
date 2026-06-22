@@ -43,6 +43,18 @@
 		// older Safari rejecting "instant" can't break the dismiss.
 		try {
 			window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+			// Annoying kludge to ensure WhileScrollingInView animations trigger on navigate
+			window.scrollTo({
+				top: 10,
+				behavior: 'smooth'
+			})
+
+			setTimeout( () => {
+				window.scrollTo({
+					top: 0,
+					behavior: 'smooth'
+				})
+			}, 100);
 		} catch {
 			window.scrollTo(0, 0);
 		}
