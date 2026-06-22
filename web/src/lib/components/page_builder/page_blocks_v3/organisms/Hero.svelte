@@ -61,7 +61,11 @@
 	// Remove <p> tags from hero headline
 	let headline: HTMLElement;
 	onMount(() => {
-		if (data.hero_headline) {
+		// `headline` is only bound when hero_style is "project" or "above".
+		// Other styles render no headline element, so guard against the binding
+		// being undefined — an unhandled throw here strands the page lifecycle
+		// (and with it, afterNavigate / the loader dismiss).
+		if (data.hero_headline && headline) {
 			const paragraphsInHeadline = headline.querySelectorAll('p');
 			headline.innerHTML = "";
 			paragraphsInHeadline.forEach((paragraph) => {
@@ -69,11 +73,15 @@
 			});
 		}
 
-		if (data.hero_video_native?.filename_disk) {
+		// Guard against the same bind:this-undefined hazard: heroVideoNative is
+		// only bound inside the "Video" media-type branch, and heroVideoNativeMobile
+		// has no bind:this in the current template at all. An unhandled throw here
+		// strands the page lifecycle and prevents afterNavigate from firing.
+		if (data.hero_video_native?.filename_disk && heroVideoNative) {
 			heroVideoNative.play();
 		}
 
-		if (data.hero_video_native_mobile?.filename_disk) {
+		if (data.hero_video_native_mobile?.filename_disk && heroVideoNativeMobile) {
 			heroVideoNativeMobile.play();
 		}
 	});

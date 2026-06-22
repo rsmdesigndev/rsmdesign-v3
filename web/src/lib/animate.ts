@@ -46,10 +46,14 @@ export function animate(element: HTMLElement, options: AnimateOptions) {
 	if (options.targetSelector) {
 		const el = document.querySelector<HTMLElement>(options.targetSelector);
 		if (el === null) {
-			throw new Error("Failed to find target element.");
+			// Throwing here strands the page lifecycle (afterNavigate stops
+			// firing, loader gets stuck). Warn and no-op instead so a missing
+			// selector on one route doesn't break navigation site-wide.
+			console.warn(`animate: target selector not found: ${options.targetSelector}`);
+			return;
 		}
 		targetElement = el;
-	}	
+	}
 
 	if (options.trigger === AnimateTrigger.OnScrollIntoView) {
 		const observer = new IntersectionObserver((entries) => {
