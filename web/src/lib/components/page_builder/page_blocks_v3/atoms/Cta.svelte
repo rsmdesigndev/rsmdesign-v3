@@ -15,6 +15,7 @@
 
 <script lang="ts">
 	import { onMount, createEventDispatcher } from 'svelte';
+	import { goto } from "$app/navigation";
 	import type { BleedData } from "../organisms/CardColumn.svelte";
 
 	export let data: CtaData;
@@ -55,7 +56,13 @@
 
 	const dispatch = createEventDispatcher();
 	function handleClick() {
-		dispatch('click');
+		if (button) {
+			dispatch('click');
+		} else if (data.cta_link) {
+			goto(data.cta_link);
+		} else {
+			console.warn("CTA used without specified link or action");
+		}
 	}
 </script>
 
