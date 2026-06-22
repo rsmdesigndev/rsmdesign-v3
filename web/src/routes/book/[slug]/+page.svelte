@@ -118,7 +118,7 @@
 	figure.hero {
 		margin: 0 0 calc(var(--GRID-CELL) * 6);
 		padding: 0;
-		z-index: 8;
+		z-index: 5;
 		grid-column: viewport;
 		width: 100vw;
 		height: 100vh;
@@ -137,7 +137,7 @@
 		justify-content: center;
 
 		> div.hero-video {
-			z-index: 8;
+			z-index: 5;
 			position: relative;
 			flex: 0 0 calc(100vh * 16 / 9);
 			height: 0;
