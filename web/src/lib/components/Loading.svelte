@@ -17,7 +17,6 @@
 	{#if variant === "home"}
 		<lottie-player
 			autoplay
-			loop
 			mode="normal"
 			src="/preloader/RSM_Web-Loading-Animation2.json"
 			style="width: 480px"
