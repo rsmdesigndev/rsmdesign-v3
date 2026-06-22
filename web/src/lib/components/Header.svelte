@@ -48,8 +48,20 @@
 
 	//let showBreadcrumbs: boolean = true;
 
-	afterNavigate(async () => {
+	// Close the menu the moment a navigation is committed, before the loader
+	// snaps on. Doing this in afterNavigate left the open menu visible during
+	// the entire transition window.
+	beforeNavigate(() => {
 		closeMenu();
+	});
+
+	afterNavigate(async () => {
+		// Safety net — beforeNavigate already closes the menu before the loader
+		// covers, but if a navigation skipped beforeNavigate (interrupted
+		// lifecycle, page mount error, etc.) make sure the menu still closes
+		// once we land on the new route.
+		closeMenu();
+
 		/*if ($page.url.pathname != "" && $page.url.pathname != "/") {
 			root_links: for (let item of navMenu.nav_menu_links) {
 				let link = item.nav_menu_links_id;
@@ -147,9 +159,10 @@
 	}
 	function selectItemOnClick(i: number, link: string, linkDirectly: boolean) {
 		if (selectedItem === i || linkDirectly) {
-			//invalidateAll(); // force page reload
-			goto(link);
+			// Close the menu BEFORE triggering navigation so the close transition
+			// kicks in before the loader covers the screen.
 			closeMenu();
+			goto(link);
 		} else {
 			selectedItem = i;
 		}
