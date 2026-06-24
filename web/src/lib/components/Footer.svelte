@@ -159,7 +159,7 @@
 		height: calc(var(--GRID-CELL) * 1.75);
 		margin-bottom: calc(-1 * var(--SPACE-LG));
 		pointer-events: none;
-		z-index: 3;
+		z-index: 9;
 		background-color: var(--COLOR-BLACK);
 		opacity: 0;
 		transition: opacity 1s ease;
@@ -177,7 +177,7 @@
 			7: Menu overlay
 			8: Menu button
 		*/
-		z-index: 2;
+		z-index: 9;
 		position: relative;
 
 		width: 100%;
@@ -192,6 +192,10 @@
 		//background-color: var(--COLOR-BLACK);
 		opacity: 0;
 		transition: opacity 1s ease;
+
+		// Colors
+		--color-primary: white;
+		--color-accent: var(--COLOR-ORANGE);
 
 		&.active {
 			opacity: 1;
