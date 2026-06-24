@@ -13,56 +13,40 @@
 		cta_hover_highlight: "light"
 	}
 
-	let footerHeight: number;
+	let footerIsActive: boolean = false;
+
+	function activateFooterOnIntersection(node: Element) {
+		const observer = new IntersectionObserver(([entry]) => {
+			if (entry.isIntersecting) {
+				footerIsActive = true;
+			} else if (footerIsActive = true) {
+				footerIsActive = false;
+			};
+		}, { rootMargin: '-50% 0% -50% 0%' });
+		observer.observe(node);
+		return {
+			destroy() {
+				observer.disconnect();
+			}
+		};
+	}
+
+	function handleClick() {
+		footerIsActive = false;
+	}
 </script>
 
 <template>
-	<div id="bg-color-footer"
-		 class="bg-color"
-		 style:--color-background="#1a1818"
+	<div class="activation-trigger"
+		 use:activateFooterOnIntersection
 	/>
 
-	<footer id="footer">
-		<div class="bg-color-trigger"
-			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#bg-color-footer", animClass: "bg-color-animate" } }
-		/>
-		<div class="bg-color-trigger"
-			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#footer`, animClass: "footer-opacity-animate" } }
-		/>
-		<div class="bg-color-trigger"
-			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#menu-bar-footer", animClass: "bg-color-animate" } }
-		/>
-
-		<div bind:offsetHeight={footerHeight}
-			style:top={`calc(100vh - 1px * ${footerHeight} - var(--SPACE-MD))`}
-		>
-			<!--<a class="footer-logo" href="/">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-					<g class="logomark" fill-rule="nonzero">
-						<path d="M49.8 72.14c-3.72 0-6.92-.95-9.38-3.7l4.01-3.76c1.55 1.7 3.16 2.96 5.71 2.96 1.76 0 4.01-.86 4.01-2.76 0-4.96-12.98-1.05-12.98-10.23 0-5.36 4.81-7.76 9.67-7.76 3.21 0 6.62 1 8.57 3.66l-4 3.6a5.46 5.46 0 0 0-4.72-2.45c-1.6 0-3.5.75-3.5 2.55 0 4.31 12.97.8 12.97 10.18 0 5.7-5.46 7.71-10.37 7.71M38.72 53.05a12.07 12.07 0 0 0-2.9-.45 6.05 6.05 0 0 0-6.47 6.06v12.88h-6.02V47.5h6.02v3.8h.1a7.66 7.66 0 0 1 7.11-4.4 7.63 7.63 0 0 1 2.16.35zm53.46 23.8a54.3 54.3 0 0 0 1.8-3.02A13.87 13.87 0 0 0 95 70.12q.05-.37.1-.61V57.9c0-3-.9-5.6-4.46-5.6-3.76 0-5.16 3.1-5.16 6.2v13.03h-6.02V57.22c0-2.96-1.2-4.92-4.1-4.92-3.97 0-5.52 2.91-5.52 6.12v13.13h-6.01V47.49h5.7v3.76h.1A7.64 7.64 0 0 1 77 46.89c3.71 0 6.27 1.45 7.52 4.46a8.37 8.37 0 0 1 7.92-4.46c3.93 0 6.28 1.71 7.53 4.36.01-.42.04-.83.04-1.25A50 50 0 0 0 50 0 50 50 0 0 0 0 50a50 50 0 0 0 50 50 49.96 49.96 0 0 0 42.16-23.15z"/>
-					</g>
-				</svg>
-			</a>-->
-
+	<footer id="footer"
+			class:active={footerIsActive}
+	>
+		<div class="footer-bg" />
+		<div class="footer-container">
 			<div class="footer-col1">
-				<!--<article>
-					<a href="/project-inquiry">Project inquiries</a>
-					<p>Stephanie Wills</p>
-					<!--HubSpot Call-to-Action Code -->
-					<!--<span class="hs-cta-wrapper" id="hs-cta-wrapper-83a3f126-b26c-4061-81d0-9079a980aa15">
-						<span class="hs-cta-node hs-cta-83a3f126-b26c-4061-81d0-9079a980aa15" id="hs-cta-83a3f126-b26c-4061-81d0-9079a980aa15">
-							<!--[if lte IE 8]><div id="hs-cta-ie-element"></div><![endif]-->
-							<!--<a href="https://cta-redirect.hubspot.com/cta/redirect/8650991/83a3f126-b26c-4061-81d0-9079a980aa15" >
-								stephanie@rsmdesign.com
-							</a>
-						</span>
-						<script charset="utf-8" src="https://js.hscta.net/cta/current.js"></script>
-						<script type="text/javascript"> hbspt.cta.load(8650991, '83a3f126-b26c-4061-81d0-9079a980aa15', {"region":"na1"}); </script>
-					</span>
-					<!-- end HubSpot Call-to-Action Code -->
-					<!--<a href="tel:+13032239845">303.223.9845</a>
-				</article>-->
-
 				<a class="footer-logo" href="/">
 					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
 						<g class="logomark" fill-rule="nonzero">
@@ -84,22 +68,42 @@
 
 			<div class="footer-col2">
 				<article>
-					<a href="/offices/san-clemente">San Clemente</a>
+					<a href="/offices/san-clemente"
+					   target="_self"
+					   on:click={handleClick}
+					>
+						San Clemente
+					</a>
 					<p>160 Avenida Cabrillo <br/>San Clemente, CA 97672</p>
 					<a href="tel:+19494929479">949.492.9479</a>
 				</article>
 				<article class="dallas">
-					<a href="/offices/dallas">Dallas</a>
+					<a href="/offices/dallas"
+					   target="_self"
+					   on:click={handleClick}
+					>
+						Dallas
+					</a>
 					<p>408 West 8th Street, Suite 206 <br/>Dallas, TX 75208</p>
 					<a href="tel:+19729743690">972.974.3690</a>
 				</article>
 				<article>
-					<a href="/offices/los-angeles">Los Angeles</a>
+					<a href="/offices/los-angeles"
+					   target="_self"
+					   on:click={handleClick}
+					>
+						Los Angeles
+					</a>
 					<p>55 Auburn Avenue, Suite A <br/>Sierra Madre, CA 91024</p>
 					<a href="tel:+12137059006">213.705.9006</a>
 				</article>
 				<article>
-					<a href="/offices/new-york">New York</a>
+					<a href="/offices/new-york"
+					   target="_self"
+					   on:click={handleClick}
+					>
+						New York
+					</a>
 					<p>36 East 23rd Street, Suite 10F <br/>New York, NY 10010</p>
 					<a href="tel:+12129382793">212.938.2793</a>
 				</article>
@@ -138,49 +142,27 @@
 
 	<div id="menu-bar-footer"
 		 class="menu-bar" 
-		 style:--color-background="#1a1818"
 	/>
 </template>
 <style lang="scss">
-	div.bg-color,
+	div.activation-trigger {
+		height: 100vh;
+		width: 100%;
+		margin-bottom: -100vh;
+		pointer-events: none;
+	}
 	div.menu-bar {
 		position: fixed;
 		top: 0;
 		left: 0;
 		width: 100vw;
-		height: 100vh;
-		pointer-events: none;
-	}
-	div.bg-color {
-		/* 
-			Z-Indexes
-			1: Background color
-			2: Content
-			3: Menu bar
-			4: Logo
-			5: Hero
-			6: Breadcrumbs
-			7: Menu overlay
-			8: Menu button
-		*/
-		z-index: 1;
-	}
-	div.menu-bar {
-		/* 
-			Z-Indexes
-			1: Background color
-			2: Content
-			3: Menu bar
-			4: Logo
-			5: Hero
-			6: Breadcrumbs
-			7: Menu overlay
-			8: Menu button
-		*/
-		z-index: 3;
-
 		height: calc(var(--GRID-CELL) * 1.75);
 		margin-bottom: calc(-1 * var(--SPACE-LG));
+		pointer-events: none;
+		z-index: 3;
+		background-color: var(--COLOR-BLACK);
+		opacity: 0;
+		transition: opacity 1s ease;
 	}
 
 	footer {
@@ -203,17 +185,44 @@
 		display: grid;
 		grid-template-columns: var(--GRID-WRAPPER);
 		row-gap: var(--SPACE-LG);
-		align-content: start;
+		align-content: end;
 
-		margin: var(--SPACE-XL) 0 var(--SPACE-LG);
+		padding: var(--SPACE-XXL) 0 var(--SPACE-MD);
 
-		> div {
+		//background-color: var(--COLOR-BLACK);
+		opacity: 0;
+		transition: opacity 1s ease;
+
+		&.active {
+			opacity: 1;
+
+			+ div.menu-bar {
+				opacity: 1;
+			}
+		}
+
+		> .footer-bg {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			width: 100vw;
+			height: 100vh;
+			z-index: 0;
+			pointer-events: none;
+
+			background-color: var(--COLOR-BLACK);
+		}
+
+		> .footer-container {
 			grid-column: viewport;
 			display: grid;
 			grid-template-columns: subgrid;
 			row-gap: var(--SPACE-LG);
 			
 			position: sticky;
+			bottom: var(--SPACE-MD);
 
 			align-content: start;
 
@@ -500,62 +509,6 @@
 						font-size: var(--FONT-SIZE-XS);
 					}
 				}
-			}
-		}
-
-		/* BG COLOR SWITCH */
-		--color-primary: white;
-		--color-secondary: var(--COLOR-MID-GRAY);
-		--color-tertiary: var(--COLOR-DIM-GRAY);
-		--color-accent: var(--COLOR-ORANGE);
-
-		> .bg-color-trigger {
-			position: absolute;
-			top: 0;
-			left: 0;
-			height: 100%;
-			pointer-events: none;
-		}
-	}
-
-	:global {
-		.bg-color-animate {
-			background: transparent;
-			animation: bg-color-animate 1s linear forwards;
-		}
-
-		@keyframes bg-color-animate {
-			0% {
-				background: transparent;
-			}
-			25% {
-				background: transparent;
-			}
-			33% {
-				background: var(--color-background);
-			}
-			100% {
-				background: var(--color-background);
-			}
-		}
-
-		.footer-opacity-animate {
-			opacity: 0;
-			animation: footer-opacity-animate 1s linear forwards;
-		}
-
-		@keyframes footer-opacity-animate {
-			0% {
-				opacity: 0;
-			}
-			25% {
-				opacity: 0;
-			}
-			33% {
-				opacity: 1;
-			}
-			100% {
-				opacity: 1;
 			}
 		}
 	}

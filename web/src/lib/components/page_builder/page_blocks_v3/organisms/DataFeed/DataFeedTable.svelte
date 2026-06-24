@@ -187,15 +187,13 @@
 								{item.name}
 							{/if}
 						</strong>
-						{#if data.feed_source === "Projects"}
-							{item.location}
-						{:else if data.feed_source === "Awards" && item.award_category}
+						{#if data.feed_source === "Awards" && item.award_category}
 							{item.award_category}
 						{/if}
 					</div>
-					<div class="table-item-col2">
+					<div class="table-item-col2" class:small={data.feed_source === "Projects"}>
 						{#if data.feed_source === "Projects"}
-							{item.studio_locations?.[0]?.studio_locations_id?.location}
+							{item.location}
 						{:else if data.feed_source === "Articles"}
 							{formatDate(item.published_date, { fullMonth: false })}
 						{:else if data.feed_source === "Awards"}
@@ -465,6 +463,10 @@
 
 				> strong {
 					font-weight: 500;
+				}
+
+				&.small {
+					font-size: var(--FONT-SIZE-SM);
 				}
 			}
 
