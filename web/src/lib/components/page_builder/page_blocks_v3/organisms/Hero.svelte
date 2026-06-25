@@ -122,12 +122,26 @@
 					/>
 				{:else}
 					{#if data.hero_video_native?.filename_disk}
-						<video bind:this={heroVideoNative} loop autoplay muted playsinline preload="none">
+						<video 
+							class:desktop={data.hero_video_native_mobile?.filename_disk}
+							bind:this={heroVideoNative} 
+							loop autoplay muted playsinline preload="none"
+						>
 							<source src={assetUrl(data.hero_video_native?.filename_disk)} type={data.hero_video_native?.type} />
 							<track kind="captions" />
 						</video>
 					{:else}
 						Video selected, but no video attached.
+					{/if}
+					{#if data.hero_video_native_mobile?.filename_disk}
+						<video 
+							class="mobile"
+							bind:this={heroVideoNativeMobile} 
+							loop autoplay muted playsinline preload="none"
+						>
+							<source src={assetUrl(data.hero_video_native_mobile?.filename_disk)} type={data.hero_video_native_mobile?.type} />
+							<track kind="captions" />
+						</video>
 					{/if}
 				{/if}
 			</div>
@@ -295,6 +309,18 @@
 				> video {
 					height: 100%;
 					width: 100%;
+
+					&.desktop {
+						@media (max-width: 56.25vh) {
+							display: none;
+						}
+					}
+
+					&.mobile {
+						@media (min-width: 56.25vh) {
+							display: none;
+						}
+					}
 				}
 			}
 		}
