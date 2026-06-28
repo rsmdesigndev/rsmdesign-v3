@@ -22,7 +22,7 @@
 			} else if (footerIsActive = true) {
 				footerIsActive = false;
 			};
-		}, { rootMargin: '-50% 0% -50% 0%' });
+		}, { rootMargin: '25% 0% -75% 0%' });
 		observer.observe(node);
 		return {
 			destroy() {
