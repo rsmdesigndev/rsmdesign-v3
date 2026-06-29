@@ -75,33 +75,27 @@
 	$: collaborators = [];
 
 	const loadFilters = async () => {
-		switch (loadFilterItems) {
-			case "services": {
-				if (!servicesLoaded) {
-					servicesLoaded = true;
-					let response = await request(env.PUBLIC_DIRECTUS_API_URL, servicesQuery);
+		if (loadFilterItems === "services" || loadFilterItems === "all") {
+			if (!servicesLoaded) {
+				servicesLoaded = true;
+				let response = await request(env.PUBLIC_DIRECTUS_API_URL, servicesQuery);
 
-					if (response) {
-						services.push(...response.services);
-						services = services;
-					}
+				if (response) {
+					services.push(...response.services);
+					services = services;
 				}
-				break;
 			}
-			case "markets": {
-				if (!marketsLoaded) {
-					marketsLoaded = true;
-					let response = await request(env.PUBLIC_DIRECTUS_API_URL, marketsQuery);
+		}
+		if (loadFilterItems === "markets" || loadFilterItems === "all") {
+			if (!marketsLoaded) {
+				marketsLoaded = true;
+				let response = await request(env.PUBLIC_DIRECTUS_API_URL, marketsQuery);
 
-					if (response) {
-						markets.push(...response.markets);
-						markets = markets;
-					}
+				if (response) {
+					markets.push(...response.markets);
+					markets = markets;
 				}
-				break;
 			}
-			case "locations": {}
-			case "collaborators": {}
 		}
 	}
 
@@ -203,6 +197,14 @@
 						  } }
 					 on:click={() => toggleFilterMenu("collaborators")}
 				/>-->
+				<Cta button
+					 data={ {...filterMenuCta, 
+							 cta_text_light: "Filter",
+							 cta_icon: `${openFilterMenu === "all" ? "arrow_up" : "arrow_down"}`
+						  } }
+					 on:mouseover={() => loadFiltersOnHover("all")}
+					 on:click={() => toggleFilterMenu("all")}
+				/>
 			</div>
 		</div>
 		<div>
@@ -222,11 +224,13 @@
 				<div class="project-filters"
 					 class:active={openFilterMenu != "none"}
 				>
-					{#if openFilterMenu === "services"}
+					{#if openFilterMenu === "services" || openFilterMenu === "all"}
 						{#if servicesLoaded}
 							<div in:fade={{ duration: 200, delay: 201 }}
 								 out:fade={{ duration: 200 }}
+								 class:project-filters-stacked={openFilterMenu === "all"}
 							>
+								<h2>Services</h2>
 								{#each services as item}
 									<div>
 										<Cta button
@@ -242,11 +246,14 @@
 						{:else}
 							<p>Loading…</p>
 						{/if}
-					{:else if openFilterMenu === "markets"}
+					{/if}
+					{#if openFilterMenu === "markets" || openFilterMenu === "all"}
 						{#if marketsLoaded}
 							<div in:fade={{ duration: 200, delay: 201 }}
 								 out:fade={{ duration: 200 }}
+								 class:project-filters-stacked={openFilterMenu === "all"}
 							>
+								<h2>Markets</h2>
 								{#each markets as item}
 									<div>
 										<Cta button
@@ -262,7 +269,8 @@
 						{:else}
 							<p>Loading…</p>
 						{/if}
-					{:else if openFilterMenu === "search"}
+					{/if}
+					{#if openFilterMenu === "search"}
 						<div class="search">
 							<form on:submit|preventDefault={search}>
 								<input placeholder="Search" aria-label="Search bar" autofocus />
@@ -288,10 +296,6 @@
 		display: flex;
 		justify-content: space-between;
 
-		@media (max-width: 62.5em) {
-			display: none;
-		}
-
 		> div {
 			flex: 0 0 auto;
 			display: flex;
@@ -310,6 +314,24 @@
 
 				&:last-of-type {
 					gap: calc(var(--GRID-CELL) * 1.5);
+				}
+
+				:global {
+					button {
+						display: flex;
+
+						&:last-of-type {
+							display: none;
+						}
+
+						@media (max-width: 62.5em) {
+							display: none;
+
+							&:last-of-type {
+								display: flex;
+							}
+						}
+					}
 				}
 			}
 		}
@@ -420,6 +442,42 @@
 					grid-auto-flow: row dense;
 					column-gap: var(--SPACE-MD);
 					row-gap: 1rem;
+
+					@media (max-width: 62.5em) {
+						grid-template-columns: repeat(3, 1fr);
+					}
+
+					@media (max-width: 31.25em) {
+						grid-template-columns: repeat(2, 1fr);
+					}
+
+					> h2 {
+						display: none;
+					}
+
+					&.project-filters-stacked {
+						grid-row: auto;
+
+						> h2 {
+							display: block;
+							grid-column: 1 / -1;
+
+							margin-bottom: 0.5rem;
+
+							font-size: var(--FONT-SIZE-MD);
+							font-weight: 500;
+							line-height: 1.167;
+
+							text-transform: uppercase;
+							letter-spacing: 0.05em;
+						}
+
+						&:first-of-type {
+							padding-bottom: calc(var(--SPACE-MD) + 0.5rem);
+							border-bottom: 1px solid var(--color-secondary);
+							margin-bottom: calc(var(--SPACE-MD) + 0.5rem);
+						}
+					}
 
 					> p {
 						font-size: var(--FONT-SIZE-SM);
