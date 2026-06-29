@@ -9,14 +9,6 @@
 	export let marketFilters: string[] = [];
 	export let feedView: "Grid" | "Table" | "Ticker Tape" = "Grid";
 
-	function toggleFeedView(view: string) {
-		if (view != feedView) {
-			feedView = view;
-			dispatch('updateFilters');
-		}
-	}
-
-	$: filterMenuOpen = "none";
 	const filterMenuCta = {
 		cta_type: "link",
 		cta_size: "md",
@@ -32,13 +24,89 @@
 		cta_icon_position: "left"
 	}
 
-	function toggleFilterMenu(item: string) {
-		if (item === filterMenuOpen) {
-			filterMenuOpen = "none";
+	$: loadFilterItems = "none";
+	$: openFilterMenu = "none";
+
+	function loadFiltersOnHover(filter: string) {
+		loadFilterItems = filter;
+		loadFilters();
+	}
+
+	function toggleFilterMenu(filter: string) {
+		if (openFilterMenu === filter) {
+			openFilterMenu = "none";
 		} else {
-			filterMenuOpen = item;
+			loadFilterItems = filter;
+			openFilterMenu = filter;
 			loadFilters();
 		}
+	}
+
+	function toggleSearchMenu() {
+		if (openFilterMenu === "search") {
+			openFilterMenu = "none";
+		} else {
+			openFilterMenu = "search"
+		}
+	}
+
+	// Load more functionality
+	$: services = [];
+	let servicesLoaded: boolean = false;
+	let servicesQuery = `
+		query Services {
+			services(filter: { visibility: { _nin: ["draft", "archived", "visibleExceptFilters"] } }) {
+				filter_button_name
+			}
+		}
+	`;
+
+	$: markets = [];
+	let marketsLoaded: boolean = false;
+	let marketsQuery = `
+		query Markets {
+			markets(filter: { visibility: { _nin: ["draft", "archived", "visibleExceptFilters"] } }) {
+				filter_button_name
+			}
+		}
+	`;
+
+	$: locations = [];
+	$: collaborators = [];
+
+	const loadFilters = async () => {
+		switch (loadFilterItems) {
+			case "services": {
+				if (!servicesLoaded) {
+					servicesLoaded = true;
+					let response = await request(env.PUBLIC_DIRECTUS_API_URL, servicesQuery);
+
+					if (response) {
+						services.push(...response.services);
+						services = services;
+					}
+				}
+				break;
+			}
+			case "markets": {
+				if (!marketsLoaded) {
+					marketsLoaded = true;
+					let response = await request(env.PUBLIC_DIRECTUS_API_URL, marketsQuery);
+
+					if (response) {
+						markets.push(...response.markets);
+						markets = markets;
+					}
+				}
+				break;
+			}
+			case "locations": {}
+			case "collaborators": {}
+		}
+	}
+
+	function search() {
+		console.log("searched");
 	}
 
 	const dispatch = createEventDispatcher();
@@ -69,65 +137,11 @@
 		}
 	}
 
-	// Load more functionality
-	$: services = [];
-	let servicesLoaded: boolean = false;
-	let servicesQuery = `
-		query Services {
-			services(filter: { visibility: { _nin: ["draft", "archived", "visibleExceptFilters"] } }) {
-				filter_button_name
-			}
+	function toggleFeedView(view: string) {
+		if (view != feedView) {
+			feedView = view;
+			dispatch('updateFilters');
 		}
-	`;
-
-	$: markets = [];
-	let marketsLoaded: boolean = false;
-	let marketsQuery = `
-		query Markets {
-			markets(filter: { visibility: { _nin: ["draft", "archived", "visibleExceptFilters"] } }) {
-				filter_button_name
-			}
-		}
-	`;
-
-	$: locations = [];
-	$: collaborators = [];
-
-	const loadFilters = async () => {
-		switch (filterMenuOpen) {
-			case "services": {
-				if (!servicesLoaded) {
-					let response = await request(env.PUBLIC_DIRECTUS_API_URL, servicesQuery);
-
-					if (response) {
-						services.push(...response.services);
-						services = services;
-					}
-
-					servicesLoaded = true;
-				}
-				break;
-			}
-			case "markets": {
-				if (!marketsLoaded) {
-					let response = await request(env.PUBLIC_DIRECTUS_API_URL, marketsQuery);
-
-					if (response) {
-						markets.push(...response.markets);
-						markets = markets;
-					}
-
-					marketsLoaded = true;
-				}
-				break;
-			}
-			case "locations": {}
-			case "collaborators": {}
-		}
-	}
-
-	function search() {
-		console.log("searched");
 	}
 </script>
 
@@ -162,53 +176,56 @@
 				<Cta button
 					 data={ {...filterMenuCta, 
 							 cta_text_light: "Service",
-							 cta_icon: `${filterMenuOpen === "services" ? "arrow_up" : "arrow_down"}`
+							 cta_icon: `${openFilterMenu === "services" ? "arrow_up" : "arrow_down"}`
 						  } }
+					 on:mouseover={() => loadFiltersOnHover("services")}
 					 on:click={() => toggleFilterMenu("services")}
 				/>
 				<Cta button
 					 data={ {...filterMenuCta, 
 							 cta_text_light: "Market",
-							 cta_icon: `${filterMenuOpen === "markets" ? "arrow_up" : "arrow_down"}`
+							 cta_icon: `${openFilterMenu === "markets" ? "arrow_up" : "arrow_down"}`
 						  } }
+					 on:mouseover={() => loadFiltersOnHover("markets")}
 					 on:click={() => toggleFilterMenu("markets")}
 				/>
 				<!--<Cta button
 					 data={ {...filterCta, 
 							 cta_text_light: "Location",
-							 cta_icon: `${filterMenuOpen === "locations" ? "arrow_up" : "arrow_down"}`
+							 cta_icon: `${openFilterMenu === "locations" ? "arrow_up" : "arrow_down"}`
 						  } }
 					 on:click={() => toggleFilterMenu("locations")}
 				/>
 				<Cta button
 					 data={ {...filterCta, 
 							 cta_text_light: "Collaborator",
-							 cta_icon: `${filterMenuOpen === "collaborators" ? "arrow_up" : "arrow_down"}`
+							 cta_icon: `${openFilterMenu === "collaborators" ? "arrow_up" : "arrow_down"}`
 						  } }
 					 on:click={() => toggleFilterMenu("collaborators")}
 				/>-->
 			</div>
 		</div>
-		<form on:submit|preventDefault={search}>
-			<input placeholder="Search" aria-label="Search bar" />
-			<button type="submit" aria-label="Search button">
-				<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<rect width="10" height="2.25" transform="matrix(-0.707107 -0.707107 -0.707107 0.707107 20.6621 19.0703)" />
-					<circle cx="6.875" cy="6.875" r="6.875" transform="matrix(-1 0 0 1 14.8125 1.0625)" stroke-width="2.125"/>
-				</svg>
-			</button>
-		</form>
+		<div>
+			<Cta button
+				 data={ {...filterMenuCta, 
+				 		 cta_icon_position: "left",
+						 cta_text_light: "Search",
+						 cta_icon: `${openFilterMenu === "search" ? "cancel" : "search"}`
+					  } }
+				 on:click={toggleSearchMenu}
+			/>
+		</div>
 	</div>
-	{#if filterMenuOpen != "none"}
+	{#if openFilterMenu != "none"}
 		<div class="project-filters-wrapper" transition:slide={{ duration: 400 }}>
 			<div class="project-filters-container">
 				<div class="project-filters"
-					 class:active={filterMenuOpen === "markets"}				 
+					 class:active={openFilterMenu != "none"}
 				>
-					{#if filterMenuOpen === "services"}
+					{#if openFilterMenu === "services"}
 						{#if servicesLoaded}
-							<div in:fade={{ duration: 100, delay: 101 }}
-								 out:fade={{ duration: 100 }}
+							<div in:fade={{ duration: 200, delay: 201 }}
+								 out:fade={{ duration: 200 }}
 							>
 								{#each services as item}
 									<div>
@@ -225,10 +242,10 @@
 						{:else}
 							<p>Loading…</p>
 						{/if}
-					{:else if filterMenuOpen === "markets"}
+					{:else if openFilterMenu === "markets"}
 						{#if marketsLoaded}
-							<div in:fade={{ duration: 100, delay: 101 }}
-								 out:fade={{ duration: 100 }}
+							<div in:fade={{ duration: 200, delay: 201 }}
+								 out:fade={{ duration: 200 }}
 							>
 								{#each markets as item}
 									<div>
@@ -245,6 +262,18 @@
 						{:else}
 							<p>Loading…</p>
 						{/if}
+					{:else if openFilterMenu === "search"}
+						<div class="search">
+							<form on:submit|preventDefault={search}>
+								<input placeholder="Search" aria-label="Search bar" autofocus />
+								<button type="submit" aria-label="Search button">
+									<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+										<rect width="10" height="2.25" transform="matrix(-0.707107 -0.707107 -0.707107 0.707107 20.6621 19.0703)" />
+										<circle cx="6.875" cy="6.875" r="6.875" transform="matrix(-1 0 0 1 14.8125 1.0625)" stroke-width="2.125"/>
+									</svg>
+								</button>
+							</form>
+						</div>
 					{/if}
 				</div>
 			</div>
@@ -356,77 +385,14 @@
 				}
 			}
 		}
-
-		> form {
-			display: flex;
-			//width: 100%;
-			align-items: center;
-
-			> button {
-				width: auto;
-				background: transparent;
-				margin: 0;
-				padding: 0;
-				border: 0;
-				border-radius: 0;
-				color: var(--color-primary);
-				transition: color 0.3s ease;
-				font-weight: 300;
-				font-size: var(--FONT-SIZE-XL);
-				line-height: 0;
-				> svg {
-					margin-top: 0.111em;
-					height: var(--SPACE-SM);
-					width: auto;
-					rect {
-						fill: var(--color-primary);
-						transition: fill 0.3s ease;
-					}
-					circle {
-						stroke: var(--color-primary);
-						transition: stroke 0.3s ease;
-					}
-				}
-				&:hover {
-					color: var(--COLOR-ORANGE);
-					> svg {
-						rect {
-							fill: var(--COLOR-ORANGE);
-						}
-						circle {
-							stroke: var(--COLOR-ORANGE);
-						}
-					}
-				}
-			}
-			> input {
-				background: none;
-				border: none;
-				border-bottom: 1px solid var(--color-primary);
-				max-width: 100%;
-				padding: 0;
-				color: var(--color-primary);
-				font-size: var(--FONT-SIZE-MD);
-				font-weight: 300;
-				caret-color: var(--COLOR-MID-GRAY);
-
-				&::placeholder {
-					color: var(--color-primary);
-					font-size: var(--FONT-SIZE-MD);
-					font-weight: 300;
-				}
-
-				&.active {
-					color: var(--COLOR-ORANGE);
-				}
-			}
-		}
 	}
 	.project-filters-wrapper {
 		grid-column: viewport;
 
 		display: grid;
 		grid-template-columns: subgrid;
+
+		transition: height 200ms ease;
 
 		> .project-filters-container {
 			margin-top: var(--SPACE-MD);
@@ -447,6 +413,7 @@
 				grid-template-columns: subgrid;
 				
 				> div {
+					grid-row: 1;
 					grid-column: 1 / -1;
 					display: grid;
 					grid-template-columns: repeat(4, 1fr);
@@ -458,6 +425,67 @@
 						font-size: var(--FONT-SIZE-SM);
 						line-height: 1.333;
 						margin-bottom: 0;
+					}
+
+					&.search {
+						grid-template-columns: repeat(3, 1fr);
+					}
+
+					> form {
+						grid-column: 2;
+						display: flex;
+
+						> button {
+							width: auto;
+							background: transparent;
+							margin: 0;
+							padding: 0 1rem 0 0.67rem;
+							height: 100%;
+							background-color: var(--color-primary);
+							transition: background-color 0.3s ease;
+							border: 0;
+							border-radius: 0 50% 50% 0;
+							color: var(--color-primary);
+							font-weight: 300;
+							font-size: var(--FONT-SIZE-XL);
+							line-height: 0;
+							> svg {
+								height: var(--SPACE-SM);
+								width: auto;
+								rect {
+									fill: var(--color-background);
+									transition: fill 0.3s ease;
+								}
+								circle {
+									stroke: var(--color-background);
+									transition: stroke 0.3s ease;
+								}
+							}
+							&:hover {
+								background-color: var(--color-tertiary);
+							}
+						}
+						> input {
+							background: none;
+							border: 1px solid var(--color-primary);
+							max-width: 100%;
+							padding: 0.25rem 0.5rem;
+							background-color: var(--color-background);
+							color: var(--color-primary);
+							font-size: var(--FONT-SIZE-MD);
+							font-weight: 300;
+							caret-color: var(--COLOR-MID-GRAY);
+
+							&::placeholder {
+								color: var(--color-primary);
+								font-size: var(--FONT-SIZE-MD);
+								font-weight: 300;
+							}
+
+							&.active {
+								color: var(--COLOR-ORANGE);
+							}
+						}
 					}
 				}
 			}

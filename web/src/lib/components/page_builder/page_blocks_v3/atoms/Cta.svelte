@@ -64,11 +64,15 @@
 			console.warn("CTA used without specified link or action");
 		}
 	}
+	function handleMouseover() {
+		dispatch('mouseover');
+	}
 </script>
 
 <svelte:element this={button ? "button" : 
 					 (data.cta_link ? "a" : "p")}
 				on:click={handleClick}
+				on:mouseover={handleMouseover}
 				href={data.cta_link ?? ""}
 				target={data.cta_link?.includes("https://") && !data.cta_link?.includes("rsmdesign.com")
 						? "_blank" : "_self"}
@@ -275,6 +279,15 @@
 			&[data-icon="arrow_up"].open::after,
 			&[data-icon="arrow_down"].open::after {
 				transform: rotateY(180deg) translate(-0.222em, 0);
+			}
+			&[data-icon="search"]::after {
+				content: url(/img/search-icon.svg);
+				width: 1rem;
+				height: 1rem;
+				padding-top: 0.25rem;
+			}
+			&[data-icon="cancel"]::after {
+				content: "×";
 			}
 			&[data-icon="dot_solid"]::after,
 			&[data-icon="dot_outline"]::after,
