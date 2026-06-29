@@ -527,8 +527,9 @@
 							flex: 1 1 auto;
 							background: none;
 							border: 1px solid var(--color-primary);
+							border-radius: 0.5rem 0 0 0.5rem;
 							max-width: 100%;
-							padding: 0.25rem 0.5rem;
+							padding: 0.25rem 0.75rem;
 							background-color: var(--color-background);
 							color: var(--color-primary);
 							font-size: var(--FONT-SIZE-MD);
