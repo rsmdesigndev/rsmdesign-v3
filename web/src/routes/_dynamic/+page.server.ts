@@ -19,7 +19,7 @@ export const _query = gql`
 		team(limit: -1, filter: { visibility: { _neq: "archived" }, has_profile_page: { _eq: true } }) {
 			slug
 		}
-		aeo_articles(limit: -1, filter: { visibility: { _neq: "feed" } }) {
+		aeo_articles(limit: -1, filter: { aeo_article_visibility: { _neq: "feed" } }) {
 			slug
 		}
 	}
