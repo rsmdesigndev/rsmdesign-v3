@@ -5,7 +5,7 @@ import { error } from "@sveltejs/kit";
 
 export const _query = gql`
 	query AeoSlug($slug: String!) {
-		aeo_articles(filter: { slug: { _eq: $slug }, visibility: { _neq: "feeds" } }) {
+		aeo_articles(filter: { slug: { _eq: $slug }, aeo_article_visibility: { _neq: "feeds" } }) {
 			slug
 			aeo_article_visibility
 			aeo_article_heading
