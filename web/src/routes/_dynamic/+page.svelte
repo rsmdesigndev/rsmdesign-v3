@@ -29,6 +29,10 @@
 		<a href="/team/{team.slug}">{team.slug}</a>
 	{/each}
 
+	{#each data.aeo_articles as aeo_article}
+		<a href="/aeo/{article.slug}">{article.slug}</a>
+	{/each}
+
 	<a href="/work/great-park-neighborhoods">Great Park Neighborhoods</a>
 	<a href="/markets/hotel-signage">Hotel Signage</a>
 	<a href="/markets/resort-signage">Resort Signage</a>

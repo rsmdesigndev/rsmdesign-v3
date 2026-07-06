@@ -19,6 +19,9 @@ export const _query = gql`
 		team(limit: -1, filter: { visibility: { _neq: "archived" }, has_profile_page: { _eq: true } }) {
 			slug
 		}
+		aeo_articles(limit: -1, filter: { visibility: { _neq: "feed" } }) {
+			slug
+		}
 	}
 `;
 
@@ -29,6 +32,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		newsPosts: res.news_posts,
 		markets: res.markets,
 		services: res.services,
-		team: res.team
+		team: res.team,
+		aeo_articles: res.aeo_articles
 	};
 };
