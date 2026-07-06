@@ -140,9 +140,9 @@
 		</div>
 	</footer>
 
-	<div id="menu-bar-footer"
+	<!--<div id="menu-bar-footer"
 		 class="menu-bar" 
-	/>
+	/>-->
 </template>
 <style lang="scss">
 	div.activation-trigger {
