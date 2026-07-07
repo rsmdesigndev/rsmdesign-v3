@@ -221,7 +221,7 @@
 							{#if projectData?.project_services?.length > i}
 								<Cta data={ {...expertiseCta, 
 											 cta_text_light: service.services_id.name,
-											 cta_link: `/${service.services_id.slug}` 
+											 cta_link: `/services/${service.services_id.slug}` 
 										  } }
 								/>
 							{/if}
@@ -237,7 +237,7 @@
 							{#if projectData?.project_markets?.length > i}
 								<Cta data={ {...expertiseCta, 
 											 cta_text_light: market.markets_id.name,
-											 cta_link: `/${market.markets_id.slug}` 
+											 cta_link: `/markets/${market.markets_id.slug}` 
 										  } }
 								/>
 							{/if}
