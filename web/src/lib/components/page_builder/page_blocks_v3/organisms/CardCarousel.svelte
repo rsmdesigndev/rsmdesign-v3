@@ -21,7 +21,7 @@
 
 	let cards: CardData[] = data.carousel_cards;
 	let fullBleed: boolean = bleed.left && bleed.right;
-	let animation: "fade" | "slide" = (bleed.left || bleed.right) && !fullBleed ? "slide" : "fade";
+	let animation: "fade" | "slide" = bleed.right && !fullBleed ? "slide" : "fade";
 	let autoplay: boolean = data.carousel_autoplay ?? true;
 	let interval: number = data.carousel_autoplay_interval ?? 10000;
 
@@ -144,7 +144,7 @@
 <template>
 	<div id={`colItem-row-${row}-col-${column}-item-${colItem}`}
 		 class={`carousel-wrapper ${fullBleed ? "carousel-width-full-bleed" : ""}`}
-		 style:--grid-column-start={fullBleed ? "1" : (bleed.left ? "2" : "1")}
+		 style:--grid-column-start="1"
 		 style:--grid-column-end={fullBleed ? "-1" : (bleed.right ? "-2" : "-1")}
 		 bind:offsetWidth={carouselWidth}
 	>
