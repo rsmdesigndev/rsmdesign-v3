@@ -27,7 +27,12 @@
 />
 
 <template>
-	<article>
+	{#if data.article.aeo_article_page_blocks_v3}
+		<PageBlocksV3 blocks={data.article.aeo_article_page_blocks_v3} />
+	{:else}
+		<div class="container">Page Blocks v3 selected, but no blocks added.</div>
+	{/if}
+	<!--<article>
 		<h1>{data.article.aeo_article_heading}</h1>
 		{#if data.article.aeo_article_services.length || data.article.aeo_article_markets.length || data.article.aeo_article_regions.length}
 			<section class="tags-wrapper">
@@ -84,7 +89,7 @@
 				alt={data.article.aeo_article_image?.description}
 			/>
 		</figure>
-	</article>
+	</article>-->
 </template>
 
 <style lang="scss">
