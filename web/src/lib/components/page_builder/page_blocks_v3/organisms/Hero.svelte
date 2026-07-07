@@ -408,6 +408,19 @@
 			display: grid;
 			grid-template-columns: var(--GRID-WRAPPER);
 
+			// prevent line beneath hero
+			&::after {
+				content: "";
+				position: absolute;
+				top: 100%;
+				left: 0;
+				width: 100%;
+				height: 1px;
+				background-color: var(--color-background);
+				z-index: 0;
+				pointer-events: none;
+			}
+
 			> .project-headings {
 				grid-column: sixth-start 1 / sixth-end 4;
 				@media (max-width: 62.5em) {
@@ -451,6 +464,7 @@
 				}
 			}
 			> .project-expertise {
+				z-index: 1;
 				position: absolute;
 				bottom: 0;
 				grid-column: viewport;
