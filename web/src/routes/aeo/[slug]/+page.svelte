@@ -2,6 +2,7 @@
 	import type { PageData } from "./$types";
 	import { assetUrl } from "$lib/cms/assets";
 	import SeoHead from "$lib/components/SeoHead.svelte";
+	import PageBlocksV3 from "$lib/components/page_builder/page_blocks_v3/index.svelte";
 	import Cta, { type CtaData } from "$lib/components/page_builder/page_blocks_v3/atoms/Cta.svelte";
 	import RichText, { type RichTextData } from "$lib/components/page_builder/page_blocks_v3/atoms/RichText.svelte";
 
