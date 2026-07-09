@@ -10,30 +10,30 @@
 
 <template>
 	{#each data.projects as project}
-		<a href="/work/{project.slug}">{project.slug}</a>
+		<a href={`/work/${project.slug}`}>{project.slug}</a>
 	{/each}
 
 	{#each data.newsPosts as newsPost}
-		<a href="/news/{newsPost.slug}">{newsPost.slug}</a>
+		<a href={`/news/${newsPost.slug}`}>{newsPost.slug}</a>
 	{/each}
 
 	{#each data.markets as market}
-		<a href="/markets/{market.slug}">{market.slug}</a>
+		<a href={`/markets/${market.slug}`}>{market.slug}</a>
 	{/each}
 
 	{#each data.services as service}
-		<a href="/services/{service.slug}">{service.slug}</a>
+		<a href={`/services/${service.slug}`}>{service.slug}</a>
 	{/each}
 
 	{#each data.team as team}
-		<a href="/team/{team.slug}">{team.slug}</a>
+		<a href={`/team/${team.slug}`}>{team.slug}</a>
 	{/each}
 
 	{#each data.aeo_articles as aeo_article}
-		<a href="/aeo/{article.slug}">{article.slug}</a>
+		<a href={`/aeo/${article.slug}`}>{article.slug}</a>
 	{/each}
 
-	<a href="/work/great-park-neighborhoods">Great Park Neighborhoods</a>
+	<!--<a href="/work/great-park-neighborhoods">Great Park Neighborhoods</a>
 	<a href="/markets/hotel-signage">Hotel Signage</a>
-	<a href="/markets/resort-signage">Resort Signage</a>
+	<a href="/markets/resort-signage">Resort Signage</a>-->
 </template>
