@@ -30,7 +30,7 @@
 	{/each}
 
 	{#each data.aeo_articles as aeo_article}
-		<a href={`/aeo/${article.slug}`}>{article.slug}</a>
+		<a href={`/aeo/${aeo_article.slug}`}>{aeo_article.slug}</a>
 	{/each}
 
 	<!--<a href="/work/great-park-neighborhoods">Great Park Neighborhoods</a>
