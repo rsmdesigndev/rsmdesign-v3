@@ -265,9 +265,24 @@ $BREAKPOINT-LG: 125em;
 				counter-increment: rsm-counter;
 
 				&::before {
-					content: counter(alt-counter) ".";
+					content: counter(rsm-counter) ".";
 					font-weight: 400;
 				}
+			}
+		}
+
+		table {
+			width: 100%;
+
+			td {
+				padding: 0.5rem 0 0.67em;
+				border-bottom: 1px solid var(--COLOR-MID-GRAY);
+			}
+
+			th {
+				text-align: left;
+				padding-bottom: 0.67rem;
+				border-bottom: 1px solid var(--COLOR-BLACK);
 			}
 		}
 

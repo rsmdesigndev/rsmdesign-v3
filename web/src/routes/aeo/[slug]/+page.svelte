@@ -27,7 +27,7 @@
 		<article>
 			<h1>{data.article.aeo_article_heading ?? "AEO Post"}</h1>
 			{#if data.article.page_content}
-				<PageBlocks content={data.article.page_content} news />
+				<PageBlocks content={data.article.page_content} />
 			{/if}
 		</article>
 	{/if}
