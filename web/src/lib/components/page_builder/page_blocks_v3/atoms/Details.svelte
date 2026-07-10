@@ -68,6 +68,11 @@
 			/>
 		</summary>
 
+		<!-- 
+			Convert to blockquote (using svelte:element tag)
+			add `cite` attribute to specify blockquote source,
+			link back to AEO article page if applicable
+		-->
 		<div class="details-body" 
 			 class:open={isOpen}
 			 style:--height={height}

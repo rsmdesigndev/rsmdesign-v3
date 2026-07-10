@@ -25,6 +25,7 @@
 		| ({ __typename: "page_blocks_v3_molecule_card" }			& CardData)
 		| ({ __typename: "page_blocks_v3_molecule_contact_form" }	& ContactFormData)
 		| ({ __typename: "page_blocks_v3_molecule_cta_list" }		& CtaListData)
+		| ({ __typename: "page_blocks_v3_molecule_table" }			& TableData)
 		| ({ __typename: "page_blocks_v3_atom_spacer" }				& SpacerData)
 		;
 
@@ -41,6 +42,7 @@
 	import CardCarousel, { type CardCarouselData } from "./CardCarousel.svelte";
 	import ContactForm, { type ContactFormData } from "../molecules/ContactForm.svelte";
 	import CtaList, { type CtaListData } from "../molecules/CtaList.svelte";
+	import Table, { type TableData } from "../molecules/Table.svelte";
 	import Spacer, { type SpacerData } from "../atoms/Spacer.svelte";
 	import type { ProjectData, ExpertiseData } from "../index.svelte";
 	
@@ -197,6 +199,11 @@
 					{expertiseData}
 					{bleed}
 					bind:selectedItem
+				/>
+			{:else if data?.__typename === "page_blocks_v3_molecule_table"}
+				<Table
+					{data}
+					{bleed}
 				/>
 			{:else if data?.__typename === "page_blocks_v3_atom_spacer"}
 				<Spacer {data} />

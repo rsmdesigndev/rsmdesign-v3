@@ -89,7 +89,7 @@
 	// import components & types
 	import CardRow, { type CardRowData } from "./organisms/CardRow.svelte";
 	import DataFeed, { type DataFeedData } from "./organisms/DataFeed/index.svelte";
-	import NextEntry, { EntryType } from "./organisms/NextEntry.svelte";
+	import NextEntry from "./organisms/NextEntry.svelte";
 	import Hero, { type HeroData } from "./organisms/Hero.svelte";
 	import BookParallaxAnimation from "./one-off/BookParallaxAnimation.svelte";
 	import LogosTickerTape from "./one-off/LogosTickerTape.svelte";
@@ -188,7 +188,7 @@
 	{/each}
 	{#if projectData}
 		<NextEntry 
-			entryType={EntryType.Project} 
+			entryType="project"
 			currentSlug={projectData.project_slug ?? ""} 
 			on:selectComponent={() => changeTheme(blocks.length)}
 		/>

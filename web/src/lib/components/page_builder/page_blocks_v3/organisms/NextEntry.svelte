@@ -1,10 +1,3 @@
-<script lang="ts" context="module">
-	export enum EntryType {
-		Project = "Project",
-		Article = "Article"
-	}
-</script>
-
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { cmsClient } from "$lib/cms";
@@ -23,7 +16,7 @@
 	import Cta, { type CtaData } from "../atoms/Cta.svelte";
 
 	//export let project: boolean = false;
-	export let entryType: EntryType;
+	export let entryType: "project" | "article";
 	export let currentSlug: string;
 
 	// Color theme
@@ -52,9 +45,9 @@
 	let topicFilterSlugs: Set<string> = new Set();
 
 	function makeUrlParams(): string {
-		if (entryType === EntryType.Project) {
+		if (entryType === "project") {
 			return makeProjectFilterUrlParams(serviceFilterSlugs, marketFilterSlugs);
-		} else if (entryType === EntryType.Article) {
+		} else if (entryType === "article") {
 			return makeNewsFilterUrlParams(topicFilterSlugs);
 		} else {
 			throw new Error(`Invalid entryType: ${entryType}`);
@@ -62,9 +55,9 @@
 	}
 
 	function makeNextUrl(): string {
-		if (entryType === EntryType.Project) {
+		if (entryType === "project") {
 			return `/work/${nextSlug}${makeUrlParams()}`;
-		} else if (entryType === EntryType.Article) {
+		} else if (entryType === "article") {
 			return `/news/${nextSlug}${makeUrlParams()}`;
 		} else {
 			throw new Error(`Invalid entryType: ${entryType}`);
@@ -74,7 +67,7 @@
 	afterNavigate(async () => {
 		loaded = false;
 
-		if (entryType === EntryType.Project) {
+		if (entryType === "project") {
 			let urlProjectFilters = getProjectFiltersFromUrl($page.url.searchParams);
 			serviceFilterSlugs = urlProjectFilters.serviceFilterSlugs;
 			marketFilterSlugs = urlProjectFilters.marketFilterSlugs;
@@ -96,7 +89,7 @@
 
 			nextSlug = nextProject.slug ?? "";
 			nextTitle = nextProject.project_title ?? "";
-		} else if (entryType === EntryType.Article) {
+		} else if (entryType === "article") {
 			let urlNewsFilters = getNewsFiltersFromUrl($page.url.searchParams);
 			topicFilterSlugs = urlNewsFilters.topicFilterSlugs;
 
@@ -133,7 +126,7 @@
 						 heading_has_large_text: true,
 						 heading_has_superscript: false, 
 						 heading_small: `Next ${entryType}`,
-						 heading_large: loaded ? nextTitle : `Loading next ${entryType.toLowerCase()}`
+						 heading_large: loaded ? nextTitle : `Loading next ${entryType}`
 					 } }
 			/>
 
@@ -141,8 +134,8 @@
 				data={ { cta_type: "button",
 						 cta_icon: "arrow_right", 
 						 cta_style: "bold",
-						 cta_text_bold: `View ${entryType.toLowerCase()}`,
-						 cta_link: entryType === "Project" ? `/work/${nextSlug}` : `/news/${nextSlug}`
+						 cta_text_bold: `View ${entryType}`,
+						 cta_link: entryType === "project" ? `/work/${nextSlug}` : `/news/${nextSlug}`
 					 } }
 			/>
 		</article>

@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
 	export type AccordionData = {
-		accordion_heading_size?: boolean | null;
+		accordion_first_item_open?: boolean | null;
 		accordion_heading_size?: string | null;
 		accordion_items?: AccordionItem[] | null;
 	};

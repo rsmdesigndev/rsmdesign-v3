@@ -566,6 +566,12 @@ export const _query = gql`
 											}
 										}
 									}
+									... on page_blocks_v3_molecule_table {
+										table_heading_size
+										table_data_size
+										table_first_row_header
+										table_content
+									}
 									... on page_blocks_v3_molecule_contact_form {
 										form
 										form_type

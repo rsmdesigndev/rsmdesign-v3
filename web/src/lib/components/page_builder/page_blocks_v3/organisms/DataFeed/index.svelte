@@ -121,7 +121,7 @@
 	let searchText: string;
 
 	// Load more functionality
-	const loadMore = async () => {
+	async function loadMore() {
 		switch (data.feed_source) {
 			case "Projects": {
 				let filters = [];
