@@ -153,7 +153,9 @@
 		/>
 	{/if}
 	<div class="hero-scrim-top" />
-	<div class="hero-scrim-bottom" />
+	<div class="hero-scrim-bottom" 
+		 class:project={data.hero_style === "project"}
+	/>
 	{#if data.hero_style === "project"}
 		<div class="project-details">
 			{#if data.hero_media_type === "Video"}
@@ -382,11 +384,13 @@
 				rgba(255,255,255,1) 100%
 			);
 
-			/*@media (max-width: 62.5em) {
-				position: absolute;
-				bottom: 0;
-				height: 50vh;
-			}*/
+			&:not(.project) {
+				@media (max-width: 62.5em) {
+					position: absolute;
+					bottom: 0;
+					height: 50vh;
+				}
+			}
 		}
 
 		.hero-animation-trigger {
