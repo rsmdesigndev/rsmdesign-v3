@@ -382,11 +382,11 @@
 				rgba(255,255,255,1) 100%
 			);
 
-			@media (max-width: 62.5em) {
+			/*@media (max-width: 62.5em) {
 				position: absolute;
 				bottom: 0;
 				height: 50vh;
-			}
+			}*/
 		}
 
 		.hero-animation-trigger {
