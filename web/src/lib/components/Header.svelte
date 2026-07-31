@@ -549,8 +549,7 @@
 
 			width: var(--menu-button-width);
 
-			> span {
-				display: block;
+			> div {
 				background-color: var(--color-primary, var(--COLOR-BLACK));
 
 				width: 100%;
