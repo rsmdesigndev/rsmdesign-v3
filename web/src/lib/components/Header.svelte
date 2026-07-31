@@ -432,7 +432,7 @@
 		display: contents;
 
 		> div {
-			position: sticky;
+			position: fixed;
 			top: 0;
 			left: 0;
 			width: 100%;
@@ -470,7 +470,9 @@
 			// BREADCRUMBS + MENU BUTTON
 			&.nav-wrapper {
 				z-index: 8;
+				// Force WebKit to create a 3D compositing layer for the menu button
 				-webkit-transform: translate3d(0, 0, 0);
+				will-change: transform, top;
 			}
 			// MENU WRAPPER
 			&.menu-wrapper {
