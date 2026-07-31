@@ -470,6 +470,7 @@
 			// BREADCRUMBS + MENU BUTTON
 			&.nav-wrapper {
 				z-index: 8;
+				-webkit-transform: translate3d(0, 0, 0);
 			}
 			// MENU WRAPPER
 			&.menu-wrapper {
