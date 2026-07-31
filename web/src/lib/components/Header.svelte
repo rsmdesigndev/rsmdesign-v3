@@ -532,7 +532,7 @@
 			transition: color 0.3s ease;
 		}
 
-		> button.menu-button {
+		> div.menu-button {
 			background: none;
 			border: none;
 			padding: 0;
