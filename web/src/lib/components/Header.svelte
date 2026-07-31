@@ -323,8 +323,7 @@
 					</div>
 				{/if}
 
-				<div
-					role="button"
+				<button
 					class="menu-button"
 					class:active={menuOpen}
 					aria-label="Toggle visibility of site menu"
@@ -333,10 +332,10 @@
 					on:click={toggleMenu}
 					on:keypress={onMenuButtonKeypress}
 				>
-					<div />
-					<div />
-					<div />
-				</div>
+					<span></span>
+					<span></span>
+					<span></span>
+				</button>
 			</div>
 		</div>
 
@@ -532,7 +531,7 @@
 			transition: color 0.3s ease;
 		}
 
-		> div.menu-button {
+		> button.menu-button {
 			background: none;
 			border: none;
 			padding: 0;
@@ -549,7 +548,8 @@
 
 			width: var(--menu-button-width);
 
-			> div {
+			> span {
+				display: block;
 				background-color: var(--color-primary, var(--COLOR-BLACK));
 
 				width: 100%;
@@ -574,7 +574,7 @@
 				--menu-button-transform: calc(var(--menu-button-width) * 3.333 / 16);
 				//transform: translateX(var(--menu-button-transform));
 
-				> div {
+				> span {
 					background-color: white;
 					width: 100%;
 
@@ -593,8 +593,8 @@
 				}
 			}
 
-			&:hover > div,
-			&.active:hover > div {
+			&:hover > span,
+			&.active:hover > span {
 				background-color: var(--COLOR-ORANGE);
 			}
 		}
