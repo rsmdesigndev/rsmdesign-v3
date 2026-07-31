@@ -323,7 +323,8 @@
 					</div>
 				{/if}
 
-				<button
+				<div
+					role="button"
 					class="menu-button"
 					class:active={menuOpen}
 					aria-label="Toggle visibility of site menu"
@@ -335,7 +336,7 @@
 					<div />
 					<div />
 					<div />
-				</button>
+				</div>
 			</div>
 		</div>
 
@@ -531,7 +532,7 @@
 			transition: color 0.3s ease;
 		}
 
-		> button.menu-button {
+		> div.menu-button {
 			background: none;
 			border: none;
 			padding: 0;
