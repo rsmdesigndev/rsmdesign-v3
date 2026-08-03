@@ -6,7 +6,6 @@
 
 	const footerNavCta = {
 		cta_type: "link",
-		cta_size: "lg",
 		cta_icon: "arrow_right",
 		cta_icon_position: "left",
 		cta_style: "light",
@@ -135,7 +134,19 @@
 						</svg>
 					</a>
 				</div>
-				<p class="footer-copyright">Copyright © 1997–{new Date().getFullYear()} RSM&nbsp;Design</p>
+				<Cta
+					data={ {
+						cta_type: "link",
+						cta_size: "sm",
+						cta_icon: "info",
+						cta_icon_position: "left",
+						cta_style: "light",
+						cta_hover_highlight: "light",
+						cta_text_light: `Copyright 1997–${new Date().getFullYear()} RSM&nbsp;Design`,
+						cta_link: "/contact"
+					} }
+					sizeOverride="sm"
+				/>
 			</div>
 		</div>
 	</footer>
@@ -498,19 +509,18 @@
 						}
 					}
 				}
-				> p.footer-copyright {
-					grid-column: eighth-start 7 / eighth-end 8;
-					@media (max-width: 62.5em) {
-						grid-column: third-start 3 / third-end 3;
-					}
+				:global {
+					> a {
+						grid-column: eighth-start 7 / eighth-end 8;
+						@media (max-width: 62.5em) {
+							grid-column: third-start 3 / third-end 3;
+						}
 
-					margin: 1em 0 0;
-					//min-width: 16.5em;
-					font-size: var(--FONT-SIZE-SM);
-					color: var(--color-primary, var(--COLOR-WHITE));
+						margin: 1em 0 0;
 
-					@media (max-width: 46.875em) {
-						font-size: var(--FONT-SIZE-XS);
+						@media (max-width: 46.875em) {
+							font-size: var(--FONT-SIZE-XS);
+						}
 					}
 				}
 			}

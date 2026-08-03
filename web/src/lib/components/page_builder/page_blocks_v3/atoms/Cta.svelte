@@ -159,20 +159,36 @@
 
 			span.icon {
 				&[data-icon="arrow_left"]::after,
-				&[data-icon="arrow_right"]::after {
+				&[data-icon="arrow_right"]::after,
+				&[data-icon="info"]::after {
 					width: calc((var(--font-size) + var(--font-size) * var(--line-height)) / 2);
 					height: calc((var(--font-size) + var(--font-size) * var(--line-height)) / 2);
-					border: 1.5px solid var(--color-accent, var(--COLOR-ORANGE));
 					border-radius: 50%;
 
 					align-content: center;
 					justify-content: center;
 
-					font-size: calc(var(--font-size) * var(--line-height));
-					line-height: calc(var(--font-size) * var(--line-height) / 2);
-					color: var(--color-accent, var(--COLOR-ORANGE));
 
 					transition: color 0.3s ease, background-color 0.3s ease;
+				}
+
+				&[data-icon="arrow_left"]::after,
+				&[data-icon="arrow_right"]::after {
+					font-size: calc(var(--font-size) * var(--line-height));
+					line-height: calc(var(--font-size) * var(--line-height) / 2);
+
+					border: 1.5px solid var(--color-accent, var(--COLOR-ORANGE));
+					color: var(--color-accent, var(--COLOR-ORANGE));
+				}
+
+				&[data-icon="info"]::after {
+					font-style: italic;
+					font-weight: 500;
+					font-size: calc(var(--font-size) * 2 / 3);
+					line-height: var(--font-size);
+					
+					border: 1.25px solid var(--color-primary, var(--COLOR-WHITE));
+					color: var(--color-primary, var(--COLOR-WHITE));
 				}
 			}
 
@@ -259,6 +275,10 @@
 			&[data-icon="arrow_right"]::after {
 				content: "›";
 				padding-left: 1px;
+			}
+			&[data-icon="info"]::after {
+				content: "i";
+				padding-right: 0.5px;
 			}
 			&[data-icon="arrow_up"]::after {
 				content: "‹";
