@@ -196,19 +196,19 @@
 				color: var(--color-accent);
 
 				&.hover-highlight-none {
-					color: inherit;
+					color: var(--color-primary);
 				}
 				&.hover-highlight-bold {
 					strong {
 						color: var(--color-accent, var(--COLOR-ORANGE));
 					}
 					span.light {
-						color: inherit;
+						color: var(--color-primary);
 					}
 				}
 				&.hover-highlight-light {
 					strong {
-						color: inherit;
+						color: var(--color-primary);
 					}
 					span.light {
 						color: var(--color-accent, var(--COLOR-ORANGE));
@@ -216,9 +216,15 @@
 				}
 
 				span.icon[data-icon="arrow_left"]::after,
-				span.icon[data-icon="arrow_right"]::after {
+				span.icon[data-icon="arrow_right"]::after,
+				span.icon[data-icon="info"]::after {
 					background-color: var(--color-accent, var(--COLOR-ORANGE));
 					color: var(--color-background, white);
+				}
+
+				span.icon[data-icon="info"]::after {
+					background-color: var(--color-primary, var(--COLOR-WHITE));
+					color: var(--COLOR-BLACK);
 				}
 			}
 		}

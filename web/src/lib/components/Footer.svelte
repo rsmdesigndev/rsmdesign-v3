@@ -141,7 +141,7 @@
 						cta_icon: "info",
 						cta_icon_position: "left",
 						cta_style: "light",
-						cta_hover_highlight: "light",
+						cta_hover_highlight: "none",
 						cta_text_light: `Copyright 1997–${new Date().getFullYear()} RSM&nbsp;Design`,
 						cta_link: "/contact"
 					} }
