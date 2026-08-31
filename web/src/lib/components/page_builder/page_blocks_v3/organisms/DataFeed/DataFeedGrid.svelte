@@ -159,12 +159,12 @@
 								/>
 							{:else if data.feed_grid_columns === 4}
 								{#if data.feed_grid_dynamic_start_position}
-									{#if (i % 10 === 1 || i % 10 === 5)}
+									{#if (i === 1 || i === 5 || i % 10 === 1 || i % 10 === 5)}
 										<source media="(max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
 									{:else}
 										<source media="(max-width: 62.5em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
 									{/if}
-									{#if (i % 14 === 2 || i % 14 === 7)}
+									{#if (i === 2 || i === 7 || i % 14 === 2 || i % 14 === 7)}
 										<img src={assetUrl(item.hero_image?.filename_disk)}
 											 alt={item.hero_image?.title}
 										/>
@@ -174,12 +174,12 @@
 										/>
 									{/if}
 								{:else}
-									{#if (i % 10 === 0 || i % 10 === 6)}
+									{#if (i === 0 || i === 6 || i % 10 === 0 || i % 10 === 6)}
 										<source media="(max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
 									{:else}
 										<source media="(max-width: 62.5em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
 									{/if}
-									{#if (i % 14 === 0 || i % 14 === 9)}
+									{#if (i === 0 || i === 9 || i % 14 === 0 || i % 14 === 9)}
 										<img src={assetUrl(item.hero_image?.filename_disk)}
 											 alt={item.hero_image?.title}
 										/>
