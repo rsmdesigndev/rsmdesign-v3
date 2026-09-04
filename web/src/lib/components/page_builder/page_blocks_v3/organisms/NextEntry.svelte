@@ -60,7 +60,7 @@
 		const query: string = generateNextEntryQuery({
 			feedSource,
 			filters: filtersArrayToGraphql(feedFilters),
-			searchFilter: searchToGraphql(searchTerm),
+			searchFilter: searchToGraphql(feedSource, searchTerm),
 			cursor: currentCursor,
 			currentSlug
 		});
@@ -73,7 +73,8 @@
 			const response: any = await request(env.PUBLIC_DIRECTUS_API_URL, query, { search: searchTerm });
  
 			// next is empty when the current entry is the last, so it wraps around to first
-			const nextEntry = response?.next?.find(entry => entry.slug !== currentSlug) ?? response?.first?.[0];
+			const nextEntry = response?.next?.find((entry: any) => entry?.slug !== currentSlug)
+				?? response?.first?.[0];
  
 			// A set holding only the current entry has no next entry to offer
 			if (nextEntry && nextEntry.slug !== currentSlug) {

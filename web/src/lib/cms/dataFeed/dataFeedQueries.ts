@@ -7,7 +7,6 @@ type FeedSourceConfig = {
 	collection: string;
 	cursorField?: string; // What the feed orders by for NextEntry component
 	cursorDescending?: boolean;
-	searchable?: boolean;
 	titleField?: string;
 	routePrefix?: string;
 }
@@ -17,7 +16,6 @@ const feedSourceConfigs: Record<string, FeedSourceConfig> = {
 		querySource: "projects",
 		collection: "projects",
 		cursorField: "sort",
-		searchable: true,
 		titleField: "project_title",
 		routePrefix: "/work"
 	},
@@ -54,8 +52,8 @@ export const feedItemsPerLoad = (feed: {
 		return feed.feed_table_items_per_load ?? undefined;
 	}
 
-	const columns: number = feed.feed_grid_columns;
-	const rows: number = feed.feed_grid_rows_per_load;
+	const columns = feed.feed_grid_columns;
+	const rows = feed.feed_grid_rows_per_load;
 
 	if (feed.feed_grid_style === "dynamic") {
 		if (columns === 4) {
@@ -89,7 +87,7 @@ export const generateNextEntryQuery = (options: {
 
 	const filterString: string = options.filters?.join(",\n") ?? "";
 	const logic: string = options.filterLogic ?? "and";
-	const searchFilter: string = source.searchable ? (options.searchFilter ?? "") : "";
+	const searchFilter: string = options.searchFilter ?? "";
 	const searchVariable: string = searchFilter ? "($search: String!)" : "";
 	const searchClause: string = searchFilter ? `,\n${searchFilter}` : "";
 
@@ -232,7 +230,7 @@ export const generateQuery = (
 					}
 				`;
 		case "articles":
-			return `query Articles($limit: Int, $offset: Int) {
+			return `query Articles($limit: Int, $offset: Int${searchVariable}) {
 						news_posts(
 							limit: $limit
 							offset: $offset
@@ -244,7 +242,7 @@ export const generateQuery = (
 										_and: [
 											${filterString}
 										]
-									}
+									}${searchClause}
 								]
 							}
 						) {
@@ -274,7 +272,7 @@ export const generateQuery = (
 										_and: [
 											${filterString}
 										]
-									}
+									}${searchClause}
 								]
 							})
 						{

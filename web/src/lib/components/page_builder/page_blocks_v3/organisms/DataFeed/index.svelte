@@ -201,7 +201,7 @@
 			case "Projects": {
 				let filters: string[] = filtersArrayToGraphql(feedFilters);
 				let searchTerm: string = sanitizeSearchText(searchText);
-				let searchFilter: string = searchToGraphql(searchTerm);
+				let searchFilter: string = searchToGraphql(data.feed_source, searchTerm);
 
 				let query = generateQuery("projects", filters, data.feed_filter_logic, searchFilter);
 
@@ -225,11 +225,15 @@
 			}
 			case "Articles": {
 				let filters: string[] = filtersArrayToGraphql(feedFilters);
-				let query = generateQuery("articles", filters);
+				let searchTerm: string = sanitizeSearchText(searchText);
+				let searchFilter: string = searchToGraphql(data.feed_source, searchTerm);
+
+				let query = generateQuery("articles", filters, data.feed_filter_logic, searchFilter);
 
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
 					limit: numItems,
 					offset: loadOffset,
+					search: searchTerm,
 				});
 
 				if(response) {
@@ -505,7 +509,6 @@
 				</div>
 				<DataFeedFilterMenu 
 					on:updateFilters={reload}
-					feedSource={data.feed_source}
 					bind:feedFilters
 					bind:searchText
 					bind:feedView

@@ -48,7 +48,7 @@ const prefetchDataFeed = async (
 		source.querySource,
 		filters,
 		feed.feed_filter_logic,
-		searchToGraphql(searchTerm)
+		searchToGraphql(feed.feed_source, searchTerm)
 	);
 
 	try {

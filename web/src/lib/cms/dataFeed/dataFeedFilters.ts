@@ -9,7 +9,7 @@ export type FeedFilters = {
 	filterIds: string[]
 }[];
 
-type FilterType = "services" | "markets" | "location_cities" | "studio_locations" | "design_team" | "topics" | "authors";
+export type FilterType = "services" | "markets" | "location_cities" | "studio_locations" | "design_team" | "topics" | "authors";
 
 type FilterSourceItem = {
 	[propertyName: string]: string | null | undefined;
@@ -74,18 +74,25 @@ const filterConfigs: Record<FilterType, FilterConfig> = {
 	}
 };
 
-const searchPaths: string[][] = [
-	["project_title"],
-	["project_description"],
-	["project_keywords"],
-	["location"],
-	["collaborators"],
-	["services", "services_id", "name"],
-	["hidden_services", "services_id", "name"],
-	["markets", "markets_id", "name"],
-	["hidden_markets", "markets_id", "name"],
-	["page_content", "item__page_block_rich_text", "content"]
-];
+const searchPathsBySource: Record<string, string[][]> = {
+	Projects: [
+		["project_title"],
+		["project_description"],
+		["project_keywords"],
+		["location"],
+		["collaborators"],
+		["services", "services_id", "name"],
+		["hidden_services", "services_id", "name"],
+		["markets", "markets_id", "name"],
+		["hidden_markets", "markets_id", "name"],
+		["page_content", "item__page_block_rich_text", "content"]
+	],
+	Articles: [
+		["post_title"],
+		["article_preview"],
+		["authors", "team_id", "name"]
+	]
+};
 
 // Under two characters a search matches too much to be worth running
 const searchMinLength: number = 2;
@@ -242,8 +249,13 @@ export const sanitizeSearchText = (searchText?: string | null): string => {
 	return searchTerm.length >= searchMinLength ? searchTerm : "";
 };
 
-export const searchToGraphql = (searchTerm?: string | null): string => {
-	if (!searchTerm) {
+export const searchToGraphql = (
+	feedSource?: string | null,
+	searchTerm?: string | null
+): string => {
+	const searchPaths: string[][] = searchPathsBySource[feedSource ?? ""] ?? [];
+
+	if (!searchTerm || searchPaths.length === 0) {
 		return "";
 	}
 
