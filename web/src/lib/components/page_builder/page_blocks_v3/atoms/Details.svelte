@@ -69,7 +69,7 @@
 		</summary>
 
 		<!-- 
-			Convert to blockquote (using svelte:element tag)
+			Convert to blockquote (using <svelte:element> tag)
 			add `cite` attribute to specify blockquote source,
 			link back to AEO article page if applicable
 		-->

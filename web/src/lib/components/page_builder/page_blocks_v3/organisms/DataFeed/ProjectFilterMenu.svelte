@@ -1,14 +1,99 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { onMount, createEventDispatcher } from 'svelte';
 	import { request } from "graphql-request";
 	import { env } from "$env/dynamic/public";
+	import { generateQuery } from "$lib/cms/dataFeed/dataFeedQueries";
+	import { standardizeFilterPropertyNames, indexOfFilterItem, toggleFilterItem, type FilterItem } from "$lib/cms/dataFeed/dataFeedFilters";
 	import { slide, fade } from "svelte/transition";
 	import Cta, { type CtaData } from "../../atoms/Cta.svelte";
 
-	export let serviceFilters: string[] = [];
-	export let marketFilters: string[] = [];
+	export let serviceFilters: FilterItem[] = [];
+	export let marketFilters: FilterItem[] = [];
 	export let feedView: "Grid" | "Table" | "Ticker Tape" = "Grid";
 
+	// Load filters
+	$: services = [];
+	$: markets = [];
+	$: locations = [];
+	$: collaborators = [];
+
+	const loadFilters = async () => {
+		const servicesQuery = generateQuery("services");
+		const marketsQuery = generateQuery("markets");
+		
+		let servicesResponse = await request(env.PUBLIC_DIRECTUS_API_URL, servicesQuery);
+		if (servicesResponse) {
+			services.push(...servicesResponse.services);
+			services = standardizeFilterPropertyNames("services", services);
+		}
+
+		let marketsResponse = await request(env.PUBLIC_DIRECTUS_API_URL, marketsQuery);
+		if (marketsResponse) {
+			markets.push(...marketsResponse.markets);
+			markets = standardizeFilterPropertyNames("markets", markets);
+		}
+	}
+
+	onMount(() => {
+		loadFilters();
+	});
+
+	function search() {
+		console.log("searched");
+	}
+
+	// Toggle filters
+	$: openFilterMenu = "none";
+
+	function toggleFilterMenu(filter: string) {
+		if (openFilterMenu === filter) {
+			openFilterMenu = "none";
+		} else {
+			openFilterMenu = filter;
+		}
+	}
+
+	function toggleSearchMenu() {
+		if (openFilterMenu === "search") {
+			openFilterMenu = "none";
+		} else {
+			openFilterMenu = "search"
+		}
+	}
+
+	const dispatch = createEventDispatcher();
+	// Reactive so that the filter icons update whenever a filter is toggled
+	$: indexOfFilter = (type: string, item: FilterItem): number => {
+		if (type === "service") {
+			return indexOfFilterItem(serviceFilters, item);
+		} else if (type === "market") {
+			return indexOfFilterItem(marketFilters, item);
+		} else {
+			return -1;
+		}
+	}
+
+	function toggleFilter(type: string, item: FilterItem) {
+		if (!item) {
+			return;
+		} else {
+			if (type === "service") {
+				serviceFilters = toggleFilterItem(serviceFilters, item);
+			} else if (type === "market") {
+				marketFilters = toggleFilterItem(marketFilters, item);
+			}
+			dispatch('updateFilters');
+		}
+	}
+
+	function toggleFeedView(view: string) {
+		if (view != feedView) {
+			feedView = view;
+			dispatch('updateFilters');
+		}
+	}
+
+	// CTAs
 	const filterMenuCta = {
 		cta_type: "link",
 		cta_size: "md",
@@ -22,120 +107,6 @@
 		cta_style: "light",
 		cta_hover_highlight: "light",
 		cta_icon_position: "left"
-	}
-
-	$: loadFilterItems = "none";
-	$: openFilterMenu = "none";
-
-	function loadFiltersOnHover(filter: string) {
-		loadFilterItems = filter;
-		loadFilters();
-	}
-
-	function toggleFilterMenu(filter: string) {
-		if (openFilterMenu === filter) {
-			openFilterMenu = "none";
-		} else {
-			loadFilterItems = filter;
-			openFilterMenu = filter;
-			loadFilters();
-		}
-	}
-
-	function toggleSearchMenu() {
-		if (openFilterMenu === "search") {
-			openFilterMenu = "none";
-		} else {
-			openFilterMenu = "search"
-		}
-	}
-
-	// Load more functionality
-	$: services = [];
-	let servicesLoaded: boolean = false;
-	let servicesQuery = `
-		query Services {
-			services(filter: { visibility: { _nin: ["draft", "archived", "visibleExceptFilters"] } }) {
-				filter_button_name
-			}
-		}
-	`;
-
-	$: markets = [];
-	let marketsLoaded: boolean = false;
-	let marketsQuery = `
-		query Markets {
-			markets(filter: { visibility: { _nin: ["draft", "archived", "visibleExceptFilters"] } }) {
-				filter_button_name
-			}
-		}
-	`;
-
-	$: locations = [];
-	$: collaborators = [];
-
-	const loadFilters = async () => {
-		if (loadFilterItems === "services" || loadFilterItems === "all") {
-			if (!servicesLoaded) {
-				servicesLoaded = true;
-				let response = await request(env.PUBLIC_DIRECTUS_API_URL, servicesQuery);
-
-				if (response) {
-					services.push(...response.services);
-					services = services;
-				}
-			}
-		}
-		if (loadFilterItems === "markets" || loadFilterItems === "all") {
-			if (!marketsLoaded) {
-				marketsLoaded = true;
-				let response = await request(env.PUBLIC_DIRECTUS_API_URL, marketsQuery);
-
-				if (response) {
-					markets.push(...response.markets);
-					markets = markets;
-				}
-			}
-		}
-	}
-
-	function search() {
-		console.log("searched");
-	}
-
-	const dispatch = createEventDispatcher();
-	function toggleFilter(type: string, item: string) {
-		if (!item) {
-			return;
-		} else {
-			const itemString: string = `"${item}"`;
-			if (type === "service") {
-				const index = serviceFilters.indexOf(itemString);
-				if (index > -1) {
-					serviceFilters.splice(index, 1);
-				} else {
-					serviceFilters.push(itemString);
-				}
-				serviceFilters = serviceFilters;
-				dispatch('updateFilters');
-			} else if (type === "market") {
-				const index = marketFilters.indexOf(itemString);
-				if (index > -1) {
-					marketFilters.splice(index, 1);
-				} else {
-					marketFilters.push(itemString);
-				}
-				marketFilters = marketFilters;
-				dispatch('updateFilters');
-			}
-		}
-	}
-
-	function toggleFeedView(view: string) {
-		if (view != feedView) {
-			feedView = view;
-			dispatch('updateFilters');
-		}
 	}
 </script>
 
@@ -172,7 +143,6 @@
 							 cta_text_light: "Service",
 							 cta_icon: `${openFilterMenu === "services" ? "arrow_up" : "arrow_down"}`
 						  } }
-					 on:mouseover={() => loadFiltersOnHover("services")}
 					 on:click={() => toggleFilterMenu("services")}
 				/>
 				<Cta button
@@ -180,7 +150,6 @@
 							 cta_text_light: "Market",
 							 cta_icon: `${openFilterMenu === "markets" ? "arrow_up" : "arrow_down"}`
 						  } }
-					 on:mouseover={() => loadFiltersOnHover("markets")}
 					 on:click={() => toggleFilterMenu("markets")}
 				/>
 				<!--<Cta button
@@ -202,7 +171,6 @@
 							 cta_text_light: "Filter",
 							 cta_icon: `${openFilterMenu === "all" ? "arrow_up" : "arrow_down"}`
 						  } }
-					 on:mouseover={() => loadFiltersOnHover("all")}
 					 on:click={() => toggleFilterMenu("all")}
 				/>
 			</div>
@@ -225,7 +193,7 @@
 					 class:active={openFilterMenu != "none"}
 				>
 					{#if openFilterMenu === "services" || openFilterMenu === "all"}
-						{#if servicesLoaded}
+						{#if services}
 							<div in:fade={{ duration: 200, delay: 201 }}
 								 out:fade={{ duration: 200 }}
 								 class:project-filters-stacked={openFilterMenu === "all"}
@@ -235,10 +203,10 @@
 									<div>
 										<Cta button
 											 data={ {...filterCta, 
-													 cta_text_light: item.filter_button_name,
-													 cta_icon: `${serviceFilters.indexOf(`"${item.filter_button_name}"`) > -1 ? "dot_solid" : "dot_empty"}`
+													 cta_text_light: item.name
 												  } }
-											 on:click={() => toggleFilter("service", item.filter_button_name)}
+											 iconOverride={indexOfFilter("service", item) > -1 ? "dot_solid" : "dot_empty"}
+											 on:click={() => toggleFilter("service", item)}
 										/>
 									</div>
 								{/each}
@@ -248,7 +216,7 @@
 						{/if}
 					{/if}
 					{#if openFilterMenu === "markets" || openFilterMenu === "all"}
-						{#if marketsLoaded}
+						{#if markets}
 							<div in:fade={{ duration: 200, delay: 201 }}
 								 out:fade={{ duration: 200 }}
 								 class:project-filters-stacked={openFilterMenu === "all"}
@@ -258,10 +226,10 @@
 									<div>
 										<Cta button
 											 data={ {...filterCta, 
-													 cta_text_light: item.filter_button_name,
-													 cta_icon: `${marketFilters.indexOf(`"${item.filter_button_name}"`) > -1 ? "dot_solid" : "dot_empty"}`
+													 cta_text_light: item.name,
+													 cta_icon: `${indexOfFilter("market", item) > -1 ? "dot_solid" : "dot_empty"}`
 												  } }
-											 on:click={() => toggleFilter("market", item.filter_button_name)}
+											 on:click={() => toggleFilter("market", item)}
 										/>
 									</div>
 								{/each}

@@ -1,6 +1,7 @@
 import { gql } from "graphql-request";
 import type { PageServerLoad } from "./$types";
 import { cmsClient } from "$lib/cms";
+import { prefetchDataFeeds } from "$lib/cms/dataFeed/dataFeedPrefetch";
 import { error } from "@sveltejs/kit";
 import type { Projects_Filter } from "$lib/__generated__/graphql";
 

@@ -18,7 +18,10 @@
 <template>
 	{#if data.news_post.news_post_use_page_blocks_v3}
 		{#if data.news_post.news_post_page_blocks_v3}
-			<PageBlocksV3 blocks={data.news_post.news_post_page_blocks_v3} />
+			<PageBlocksV3 
+				blocks={data.news_post.news_post_page_blocks_v3} 
+				nextEntry={{ entryType: "article", slug: data.news_post.slug, cursor: data.news_post.published_date }}
+			/>
 		{:else}
 			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
 		{/if}

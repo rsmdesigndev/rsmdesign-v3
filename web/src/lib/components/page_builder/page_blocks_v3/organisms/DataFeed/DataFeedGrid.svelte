@@ -23,6 +23,7 @@
 	export let feedData: any[] | null;
 	export let rowNumber: number;
 	export let gridNumber: number = 0;
+	export let itemParams: string = "";
 
 	const itemHeading = {
 		heading_type: "feed-item",
@@ -120,7 +121,7 @@
 				this={data.feed_source === "Projects" ? "a" :
 					 (data.feed_source === "Articles" ? "a" :
 					 (data.feed_source === "Team" && item.has_profile_page ? "a" : "div"))}
-				href={`/${data.feed_source === "Projects" ? "work/" : (data.feed_source === "Articles" ? "news/" : (data.feed_source === "Team" ? "team/" : ""))}${item.slug}`}
+				href={`/${data.feed_source === "Projects" ? "work/" : (data.feed_source === "Articles" ? "news/" : (data.feed_source === "Team" ? "team/" : ""))}${item.slug}${itemParams}`}
 				id={`row-${rowNumber}-grid-${gridNumber}-item-${i}`}
 				class={`grid-item 
 						${data.feed_source === "Team" ? "team" : ""}

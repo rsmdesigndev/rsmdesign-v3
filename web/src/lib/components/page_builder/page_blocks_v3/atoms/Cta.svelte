@@ -69,24 +69,26 @@
 	}
 </script>
 
-<svelte:element this={button ? "button" : 
-					 (data.cta_link ? "a" : "p")}
-				on:click={handleClick}
-				on:mouseover={handleMouseover}
-				href={data.cta_link ?? ""}
-				target={data.cta_link?.includes("https://") && !data.cta_link?.includes("rsmdesign.com")
-						? "_blank" : "_self"}
-				class={`cta ${!button && data.cta_type === "button" ? "button" : "link"}
-						hover-highlight-${hoverOverride != "" ? hoverOverride : data.cta_hover_highlight}`}
-				class:active={isActive}
-				style:justify-content={data.cta_text_align === "right" || 
-									   data.cta_icon_position === "left" ? 
-									   "flex-end" : ""}
-				style:--grid-column-start={bleed.left ? "2" : "1"}
-				style:--grid-column-end={bleed.right ? "-2" : "-1"}
-				style:--flex-direction={data.cta_icon_position === "left" ? "row-reverse" : "row"}
-				style:--font-size={`var(--FONT-SIZE-${sizeOverride != "" ? sizeOverride?.toUpperCase() : "MD"})`}
-				style:--line-height={sizeOverride === "lg" ? "1.167" : "1.333"}
+<svelte:element 
+	this={button ? "button" : 
+		 (data.cta_link ? "a" : "p")}
+	{...$$restProps}
+	on:click={handleClick}
+	on:mouseover={handleMouseover}
+	href={data.cta_link ?? ""}
+	target={data.cta_link?.includes("https://") && !data.cta_link?.includes("rsmdesign.com")
+			? "_blank" : "_self"}
+	class={`cta ${!button && data.cta_type === "button" ? "button" : "link"}
+			hover-highlight-${hoverOverride != "" ? hoverOverride : data.cta_hover_highlight}`}
+	class:active={isActive}
+	style:justify-content={data.cta_text_align === "right" || 
+						   data.cta_icon_position === "left" ? 
+						   "flex-end" : ""}
+	style:--grid-column-start={bleed.left ? "2" : "1"}
+	style:--grid-column-end={bleed.right ? "-2" : "-1"}
+	style:--flex-direction={data.cta_icon_position === "left" ? "row-reverse" : "row"}
+	style:--font-size={`var(--FONT-SIZE-${sizeOverride != "" ? sizeOverride?.toUpperCase() : "MD"})`}
+	style:--line-height={sizeOverride === "lg" ? "1.167" : "1.333"}
 >
 	<span class:margin-right={data.cta_icon === "arrow_down" || data.cta_icon === "arrow_up"}>
 		{#if data.cta_style != "light" && data.cta_text_bold}

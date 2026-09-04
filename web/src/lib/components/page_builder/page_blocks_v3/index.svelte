@@ -38,6 +38,12 @@
 		} | null;
 	} | null;
 
+	export type NextEntryData = {
+		entryType?: "project" | "article" | null;
+		slug?: string | null;
+		cursor?: string | number | null;
+	};
+
 	export type ProjectData = {
 		project_slug?: string | null;
 		project_title?: string | null;
@@ -96,51 +102,67 @@
 
 	export let blocks: ({ item?: PageBlockV3 | null } | null | undefined)[] | null | undefined;
 	export let projectData: ProjectData | null | undefined = undefined;
+	export let nextEntry: NextEntryData | null | undefined = undefined;
 	export let expertiseData: ExpertiseData | null | undefined = undefined;
 
-	const sectionColorThemes: string[] = blocks?.map((c) => c?.item?.section_color_theme ?? "light");
-	const sectionBackgroundColors: string[] = blocks?.map((c) => c?.item?.section_background_color ?? "white");
+	const sectionColorThemes: string[] = blocks?.map((c) => c?.item?.section_color_theme ?? "light") ?? [];
+	const sectionBackgroundColors: string[] = blocks?.map((c) => c?.item?.section_background_color ?? "white") ?? [];
 
-	// add theme for NextEntry component on Projects
-	if (projectData) {
+	const entry: NextEntryData | undefined = nextEntry
+		?? (projectData ? { entryType: "project", slug: projectData.project_slug } : undefined);
+
+	// add theme for the NextEntry component
+	if (entry?.entryType) {
 		sectionColorThemes.push("dark");
 		sectionBackgroundColors.push("var(--COLOR-BLACK)");
 	}
 
-	let colorPrimary: string = "var(--COLOR-BLACK)";
-	let colorSecondary: string = "var(--COLOR-MID-GRAY)";
-	let colorTertiary: string = "var(--COLOR-DIM-GRAY)";
-	let colorAccent: string = "var(--COLOR-ORANGE)";
-	let colorBackground: string = "white";
+	type Theme = {
+		primary: string;
+		secondary: string;
+		tertiary: string;
+		accent: string;
+	};
+
+	const themes: Record<string, Theme> = {
+		light: {
+			primary: "var(--COLOR-BLACK)",
+			secondary: "var(--COLOR-MID-GRAY)",
+			tertiary: "var(--COLOR-DIM-GRAY)",
+			accent: "var(--COLOR-ORANGE)"
+		},
+		dark: {
+			primary: "white",
+			secondary: "var(--COLOR-MID-GRAY)",
+			tertiary: "var(--COLOR-DIM-GRAY)",
+			accent: "var(--COLOR-ORANGE)"
+		},
+		color: {
+			primary: "white",
+			secondary: "white",
+			tertiary: "var(--COLOR-DIM-GRAY)",
+			accent: "var(--COLOR-BLACK)"
+		},
+		neutral: {
+			primary: "white",
+			secondary: "var(--COLOR-BLACK)",
+			tertiary: "var(--COLOR-DIM-GRAY)",
+			accent: "var(--COLOR-BLACK)"
+		}
+	};
+
+	/*
+		Starts on the first section rather than on a hardcoded light theme, so a page
+		opening on a dark section is server rendered dark instead of flashing light
+		until the first observer callback lands.
+	*/
+	let currentSection: number = 0;
+
+	$: theme = themes[sectionColorThemes[currentSection]] ?? themes.light;
+	$: colorBackground = sectionBackgroundColors[currentSection] ?? "white";
 
 	function changeTheme(i: number) {
-		colorBackground = sectionBackgroundColors[i];
-		switch (sectionColorThemes[i]) {
-			case "light":
-				colorPrimary = "var(--COLOR-BLACK)";
-				colorSecondary = "var(--COLOR-MID-GRAY)";
-				colorTertiary = "var(--COLOR-DIM-GRAY)";
-				colorAccent = "var(--COLOR-ORANGE)";
-				break;
-			case "dark":
-				colorPrimary = "white";
-				colorSecondary = "var(--COLOR-MID-GRAY)";
-				colorTertiary = "var(--COLOR-DIM-GRAY)";
-				colorAccent = "var(--COLOR-ORANGE)";
-				break;
-			case "color":
-				colorPrimary = "white";
-				colorSecondary = "white";
-				colorTertiary = "var(--COLOR-DIM-GRAY)";
-				colorAccent = "var(--COLOR-BLACK)";
-				break;
-			case "neutral":
-				colorPrimary = "white";
-				colorSecondary = "var(--COLOR-BLACK)";
-				colorTertiary = "var(--COLOR-DIM-GRAY)";
-				colorAccent = "var(--COLOR-BLACK)";
-				break;
-		}
+		currentSection = i;
 	}
 </script>
 
@@ -148,10 +170,10 @@
 	{@html 
 		`<style>
 			:root {
-				--color-primary: ${colorPrimary};
-				--color-secondary: ${colorSecondary};
-				--color-tertiary: ${colorTertiary};
-				--color-accent: ${colorAccent};
+				--color-primary: ${theme.primary};
+				--color-secondary: ${theme.secondary};
+				--color-tertiary: ${theme.tertiary};
+				--color-accent: ${theme.accent};
 				--color-background: ${colorBackground};
 			}
 		</style>`
@@ -186,11 +208,12 @@
 			No page content
 		{/if}
 	{/each}
-	{#if projectData}
+	{#if entry?.entryType}
 		<NextEntry 
-			entryType="project"
-			currentSlug={projectData.project_slug ?? ""} 
-			on:selectComponent={() => changeTheme(blocks.length)}
+			entryType={entry.entryType}
+			currentSlug={entry.slug ?? ""} 
+			currentCursor={entry.cursor}
+			on:selectComponent={() => changeTheme(sectionColorThemes.length - 1)}
 		/>
 	{/if}
 </template>

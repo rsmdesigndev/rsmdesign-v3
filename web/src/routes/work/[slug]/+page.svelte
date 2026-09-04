@@ -3,7 +3,7 @@
 	import { assetUrl } from "$lib/cms/assets";
 	import PageBlocks from "$lib/components/page_builder/page_blocks/index.svelte";
 	import PageBlocksV3, { type ProjectData } from "$lib/components/page_builder/page_blocks_v3/index.svelte";
-	import NextEntry, { EntryType } from "$lib/components/NextEntry.svelte";
+	import NextEntry from "$lib/components/page_builder/page_blocks_v3/organisms/NextEntry.svelte";
 	import SeoHead from "$lib/components/SeoHead.svelte";
 
 	export let data: PageData;
@@ -76,7 +76,11 @@
 <template>
 	{#if data.project.project_use_page_blocks_v3}
 		{#if data.project.project_page_blocks_v3}
-			<PageBlocksV3 blocks={data.project.project_page_blocks_v3} {projectData} />
+			<PageBlocksV3 
+				blocks={data.project.project_page_blocks_v3} 
+				nextEntry={{ entryType: "project", slug: data.project.slug, cursor: data.project.sort }}
+				{projectData} 
+			/>
 		{:else}
 			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
 		{/if}
@@ -212,7 +216,13 @@
 					<p>{data.project.collaborators}</p>
 				</section>
 			{/if}
-			<NextEntry project entryType={EntryType.Project} currentSlug={data.project.slug ?? ""} />
+			<div class="next-entry">
+				<NextEntry 
+					entryType="project"
+					currentSlug={data.project.slug ?? ""} 
+					currentCursor={data.project.sort}
+				/>
+			</div>
 		</div>
 	{/if}
 </template>
@@ -367,5 +377,29 @@
 				color: var(--COLOR-ORANGE-HOVER);
 			}
 		}
+	}
+
+	.next-entry {
+		grid-column: whole;
+		display: flex;
+		justify-content: stretch;
+
+		> h3 {
+			margin-right: 0.5em;
+		}
+
+		a {
+			color: var(--COLOR-ORANGE);
+
+			&:hover {
+				color: var(--COLOR-ORANGE-HOVER);
+			}
+		}
+
+		--color-primary: var(--COLOR-BLACK);
+		--color-secondary: var(--COLOR-MID-GRAY);
+		--color-tertiary: var(--COLOR-DIM-GRAY);
+		--color-accent: var(--COLOR-ORANGE);
+		--color-background: white;
 	}
 </style>

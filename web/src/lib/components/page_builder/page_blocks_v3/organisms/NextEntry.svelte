@@ -1,27 +1,24 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { cmsClient } from "$lib/cms";
+	import { request } from "graphql-request";
+	import { env } from "$env/dynamic/public";
 	import { afterNavigate } from "$app/navigation";
-	import {
-		getNewsFiltersFromUrl,
-		getProjectFiltersFromUrl,
-		makeGraphqlNewsFilters,
-		makeGraphqlProjectFilters,
-		makeNewsFilterUrlParams,
-		makeProjectFilterUrlParams
-	} from "$lib/cms/filters";
 	import { page } from "$app/stores";
-
+	import { feedSourceConfig, generateNextEntryQuery } from "$lib/cms/dataFeed/dataFeedQueries";
+	import { feedFilterGroups, feedFiltersFromUrlParams, feedFiltersToUrlParams,
+			 filtersArrayToGraphql, searchTextFromUrlParams, searchToGraphql,
+			 type FeedFilters } from "$lib/cms/dataFeed/dataFeedFilters";
+ 
 	import Heading from "../atoms/Heading.svelte";
-	import Cta, { type CtaData } from "../atoms/Cta.svelte";
-
-	//export let project: boolean = false;
+	import Cta from "../atoms/Cta.svelte";
+ 
 	export let entryType: "project" | "article";
 	export let currentSlug: string;
-
+	export let currentCursor: string | number | null = null;
+ 
 	// Color theme
 	const dispatch = createEventDispatcher();
-
+ 
 	function selectComponentOnIntersection(node: Element) {
 		const observer = new IntersectionObserver(([entry]) => {
 			if (entry.isIntersecting) {
@@ -35,111 +32,91 @@
 			}
 		};
 	}
-
-	let loaded: boolean;
-	let nextSlug: string;
-	let nextTitle: string;
-
-	let serviceFilterSlugs: Set<string> = new Set();
-	let marketFilterSlugs: Set<string> = new Set();
-	let topicFilterSlugs: Set<string> = new Set();
-
-	function makeUrlParams(): string {
-		if (entryType === "project") {
-			return makeProjectFilterUrlParams(serviceFilterSlugs, marketFilterSlugs);
-		} else if (entryType === "article") {
-			return makeNewsFilterUrlParams(topicFilterSlugs);
-		} else {
-			throw new Error(`Invalid entryType: ${entryType}`);
-		}
-	}
-
-	function makeNextUrl(): string {
-		if (entryType === "project") {
-			return `/work/${nextSlug}${makeUrlParams()}`;
-		} else if (entryType === "article") {
-			return `/news/${nextSlug}${makeUrlParams()}`;
-		} else {
-			throw new Error(`Invalid entryType: ${entryType}`);
-		}
-	}
-
+ 
+	let loaded: boolean = false;
+	let nextSlug: string = "";
+	let nextTitle: string = "";
+	let nextUrl: string = "";
+ 
+	$: feedSource = entryType === "project" ? "Projects" : "Articles";
+ 
+	// Reading URL params inside afterNavigate keeps them clear of prerendering
 	afterNavigate(async () => {
 		loaded = false;
-
-		if (entryType === "project") {
-			let urlProjectFilters = getProjectFiltersFromUrl($page.url.searchParams);
-			serviceFilterSlugs = urlProjectFilters.serviceFilterSlugs;
-			marketFilterSlugs = urlProjectFilters.marketFilterSlugs;
-
-			const projectsRes = await cmsClient.NextProject({
-				filter: makeGraphqlProjectFilters(serviceFilterSlugs, marketFilterSlugs)
-			});
-
-			const currentProjectIndex = projectsRes.projects.findIndex(
-				(project) => project.slug === currentSlug
-			);
-			let nextProject;
-			if (currentProjectIndex < projectsRes.projects.length - 1) {
-				nextProject = projectsRes.projects[currentProjectIndex + 1];
-			} else {
-				// wrap around to the first project
-				nextProject = projectsRes.projects[0];
-			}
-
-			nextSlug = nextProject.slug ?? "";
-			nextTitle = nextProject.project_title ?? "";
-		} else if (entryType === "article") {
-			let urlNewsFilters = getNewsFiltersFromUrl($page.url.searchParams);
-			topicFilterSlugs = urlNewsFilters.topicFilterSlugs;
-
-			const newsRes = await cmsClient.News({ filter: makeGraphqlNewsFilters(topicFilterSlugs) });
-
-			const currentArticleIndex = newsRes.news_posts.findIndex(
-				(article) => article.slug === currentSlug
-			);
-			let nextArticle;
-			if (currentArticleIndex < newsRes.news_posts.length - 1) {
-				nextArticle = newsRes.news_posts[currentArticleIndex + 1];
-			} else {
-				// wrap around to the first article
-				nextArticle = newsRes.news_posts[0];
-			}
-
-			nextSlug = nextArticle.slug ?? "";
-			nextTitle = nextArticle.post_title ?? "";
+ 
+		const source = feedSourceConfig(feedSource);
+ 
+		if (!source?.titleField) {
+			loaded = true;
+			return;
 		}
-
+ 
+		const feedFilters: FeedFilters = feedFiltersFromUrlParams(
+			feedFilterGroups({ feed_source: feedSource }),
+			$page.url.searchParams
+		);
+		const searchTerm: string = searchTextFromUrlParams($page.url.searchParams);
+ 
+		const query: string = generateNextEntryQuery({
+			feedSource,
+			filters: filtersArrayToGraphql(feedFilters),
+			searchFilter: searchToGraphql(searchTerm),
+			cursor: currentCursor,
+			currentSlug
+		});
+ 
+		nextSlug = "";
+		nextTitle = "";
+		nextUrl = "";
+ 
+		try {
+			const response: any = await request(env.PUBLIC_DIRECTUS_API_URL, query, { search: searchTerm });
+ 
+			// next is empty when the current entry is the last, so it wraps around to first
+			const nextEntry = response?.next?.find(entry => entry.slug !== currentSlug) ?? response?.first?.[0];
+ 
+			// A set holding only the current entry has no next entry to offer
+			if (nextEntry && nextEntry.slug !== currentSlug) {
+				nextSlug = nextEntry.slug ?? "";
+				nextTitle = nextEntry[source.titleField] ?? "";
+				nextUrl = `${source.routePrefix}/${nextSlug}${feedFiltersToUrlParams(feedFilters, searchTerm)}`;
+			}
+		} catch (error) {
+			console.warn(`Could not load the next ${entryType}:`, error);
+		}
+ 
 		loaded = true;
 	});
 </script>
 
 <template>
-	<section use:selectComponentOnIntersection>
-		<article>
-			<Heading 
-				data={ { heading_type: "feed-item",
-						 heading_primary: "large",
-						 heading_size: "xxxl",
-						 heading_weight: "regular",
-						 heading_has_small_text: true,
-						 heading_has_large_text: true,
-						 heading_has_superscript: false, 
-						 heading_small: `Next ${entryType}`,
-						 heading_large: loaded ? nextTitle : `Loading next ${entryType}`
-					 } }
-			/>
-
-			<Cta 
-				data={ { cta_type: "button",
-						 cta_icon: "arrow_right", 
-						 cta_style: "bold",
-						 cta_text_bold: `View ${entryType}`,
-						 cta_link: entryType === "project" ? `/work/${nextSlug}` : `/news/${nextSlug}`
-					 } }
-			/>
-		</article>
-	</section>
+	{#if !loaded || nextSlug}
+		<section use:selectComponentOnIntersection>
+			<article>
+				<Heading 
+					data={ { heading_type: "feed-item",
+							 heading_primary: "large",
+							 heading_size: "xxxl",
+							 heading_weight: "regular",
+							 heading_has_small_text: true,
+							 heading_has_large_text: true,
+							 heading_has_superscript: false, 
+							 heading_small: `Next ${entryType}`,
+							 heading_large: loaded ? nextTitle : `Loading next ${entryType}`
+						 } }
+				/>
+ 
+				<Cta 
+					data={ { cta_type: "button",
+							 cta_icon: "arrow_right", 
+							 cta_style: "bold",
+							 cta_text_bold: `View ${entryType}`,
+							 cta_link: nextUrl
+						 } }
+				/>
+			</article>
+		</section>
+	{/if}
 </template>
 
 <style lang="scss">

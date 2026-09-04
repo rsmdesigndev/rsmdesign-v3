@@ -1,6 +1,7 @@
 import { gql } from "graphql-request";
 import type { PageServerLoad } from "./$types";
 import { cmsClient } from "$lib/cms";
+import { prefetchDataFeeds } from "$lib/cms/dataFeed/dataFeedPrefetch";
 import { error } from "@sveltejs/kit";
 
 export const _query = gql`
@@ -291,36 +292,43 @@ export const _query = gql`
 						feed_filter_logic
 						feed_filter_markets {
 							markets_id {
+								id
 								filter_button_name
 							}
 						}
 						feed_filter_services {
 							services_id {
+								id
 								filter_button_name
 							}
 						}
 						feed_filter_location_cities {
 							locations_cities_id {
+								id
 								city_name
 							}
 						}
 						feed_filter_studio_locations {
 							studio_locations_id {
+								id
 								location
 							}
 						}
 						feed_filter_design_team {
 							team_id {
+								id
 								name
 							}
 						}
 						feed_filter_topics {
 							news_topics_id {
+								id
 								name
 							}
 						}
 						feed_filter_authors {
 							team_id {
+								id
 								name
 							}
 						}
@@ -449,15 +457,6 @@ export const _query = gql`
 				}
 			}
 		}
-
-		news_posts(
-			limit: 7
-			filter: { authors: { team_id: { slug: { _eq: $slug } } }, visibility: { _nin: ["draft", "visibleExceptFeeds", "archived"] } }
-		) {
-			slug
-			post_title
-			published_date
-		}
 	}
 `;
 
@@ -469,7 +468,9 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 
 	return {
-		team: res.team[0],
-		newsPosts: res.news_posts
+		team: {
+			...res.team[0],
+			team_page_blocks_v3: await prefetchDataFeeds(res.team[0]?.team_page_blocks_v3)
+		}
 	};
 };

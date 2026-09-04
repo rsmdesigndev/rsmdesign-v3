@@ -14,6 +14,7 @@
 
 	export let data: dataFeedGridData;
 	export let feedData: any[];
+	export let itemParams: string = "";
 
 	//console.log("table style: " + data.feed_table_style);
 
@@ -119,7 +120,7 @@
 				  }/${
 						data.feed_source === "Awards" && item.project ? 
 							item.project.slug : item.slug
-				  }`}
+				  }${itemParams}`}
 			class={`table-item
 					table-style-${data.feed_table_style}
 					${data.feed_source === "Studios" ? "table-item-studio" : ""}

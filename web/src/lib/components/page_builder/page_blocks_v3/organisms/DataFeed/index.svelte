@@ -2,10 +2,16 @@
 	import { createEventDispatcher, onMount } from "svelte";
 	import type { ImageAssetRelation } from "$lib/cms";
 	import { assetUrl } from "$lib/cms/assets";
+	import { feedItemsPerLoad, generateQuery } from "$lib/cms/dataFeed/dataFeedQueries";
+	import { feedFilterGroups, feedFiltersFromUrlParams, feedFiltersToUrlParams, filtersArrayToGraphql,
+			 firstFilterName, sanitizeSearchText, searchTextFromUrlParams, searchToGraphql,
+			 shouldApplyUrlFilters, type FeedFilters } from "$lib/cms/dataFeed/dataFeedFilters";
 	import { request } from "graphql-request";
 	import { env } from "$env/dynamic/public";
+	import { page } from "$app/stores";
+	import { browser } from "$app/environment";
 
-	import ProjectFilterMenu from "./ProjectFilterMenu.svelte";
+	import DataFeedFilterMenu from "./DataFeedFilterMenu.svelte";
 	import DataFeedGrid from "./DataFeedGrid.svelte";
 	import DataFeedTable from "./DataFeedTable.svelte";
 	import DataFeedTickerTape from "./DataFeedTickerTape.svelte";
@@ -23,29 +29,49 @@
 		section_padding_bottom?: string | null;
 		feed_source?: string;
 		feed_show_filter_menu?: boolean | null;
-		feed_filter_logic?: string | null;
+		feed_filter_logic?: string | null
+		feed_items?: any[] | null
+		feed_url_filtered?: boolean | null
+		feed_total_count?: number | null;
 		feed_filter_markets?: {
 			markets_id?: {
+				id?: string | null;
 				filter_button_name?: string | null
 			}
 		}[]
 		feed_filter_services?: {
 			services_id?: {
+				id?: string | null;
 				filter_button_name?: string | null
 			}
 		}[]
 		feed_filter_location_cities?: {
 			locations_cities_id?: {
+				id?: string | null;
 				city_name?: string | null
+			}
+		}[]
+		feed_filter_studio_locations?: {
+			studio_locations_id?: {
+				id?: string | null;
+				location?: string | null
+			}
+		}[]
+		feed_filter_design_team?: {
+			team_id?: {
+				id?: string | null;
+				name?: string | null
 			}
 		}[]
 		feed_filter_topics?: {
 			news_topics_id?: {
+				id?: string | null;
 				name?: string | null
 			}
 		}[]
 		feed_filter_authors?: {
 			team_id?: {
+				id?: string | null;
 				name?: string | null
 			}
 		}[]
@@ -86,301 +112,128 @@
 	}
 
 	// Stateful component variables
-	$: feedData = [];
-	let loaded = false;
-	let numItems: number;
-	$: loadOffset = 0;
-	let loadTotalCount: number = 0;
+	// Spread prefetched items instead of refetching
+	let feedData: any[] = [...(data.feed_items ?? [])];
+	let pages: any[][] = data.feed_items?.length ? [data.feed_items] : [];
+	let loaded: boolean = pages.length > 0;
+	let numItems: number | undefined;
+	let loadOffset: number = 0;
+	let loadTotalCount: number = data.feed_total_count ?? 0;
+	let loadingPage: Promise<void> | null = null;
+	let feedGeneration: number = 0;
 	let feedView: "Grid" | "Table" | "Ticker Tape" = data.feed_view;
 
-	if (feedView === "Grid") {
-		if (data.feed_grid_style === "dynamic") {
-			if (data.feed_grid_columns === 4) {
-				let quotient: number = Math.floor(data.feed_grid_rows_per_load / 2);
-				let remainder: number = data.feed_grid_rows_per_load % 2;
-				numItems = (data.feed_grid_columns * data.feed_grid_rows_per_load) - (quotient + remainder);
-			} else {
-				// TODO: for 3-col dynamic: if rows == 1, subtract 1; if rows == 2, subtract 2; if rows = 3, subtract 2; 
-				numItems = 14;
-			}
-		} else {
-			numItems = data.feed_grid_columns * data.feed_grid_rows_per_load;
-		}
-	} else {
-		numItems = data.feed_table_items_per_load;
+	// Shared with load, which has to request the same number of items
+	numItems = feedItemsPerLoad(data);
+
+	// A prefetched first page means the browser resumes at the second
+	if (pages.length > 0) {
+		loadOffset = numItems ?? 0;
 	}
 
-	let serviceFilters: any[] = [];
-	let marketFilters: any[] = [];
-	let locationFilters: any[] = [];
-	let studioFilters: any[] = [];
-	let designTeamFilters: any[] = [];
-	let topicFilters: any[] = [];
-	let authorFilters: any[] = [];
-	let firstFilter: string;
-	let searchText: string;
+	// URL params apply if and only if the menu is shown and a recognised param is present
+	const urlFilters: boolean = browser
+		&& shouldApplyUrlFilters(data.feed_show_filter_menu, $page.url.searchParams);
+	let feedFilters: FeedFilters = urlFilters
+		? feedFiltersFromUrlParams(feedFilterGroups(data), $page.url.searchParams)
+		: feedFilterGroups(data);
+	$: firstFilter = firstFilterName(feedFilters);
+	let searchText: string = urlFilters ? searchTextFromUrlParams($page.url.searchParams) : "";
+
+	// Needed for next entry component
+	$: feedItemParams = feedFiltersToUrlParams(feedFilters, searchText);
+
+	function addPage(items: any[], generation: number) {
+		if (generation !== feedGeneration) {
+			return;
+		}
+
+		if (!items || items.length === 0) {
+			return;
+		}
+
+		feedData.push(...items);
+		feedData = feedData;
+		pages.push(items);
+		pages = pages;
+	}
 
 	// Load more functionality
-	async function loadMore() {
+	function loadMore(): Promise<void> {
+		if (loadingPage === null) {
+			const page: Promise<void> = fetchPage();
+			loadingPage = page;
+
+			page.then(
+				() => {
+					if (loadingPage === page) {
+						loadingPage = null;
+						prefetchNextPage();
+					}
+				},
+				() => {
+					if (loadingPage === page) {
+						loadingPage = null;
+					}
+				}
+			);
+		}
+
+		return loadingPage;
+	}
+
+	// Only for carousels
+	function prefetchNextPage() {
+		if (data.feed_load_functionality !== "carousel") {
+			return;
+		}
+
+		if (pages.length > current + 1 || loadOffset >= loadTotalCount || !(numItems > 0)) {
+			return;
+		}
+
+		loadMore();
+	}
+
+	async function fetchPage() {
+		const generation: number = feedGeneration;
 		switch (data.feed_source) {
 			case "Projects": {
-				let filters = [];
+				let filters: string[] = filtersArrayToGraphql(feedFilters);
+				let searchTerm: string = sanitizeSearchText(searchText);
+				let searchFilter: string = searchToGraphql(searchTerm);
 
-				// Extract services
-				if (serviceFilters && serviceFilters.length > 0) {
-					filters.push(`{ services: { services_id: { filter_button_name: { _in: [${serviceFilters.join(",")}] } } } }`);
-				} else if (data.feed_filter_services && data.feed_filter_services.length > 0) {
-					for (let [i, item] of data.feed_filter_services.entries()) {
-						if (item?.services_id?.filter_button_name) {
-							serviceFilters.push(`"${item.services_id.filter_button_name}"`);
-
-							if (i === 0) {
-								firstFilter = item.services_id.filter_button_name;
-							}
-						}
-					}
-					filters.push(`{ services: { services_id: { filter_button_name: { _in: [${serviceFilters.join(",")}] } } } }`);
-				}
-
-				// Extract markets
-				if (marketFilters && marketFilters.length > 0) {
-					filters.push(`{ markets: { markets_id: { filter_button_name: { _in: [${marketFilters.join(",")}] } } } }`);
-				} else if (data.feed_filter_markets && data.feed_filter_markets.length > 0) {
-					for (let item of data.feed_filter_markets) {
-						if (item?.markets_id?.filter_button_name) {
-							marketFilters.push(`"${item.markets_id.filter_button_name}"`);
-						}
-					}
-					filters.push(`{ markets: { markets_id: { filter_button_name: { _in: [${marketFilters.join(",")}] } } } }`);
-				}
-
-				// Extract cities
-				if (locationFilters && locationFilters.length > 0) {
-					filters.push(`{ project_location_city: { city_name: { _in: [${locationFilters.join(",")}] } } }`);
-				} else if (data.feed_filter_location_cities && data.feed_filter_location_cities.length > 0) {
-					for (let item of data.feed_filter_location_cities) {
-						if (item?.locations_cities_id?.city_name) {
-							locationFilters.push(`"${item.locations_cities_id.city_name}"`);
-						}
-					}
-					filters.push(`{ project_location_city: { city_name: { _in: [${locationFilters.join(",")}] } } }`);
-				}
-
-				// Extract studios
-				if (studioFilters && studioFilters.length > 0) {
-					filters.push(`{ studio_locations: { studio_locations_id: { location: { _in: [${studioFilters.join(",")}] } } } }`);
-				} else if (data.feed_filter_studio_locations && data.feed_filter_studio_locations.length > 0) {
-					for (let item of data.feed_filter_studio_locations) {
-						if (item?.studio_locations_id?.location) {
-							studioFilters.push(`"${item.studio_locations_id.location}"`);
-						}
-					}
-					filters.push(`{ studio_locations: { studio_locations_id: { location: { _in: [${studioFilters.join(",")}] } } } }`);
-				}
-
-				// Extract design team
-				if (designTeamFilters && designTeamFilters.length > 0) {
-					filters.push(`{ project_design_team: { team_id: { name: { _in: [${designTeamFilters.join(",")}] } } } }`);
-				} else if (data.feed_filter_design_team && data.feed_filter_design_team.length > 0) {
-					for (let item of data.feed_filter_design_team) {
-						if (item?.team_id?.name) {
-							designTeamFilters.push(`"${item.team_id.name}"`);
-						}
-					}
-					filters.push(`{ project_design_team: { team_id: { name: { _in: [${designTeamFilters.join(",")}] } } } }`);
-				}
-
-				// Extract search text
-				if (searchText) {
-					filters.push(``)
-				}
-
-				let query = `
-					query Projects($limit: Int, $offset: Int) {
-						projects(
-							limit: $limit
-							offset: $offset
-							filter: {
-								_and: [
-									{ visibility: { _nin: ["draft", "archived"] } },
-									{
-										_${data.feed_filter_logic}: [
-											${filters.join(",\n")}
-										]
-									}
-								]
-							}
-						) {
-							slug
-							project_title
-							grid_image {
-								filename_disk
-								title
-								description
-							}
-							hero_image {
-								filename_disk
-								title
-								description
-							}
-							location
-							markets {
-								markets_id {
-									name
-									short_name
-								}
-							}
-							project_location_city {
-								city_name
-								state_province {
-									state_province_name
-									state_province_abbreviation
-								}
-								country {
-									country_name
-									country_abbreviation
-								}
-							}
-							studio_locations {
-								studio_locations_id {
-									slug
-									location
-								}
-							}
-						}
-						projects_aggregated(
-							filter: {
-								_and: [
-									{ visibility: { _nin: ["draft", "archived"] } },
-									{
-										_${data.feed_filter_logic}: [
-											${filters.join(",\n")}
-										]
-									}
-								]
-							}
-						) {
-							count {
-								id
-							}
-						}
-					}
-				`;
+				let query = generateQuery("projects", filters, data.feed_filter_logic, searchFilter);
 
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
 					limit: numItems,
 					offset: loadOffset,
+					skipCount: loadOffset > 0,
+					search: searchTerm,
 				});
 
 				if(response) {
-					feedData.push(...response.projects);
-					feedData = feedData;
+					addPage(response.projects, generation);
 					loaded = true;
-					loadTotalCount = response.projects_aggregated?.[0]?.count?.id ?? 0;
-				}
 
-				if (filters.length > 0 && !firstFilter) {
-					firstFilter = filters[0];
+					if (response.projects_aggregated) {
+						loadTotalCount = response.projects_aggregated?.[0]?.count?.id ?? 0;
+					}
 				}
 
 				break;
 			}
 			case "Articles": {
-				let filters = [];
+				let filters: string[] = filtersArrayToGraphql(feedFilters);
+				let query = generateQuery("articles", filters);
 
-				// Extract topics
-				if (topicFilters && topicFilters.length > 0) {
-					filters.push(`{ topics: { news_topics_id: { name: { _in: [${topicFilters.join(",")}] } } } }`);
-				} else if (data.feed_filter_topics && data.feed_filter_topics.length > 0) {
-					for (let [i, item] of data.feed_filter_topics.entries()) {
-						if (item?.news_topics_id?.name) {
-							topicFilters.push(`"${item.news_topics_id.name}"`);
-
-							if (i === 0) {
-								firstFilter = item.news_topics_id.name;
-							}
-						}
-					}
-					filters.push(`{ topics: { news_topics_id: { name: { _in: [${topicFilters.join(",")}] } } } }`);
-				}
-
-				// Extract authors
-				if (authorFilters && authorFilters.length > 0) {
-					filters.push(`{ authors: { team_id: { name: { _in: [${authorFilters.join(",")}] } } } }`);
-				} else if (data.feed_filter_authors && data.feed_filter_authors.length > 0) {
-					for (let [i, item] of data.feed_filter_authors.entries()) {
-						if (item?.team_id?.name) {
-							authorFilters.push(`"${item.team_id.name}"`);
-
-							if (i === 0) {
-								firstFilter = item.team_id.name;
-							}
-						}
-					}
-					filters.push(`{ authors: { team_id: { name: { _in: [${authorFilters.join(",")}] } } } }`);
-				}
-
-				let query = `
-					query Articles($limit: Int, $offset: Int) {
-						news_posts(
-							limit: $limit
-							offset: $offset
-							sort: [ "-published_date" ]
-							filter: {
-								_and: [
-									{ visibility: { _eq: "visible" } },
-									{
-										_${data.feed_filter_logic}: [
-											${filters.join(",\n")}
-										]
-									}
-								]
-							}
-						) {
-							slug
-							post_title
-							published_date
-							grid_image {
-								filename_disk
-								description
-							}
-							hero_image {
-								filename_disk
-								title
-								description
-							}
-							topics {
-								news_topics_id {
-									name
-								}
-							}
-						}
-						news_posts_aggregated(
-							filter: {
-								_and: [
-									{ visibility: { _nin: ["draft", "archived"] } },
-									{
-										_${data.feed_filter_logic}: [
-											${filters.join(",\n")}
-										]
-									}
-								]
-							})
-						{
-							count {
-								id
-							}
-						}
-					}
-				`
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
 					limit: numItems,
 					offset: loadOffset,
 				});
 
 				if(response) {
-					feedData.push(...response.news_posts);
-					feedData = feedData;
+					addPage(response.news_posts, generation);
 					loaded = true;
 					loadTotalCount = response.news_posts_aggregated?.[0]?.count?.id ?? 0;
 				}
@@ -388,49 +241,15 @@
 				break;
 			}
 			case "Team": {
-				let query = `
-					query Team($limit: Int, $offset: Int) {
-						team(
-							limit: $limit
-							offset: $offset
-							sort: ["sort_priority", "-banner_grid_image_sort"]
-							filter: { 
-								visibility: { _in: ["visible", "visibleInFeeds"] } 
-							}
-						) {
-							slug
-							name
-							full_title
-							short_title
-							seo_page_description
-							headshot {
-								title
-								description
-								filename_disk
-							}
-							has_profile_page
-						}
-						team_aggregated(
-							filter: {
-								_and: [
-									{ visibility: { _in: ["visible", "visibleInFeeds"] } }
-								]
-							})
-						{
-							count {
-								id
-							}
-						}
-					}
-				`
+				let query = generateQuery("team");
+
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
 					limit: numItems,
 					offset: loadOffset,
 				});
 
 				if(response) {
-					feedData.push(...response.team);
-					feedData = feedData;
+					addPage(response.team, generation);
 					loaded = true;
 					loadTotalCount = response.team_aggregated?.[0]?.count?.id ?? 0;
 				}
@@ -452,65 +271,15 @@
 						Col2: Project Title / Project Location
 						Col3: Year
 				*/
-				let query = `
-					query Awards($limit: Int, $offset: Int) {
-						awards(
-							limit: $limit
-							offset: $offset
-							sort: ["-year", "-awards_page_sort"]
-							filter: { 
-								visibility: { _nin: ["draft", "archived"] } 
-							}
-						) {
-							award_body_designation
-							award_category
-							year
-							awards_page_sort
-							project_name
-							project_location
-							project {
-								slug
-								project_title
-								location
-								grid_image {
-									filename_disk
-									title
-									description
-								}
-								project_location_city {
-									city_name
-									state_province {
-										state_province_name
-										state_province_abbreviation
-									}
-									country {
-										country_name
-										country_abbreviation
-									}
-								}
-							}
-						}
-						awards_aggregated(
-							filter: {
-								_and: [
-									{ visibility: { _nin: ["draft", "archived"] } }
-								]
-							})
-						{
-							count {
-								id
-							}
-						}
-					}
-				`
+				let query = generateQuery("awards");
+
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
 					limit: numItems,
 					offset: loadOffset,
 				});
 
 				if(response) {
-					feedData.push(...response.awards);
-					feedData = feedData;
+					addPage(response.awards, generation);
 					loaded = true;
 					loadTotalCount = response.awards_aggregated?.[0]?.count?.id ?? 0;
 				}
@@ -518,153 +287,47 @@
 				break;
 			}
 			case "Testimonials": {
-				let query = `
-					query Testimonials($limit: Int, $offset: Int) {
-						testimonials(
-							limit: $limit
-							offset: $offset
-							filter: { 
-								visibility: { _eq: "visible" } 
-							}
-						) {
-							quote_attribution
-							quote_attribution_job_title
-							company_name
-							quote
-							banner_image {
-								filename_disk
-								title
-								description
-							}
-							associated_project {
-								slug
-								project_title
-								location
-								grid_image {
-									filename_disk
-									title
-									description
-								}
-							}
-						}
-						testimonials_aggregated(
-							filter: {
-								visibility: { _eq: "visible" } 
-							})
-						{
-							count {
-								id
-							}
-						}
-					}
-				`
+				let query = generateQuery("testimonials");
+
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
 					limit: numItems,
 					offset: loadOffset,
 				});
 
 				if(response) {
-					feedData.push(...response.testimonials);
-					feedData = feedData;
+					addPage(response.testimonials, generation);
 					loaded = true;
 					loadTotalCount = response.testimonials_aggregated?.[0]?.count?.id ?? 0;
 				}
 
 				break;
 			}
-		case "Careers": {
-				let query = `
-					query Careers($limit: Int, $offset: Int) {
-						careers(
-							limit: $limit
-							offset: $offset
-							sort: ["sort"]
-							filter: { 
-								visibility: { _eq: "visible" } 
-							}
-						) {
-							slug
-							name
-							grid_image {
-								filename_disk
-								title
-								description
-							}
-							studios {
-								studio_locations_id {
-									location
-								}
-							}
-							years_experience
-						}
-						careers_aggregated(
-							filter: {
-								visibility: { _eq: "visible" } 
-							})
-						{
-							count {
-								id
-							}
-						}
-					}
-				`
+			case "Careers": {
+				let query = generateQuery("careers");
+
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
 					limit: numItems,
 					offset: loadOffset,
 				});
 
 				if(response) {
-					feedData.push(...response.careers);
-					feedData = feedData;
+					addPage(response.careers, generation);
 					loaded = true;
 					loadTotalCount = response.careers_aggregated?.[0]?.count?.id ?? 0;
 				}
 
 				break;
 			}
-		case "Studios": {
-				let query = `
-					query Studios($limit: Int, $offset: Int) {
-						studio_locations(
-							limit: $limit
-							offset: $offset
-							sort: ["sort_priority"]
-							filter: { 
-								visibility: { _eq: "visible" } 
-							}
-						) {
-							slug
-							location
-							grid_image {
-								filename_disk
-								title
-								description
-							}
-							studio_contact_person {
-								slug
-								name
-							}
-							studio_contact_block
-						}
-						studio_locations_aggregated(
-							filter: {
-								visibility: { _eq: "visible" } 
-							})
-						{
-							count {
-								id
-							}
-						}
-					}
-				`
+			case "Studios": {
+				let query = generateQuery("studios");
+
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
 					limit: numItems,
 					offset: loadOffset,
 				});
 
 				if(response) {
-					feedData.push(...response.studio_locations);
-					feedData = feedData;
+					addPage(response.studio_locations, generation);
 					loaded = true;
 					loadTotalCount = response.studio_locations_aggregated?.[0]?.count?.id ?? 0;
 				}
@@ -676,21 +339,25 @@
 			}
 		}
 
-		loadOffset += numItems;
+		if (generation === feedGeneration) {
+			loadOffset += numItems;
+		}
 	}
 
 	function reload() {
+		feedGeneration += 1;
+		loadingPage = null;
+
 		feedData = [];
+		pages = [];
+		current = 0;
 		loaded = false;
 		loadOffset = 0;
 		loadTotalCount = 0;
 		loadMore();
 	}
 
-	/**
-	 * Svelte action for infinite scroll functionality.
-	 * Loads more projects when the bottom of the container is reached.
-	 */
+	// Svelte action for infinite scroll functionality.
 	function loadMoreOnIntersection(node: Element) {
 		const observer = new IntersectionObserver(([entry]) => {
 			if (entry.isIntersecting && loadOffset < loadTotalCount) {
@@ -705,11 +372,7 @@
 		};
 	}
 
-	/**
-	 * Functions for carousel pagination functionality.
-	 * Set each grid as a slide.
-	 */
-
+	// Carousel pagination functionality
 	let autoplay: boolean = data.feed_grid_columns === 1;
 	let interval: number = 10000;
 
@@ -721,18 +384,20 @@
 
 	$: currentDisplay = String(current+1);
 
-	function next() {
+	async function next() {
 		if (isAnimating) return;
-
-		current += 1;
-		if (loadOffset < loadTotalCount) {
-			loadMore();
-		} else {
-			current = 0;
-		}
 
 		isAnimating = true;
 		animationDir = 1;
+
+		if (current >= pages.length - 1 && loadOffset < loadTotalCount) {
+			await loadMore();
+		}
+
+		// Last page loops back to first page
+		current = current < pages.length - 1 ? current + 1 : 0;
+		prefetchNextPage();
+
 		setTimeout(() => isAnimating = false, animationDuration - 100);
 
 		if (autoplay) restartInterval();
@@ -750,7 +415,6 @@
 		if (autoplay) restartInterval();
 	}
 
-	$: pagesLoaded = loadOffset / numItems;
 	$: pagesTotal = Math.ceil(loadTotalCount / numItems);
 
 	$: isNextSlide = (i: number): boolean => {
@@ -769,8 +433,6 @@
 		return i === current - 1;
 	}
 
-	// Calculates the correct Z index for each slide so that
-	// they dont overlap each other while animating.
 	$: calcZIndex = (i: number): number => {
 		if (i === current) {
 			return 2;
@@ -800,7 +462,13 @@
 
 	// Lifecycle
 	onMount(async () => {
-		loadMore();
+		if (pages.length === 0) {
+			loadMore();
+		} else if (urlFilters && !data.feed_url_filtered) {
+			reload();
+		} else {
+			prefetchNextPage();
+		}
 
 		if (autoplay) {
 			restartInterval();
@@ -819,7 +487,7 @@
 			 style:--z-index={feedView === "Table" && data.feed_table_style === "simple" ? "3" : "2"}
 			 use:selectFeedOnIntersection
 	>
-		{#if data.feed_show_filter_menu && data.feed_source === "Projects"}
+		{#if data.feed_show_filter_menu && (data.feed_source === "Projects" || data.feed_source === "Articles")}
 			<div class="project-filter-menu-wrapper">
 				<div class="project-filter-menu-heading">
 					<Heading 
@@ -835,16 +503,14 @@
 							 } }
 					/>
 				</div>
-				<ProjectFilterMenu 
+				<DataFeedFilterMenu 
 					on:updateFilters={reload}
-					bind:serviceFilters
-					bind:marketFilters
-					bind:locationFilters
-					bind:studioFilters
+					feedSource={data.feed_source}
+					bind:feedFilters
+					bind:searchText
 					bind:feedView
 				/>
 			</div>
-		{:else if data.feed_show_filter_menu && data.feed_source === "Articles"}
 		{/if}
 		{#key loaded}
 			{#if !loaded && data.feed_source != "Manual"}
@@ -858,6 +524,7 @@
 					{#if data.feed_source === "Manual"}
 						<div class="grid-container">
 							<DataFeedGrid 
+								itemParams={feedItemParams}
 								rowNumber={rowNumber}
 								data={ { feed_source: data.feed_source,
 										 feed_cards: data.feed_cards,
@@ -875,7 +542,7 @@
 							/>
 						</div>
 					{:else}
-						{#each Array(pagesLoaded) as page, i}
+						{#each pages as pageData, i}
 							<div class="grid-container"
 								 class:carousel-slide={data.feed_load_functionality === "carousel"}
 								 class:slide-next={isNextSlide(i)}
@@ -885,9 +552,10 @@
 								 style:transition={data.feed_load_functionality === "carousel" ? `opacity ${animationDuration}ms ease` : ""}
 							>
 								<DataFeedGrid 
+									itemParams={feedItemParams}
 									rowNumber={rowNumber}
 									gridNumber={i}
-									feedData={ feedData.slice(i * numItems, i * numItems + numItems) }
+									feedData={pageData}
 									data={ { feed_source: data.feed_source,
 											 feed_grid_columns: data.feed_grid_columns,
 											 feed_grid_style: data.feed_grid_style,
@@ -906,6 +574,7 @@
 					{/if}
 				{:else}
 					<DataFeedTable
+						itemParams={feedItemParams}
 						{feedData}
 						data={ { feed_source: data.feed_source,
 								 feed_table_style: data.feed_table_style,
@@ -927,7 +596,6 @@
 		{/if}
 		{#if loadOffset < loadTotalCount}
 			{#if data.feed_load_functionality === "scroll"}
-				<!-- When this div is reached in the DOM, more projects will be loaded. -->
 				<button class="infinite-scroll" on:click={loadMore} use:loadMoreOnIntersection
 						aria-label="Load more feed items" 
 				>
@@ -953,7 +621,6 @@
 				{/if}
 			</div>
 		{:else if data.feed_load_functionality === "all"}
-			<!-- link to main index page w/ filter(s) applied -->
 		{/if}
 	</section>
 </template>
