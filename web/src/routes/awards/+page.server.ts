@@ -1,4 +1,5 @@
 import type { AwardsPageQuery } from "$lib/__generated__/graphql";
+import { gql } from "graphql-request";
 import type { PageServerLoad } from "./$types";
 import { cmsClient } from "$lib/cms";
 import { prefetchDataFeeds } from "$lib/cms/dataFeed/dataFeedPrefetch";
