@@ -741,6 +741,10 @@
 					opacity: 1;
 					z-index: 2;
 				}
+
+				@media (max-width: 31.25em) {
+					grid-column: main;
+				}
 			}
 
 			@media (max-width: 31.25em) {
