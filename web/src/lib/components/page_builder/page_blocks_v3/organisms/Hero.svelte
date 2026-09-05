@@ -14,7 +14,7 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
 	import type { ImageAssetRelation } from "$lib/cms";
-	import { assetUrl } from "$lib/cms/assets";
+	import { assetUrl, rawAssetUrl } from "$lib/cms/assets";
 	import { animate, AnimateTrigger } from "$lib/animate";
 	import type { ProjectData } from "../index.svelte";
 	import Cta from "../atoms/Cta.svelte";
@@ -127,7 +127,7 @@
 							bind:this={heroVideoNative} 
 							loop autoplay muted playsinline preload="none"
 						>
-							<source src={assetUrl(data.hero_video_native?.filename_disk)} type={data.hero_video_native?.type} />
+							<source src={rawAssetUrl(data.hero_video_native?.filename_disk)} type={data.hero_video_native?.type} />
 							<track kind="captions" />
 						</video>
 					{:else}
@@ -139,7 +139,7 @@
 							bind:this={heroVideoNativeMobile} 
 							loop autoplay muted playsinline preload="none"
 						>
-							<source src={assetUrl(data.hero_video_native_mobile?.filename_disk)} type={data.hero_video_native_mobile?.type} />
+							<source src={rawAssetUrl(data.hero_video_native_mobile?.filename_disk)} type={data.hero_video_native_mobile?.type} />
 							<track kind="captions" />
 						</video>
 					{/if}

@@ -4,7 +4,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { ImageAssetRelation } from "$lib/cms";
-	import { assetUrl } from "$lib/cms/assets";
+	import { assetUrl, rawAssetUrl } from "$lib/cms/assets";
 	export let source: string;
 	export let vimeo: string | null;
 	export let youtube: string | null;
@@ -55,7 +55,7 @@
 				preload="auto"
 				poster={assetUrl(fallback?.filename_disk)}
 			>
-				<source src={assetUrl(native?.filename_disk)} type={native?.type} />
+				<source src={rawAssetUrl(native?.filename_disk)} type={native?.type} />
 				<img src={assetUrl(fallback?.filename_disk)} title="Your browser does not support the <video> tag">
 				<track kind="captions" />
 			</video>

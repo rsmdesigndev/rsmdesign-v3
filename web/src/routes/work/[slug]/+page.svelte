@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from "./$types";
-	import { assetUrl } from "$lib/cms/assets";
+	import { assetUrl, rawAssetUrl } from "$lib/cms/assets";
 	import PageBlocks from "$lib/components/page_builder/page_blocks/index.svelte";
 	import PageBlocksV3, { type ProjectData } from "$lib/components/page_builder/page_blocks_v3/index.svelte";
 	import NextEntry from "$lib/components/page_builder/page_blocks_v3/organisms/NextEntry.svelte";

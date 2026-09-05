@@ -19,7 +19,7 @@
 <script lang="ts">
 	import Section from "$lib/components/Section.svelte";
 	import { animate, fadeScroll } from "$lib/animate";
-	import { assetUrl } from "$lib/cms/assets";
+	import { assetUrl, rawAssetUrl } from "$lib/cms/assets";
 	export let data: PageBlockVideoData;
 	export let order: number;
 	export let project: boolean = false;
@@ -49,7 +49,7 @@
 			width="100%"
 			height="100%"
 		>
-			<source src={assetUrl(data.native_video?.filename_disk)} type="{data.native_video?.type}" />
+			<source src={rawAssetUrl(data.native_video?.filename_disk)} type="{data.native_video?.type}" />
 			<track kind="captions" />
 		</video>
 	{:else}

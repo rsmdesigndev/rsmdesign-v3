@@ -86,7 +86,7 @@
               width="100%"
               height="100%"
             >
-              <source src={assetUrl(data.video?.filename_disk)} type="{data.video?.type}" />
+              <source src={rawAssetUrl(data.video?.filename_disk)} type="{data.video?.type}" />
               <track kind="captions" />
             </video>
           </div>
