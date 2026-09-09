@@ -36,21 +36,54 @@
 
 	let card: HTMLElement;
 
-	function handleClick(_e: any) {
-		if (isActive && data.card_link) {
-			goto(data.card_link);
+	function prefersReducedMotion() {
+		return typeof window !== "undefined"
+			&& window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+	}
+
+	function center(instant = false) {
+		card.scrollIntoView({
+			block: "center",
+			behavior: (instant || prefersReducedMotion()) ? "auto" : "smooth"
+		});
+	}
+
+	// Same payload the observer sends, so CardColumn needs no changes.
+	function selectSelf() {
+		dispatch("selectItem", { subtrahend: excludeFirstItem ? 1 : 0 });
+	}
+
+	function handleClick(e: MouseEvent) {
+		// allow clicks to bubble up from these elements
+		const interactive = (e.target as HTMLElement)?.closest?.(
+			"a, button, input, select, textarea, label, [role='button']"
+		);
+		if (interactive && interactive !== card) return;
+		if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+
+		if (data.card_link) {
+			if (isActive) return;
+			e.preventDefault();
+			selectSelf();
+			center();
 		}
 		else if (isScrollItem) {
-			card.scrollIntoView({ block: "center", behavior: "smooth" });
+			e.preventDefault();
+			selectSelf();
+			center();
 		}
 	}
 
-	const dispatch = createEventDispatcher();
+	function handleFocusIn() {
+		if (!isScrollItem || isActive) return;
+		selectSelf();
+		center(true);
+	}
 
 	function selectItemOnIntersection(node: Element) {
 		const observer = new IntersectionObserver(([entry]) => {
 			if (entry.isIntersecting) {
-				dispatch('selectItem', {subtrahend: excludeFirstItem ? 1 : 0});
+				selectSelf();
 			}
 		}, { rootMargin: '-50% 0% -50% 0%' });
 		observer.observe(node);
@@ -67,15 +100,18 @@
 <template>
 	<svelte:element 
 		this={data.card_link ? "a" : "div"} 
-		href={data.card_link ?? ""}
+		href={data.card_link ?? undefined}
 		data-sveltekit-preload-data="tap"
-		target={data.card_link?.includes("https://") && !data.cta_link?.includes("rsmdesign.com")
+		target={data.card_link?.includes("https://") && !data.card_link?.includes("rsmdesign.com")
 				? "_blank" : "_self"}
+		rel={data.card_link?.includes("https://") && !data.card_link?.includes("rsmdesign.com")
+			 ? "noopener" : undefined}
 		use:conditionalSelectItemOnIntersection
 		bind:this={card}
-		on:click|preventDefault={handleClick}
+		on:click={handleClick}
+		on:focusin={handleFocusIn}
 		class={`card ${isActive ? "active" : ""} ${hasDropShadow ? "drop-shadow" : ""}`}
-		style:--row-gap={`var(--SPACE-${data.card_item_spacing?.toUpperCase()}`}
+		style:--row-gap={`var(--SPACE-${data.card_item_spacing?.toUpperCase()})`}
 	>
 		{#each data.card_atoms?.map((c) => c?.item) ?? [] as data}
 			{#if data?.__typename === "page_blocks_v3_atom_blockquote"}

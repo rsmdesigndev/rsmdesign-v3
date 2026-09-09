@@ -58,11 +58,9 @@
 	function handleClick() {
 		if (button) {
 			dispatch('click');
-		} else if (data.cta_link) {
-			goto(data.cta_link);
-		} else {
-			console.warn("CTA used without specified link or action");
+			return;
 		}
+		if (!data.cta_link) console.warn("CTA used without specified link or action");
 	}
 	function handleMouseover() {
 		dispatch('mouseover');

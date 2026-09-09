@@ -156,9 +156,9 @@
 		 style:--grid-column={`${data.grid_col_start_units}-start ${data.grid_col_start_units != "viewport" ? data.grid_col_start : ""} / ${data.grid_col_end_units}-end ${data.grid_col_end_units != "viewport" ? data.grid_col_end : ""}`}
 		 style:--grid-column-tablet={data.grid_col_start_units_tablet != "auto" && data.grid_col_end_units_tablet != "auto" ? `${data.grid_col_start_units_tablet}-start ${data.grid_col_start_units_tablet != "viewport" ? data.grid_col_start_tablet : ""} / ${data.grid_col_end_units_tablet}-end ${data.grid_col_end_units_tablet != "viewport" ? data.grid_col_end_tablet : ""}` : `${colStart} / ${colEnd}`}
 		 style:--grid-column-mobile={data.grid_col_start_units === "viewport" ? "viewport" : "main"}
-		 style:--row-gap={`var(--SPACE-${data.column_item_spacing?.toUpperCase()}`}
-		 style:--padding-left={`var(--SPACE-${data.column_padding_left?.toUpperCase()}`}
-		 style:--padding-right={`var(--SPACE-${data.column_padding_right?.toUpperCase()}`}
+		 style:--row-gap={`var(--SPACE-${data.column_item_spacing?.toUpperCase()})`}
+		 style:--padding-left={`var(--SPACE-${data.column_padding_left?.toUpperCase()})`}
+		 style:--padding-right={`var(--SPACE-${data.column_padding_right?.toUpperCase()})`}
 	>
 		{#each data.column_items?.map((c) => c?.item) ?? [] as data, i}
 			{#if data?.__typename === "page_blocks_v3_molecule_accordion"}
