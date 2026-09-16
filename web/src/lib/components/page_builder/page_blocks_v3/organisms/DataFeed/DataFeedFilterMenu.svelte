@@ -5,16 +5,15 @@
 	import { standardizeFilterPropertyNames, filterMenuCollection,
 			 type FilterItem, type FilterType } from "$lib/cms/dataFeed/dataFeedFilters";
 
-	// Shared by every menu instance, so these lists are fetched once per session
+	// Shared by every menu instance in the same session
 	const loadedFilterItems: Record<string, Promise<FilterItem[]>> = {};
 
-	// The promise is cached rather than the result, so concurrent menus share one request
+	// Cache the promise rather than the result, so concurrent menus share one request
 	const loadFilterItems = (arrayOf: FilterType): Promise<FilterItem[]> => {
 		if (!(arrayOf in loadedFilterItems)) {
 			loadedFilterItems[arrayOf] = request(env.PUBLIC_DIRECTUS_API_URL, generateQuery(arrayOf as QuerySource))
 				.then((response: any) => standardizeFilterPropertyNames(arrayOf, response?.[filterMenuCollection(arrayOf)] ?? []))
 				.catch(error => {
-					// Dropped from the cache so a later mount can try again
 					delete loadedFilterItems[arrayOf];
 					console.warn(`Could not load the ${arrayOf} filter list:`, error);
 					return [];
@@ -141,6 +140,22 @@
 		}
 	}
 
+	let gridRadio: HTMLElement;
+	let tableRadio: HTMLElement;
+
+	$: gridChecked = feedView === "Grid";
+	$: tableChecked = feedView === "Table";
+	$: gridTabIndex = (gridChecked || !tableChecked) ? 0 : -1;
+	$: tableTabIndex = tableChecked ? 0 : -1;
+
+	function handleViewKeydown(e: KeyboardEvent) {
+		if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) return;
+		e.preventDefault();
+		const next = e.currentTarget === gridRadio ? "Table" : "Grid";
+		toggleFeedView(next);
+		(next === "Grid" ? gridRadio : tableRadio)?.focus();
+	}
+
 	const filterMenuCta = {
 		cta_type: "link",
 		cta_size: "md",
@@ -155,28 +170,36 @@
 		class="project-filter-menu-container"
 	>
 		<div>
-			<div>
+			<div role="radiogroup" aria-label="Results view">
 				<button 
+					bind:this={gridRadio}
 					class="button-icon button-grid"
-					class:active={feedView === "Grid"}
-					aria-pressed={feedView === "Grid"}
+					class:active={gridChecked}
+					role="radio"
+					aria-checked={gridChecked}
+					tabindex={gridTabIndex}
 					aria-label="Display results as a grid"
 					on:click={() => toggleFeedView("Grid")}
+					on:keydown={handleViewKeydown}
 				>
-					<div />
-					<div />
-					<div />
+					<span />
+					<span />
+					<span />
 				</button>
 				<button 
+					bind:this={tableRadio}
 					class="button-icon button-table"
-					class:active={feedView === "Table"}
-					aria-pressed={feedView === "Table"}
+					class:active={tableChecked}
+					role="radio"
+					aria-checked={tableChecked}
+					tabindex={tableTabIndex}
 					aria-label="Display results as a table"
 					on:click={() => toggleFeedView("Table")}
+					on:keydown={handleViewKeydown}
 				>
-					<div />
-					<div />
-					<div />
+					<span />
+					<span />
+					<span />
 				</button>
 			</div>
 			<div>
@@ -343,7 +366,7 @@
 				display: flex;
 				flex-direction: column;
 				gap: 4px;
-				> div {
+				> span {
 					position: relative;
 					width: 2px;
 					height: 2px;
@@ -356,7 +379,7 @@
 						transition: background-color 0.3s ease;
 					}
 				}
-				&.active > div {
+				&.active > span {
 					background-color: var(--color-primary);
 					&::before,
 					&::after {
@@ -364,7 +387,7 @@
 					}
 				}
 
-				&:hover > div {
+				&:hover > span {
 					background-color: var(--color-accent);
 					&::before,
 					&::after {
@@ -374,24 +397,24 @@
 			}
 			&.button-grid {
 				align-items: center;
-				> div::before,
-				> div::after {
+				> span::before,
+				> span::after {
 					position: absolute;
 					content: "";
 					width: 2px;
 					height: 2px;
 					border-radius: 50%;
 				}
-				> div::before {
+				> span::before {
 					left: -6px;
 				}
-				> div::after {
+				> span::after {
 					left: 6px;
 				}
 			}
 			&.button-table {
 				width: 1.25rem;
-				> div::after {
+				> span::after {
 					position: absolute;
 					left: 4px;
 					top: 0.5px;

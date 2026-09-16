@@ -14,7 +14,7 @@
 
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import CardColumn, { type CardColumnData } from "./CardColumn.svelte";
+	import CardColumn, { type CardColumnData, type ColumnItem, type MobileRole } from "./CardColumn.svelte";
 	import type { ProjectData, ExpertiseData } from "../index.svelte";
 
 	export let data: CardRowData;
@@ -42,6 +42,38 @@
 	// Data binding
 	let numCols: number = data.columns.length;
 	let selectedItem: number = 0;
+
+	// Mobile
+	// Carousel column sticks above another column whose accordion or scroll drives selectedItem
+	function hasItem(col: CardColumnData, typename: ColumnItem["__typename"]): boolean {
+		return col.column_items?.some((c) => c?.item?.__typename === typename) ?? false;
+	}
+
+	function drivesSelection(col: CardColumnData): boolean {
+		return hasItem(col, "page_blocks_v3_molecule_accordion")
+			|| (!!col.column_interaction_on_scroll && (col.column_items ?? []).some((c, i) =>
+				c?.item?.__typename === "page_blocks_v3_molecule_card"
+				&& !(col.column_interaction_exclude_first_item && i === 0)
+			));
+	}
+
+	const mobileRoles: MobileRole[] = data.columns.map(() => null);
+
+	if (numCols === 2 && !data.columns.some((col) => col.column_hidden_on_mobile)) {
+		const stickyCol = [0, 1].find((i) =>
+			hasItem(data.columns[i], "page_blocks_v3_organism_card_carousel")
+			&& drivesSelection(data.columns[1 - i])
+		);
+
+		if (stickyCol !== undefined) {
+			mobileRoles[stickyCol] = "sticky";
+			mobileRoles[1 - stickyCol] = "beneath";
+		}
+	}
+
+	const stickyIndex = mobileRoles.indexOf("sticky");
+	const stickyColumn = data.columns[stickyIndex];
+	let carouselHeights: number[] = [];
 </script>
 
 <template>
@@ -50,6 +82,10 @@
 		class={`padding-top-${data.section_padding_top}
 				padding-bottom-${data.section_padding_bottom}`}
 		style:--columns-alignment={data.columns_alignment}
+		class:mobile-sticky-carousel={stickyIndex >= 0}
+		style:--sticky-rows={stickyColumn ? (stickyColumn.column_items?.length ?? 0) + 1 : null}
+		style:--sticky-column-gap={stickyColumn ? `var(--SPACE-${stickyColumn.column_item_spacing?.toUpperCase()})` : null}
+		style:--sticky-carousel-height={carouselHeights[stickyIndex] ? `${carouselHeights[stickyIndex]}px` : null}
 
 		use:selectRowOnIntersection
 	>
@@ -60,6 +96,8 @@
 						{projectData}
 						{expertiseData}
 						columns={{numCols: numCols, currCol: i+1}}
+						mobileRole={mobileRoles[i]}
+						bind:carouselHeight={carouselHeights[i]}
 						bind:selectedItem
 			/>
 		{/each}
@@ -89,6 +127,13 @@
 
 		@media (max-width: 31.25em) {
 			row-gap: var(--SPACE-XL);
+		}
+
+		&.mobile-sticky-carousel {
+			@media (max-width: 31.25em) {
+				grid-template-rows: repeat(var(--sticky-rows), auto);
+				row-gap: var(--sticky-column-gap);
+			}
 		}
 
 		&.padding-top-sm {

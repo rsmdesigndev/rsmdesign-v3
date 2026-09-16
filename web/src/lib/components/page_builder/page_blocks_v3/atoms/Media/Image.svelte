@@ -23,7 +23,8 @@
 		background-color: var(--background-color);
 
 		@media (max-width: 31.25em) {
-			max-height: calc(100vh / 3);
+			max-height: calc(100vh / 2);
+			//min-height: calc(100vh / 2);
 			object-fit: cover;
 
 			&.unlimit-height-mobile {

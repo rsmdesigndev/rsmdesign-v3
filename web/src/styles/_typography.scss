@@ -41,7 +41,7 @@ $BREAKPOINT-LG: 125em;
 		--FONT-SIZE-MD: calc(14.222px + (18.667 - 14.222) * ((100vw - 500px) / (1000 - 500))); // 20
 		--FONT-SIZE-LG: calc(16px + (21.333 - 16) * ((100vw - 500px) / (1000 - 500))); // 22.5
 		--FONT-SIZE-XL: calc(18.667px + (28.444 - 18.667) * ((100vw - 500px) / (1000 - 500))); // 40
-		--FONT-SIZE-XXL: calc(21.333px + (37.333 - 21.333) * ((100vw - 500px) / (1000 - 500))); // 55
+		--FONT-SIZE-XXL: calc(28.444px + (37.333 - 28.444) * ((100vw - 500px) / (1000 - 500))); // 55
 		--FONT-SIZE-XXXL: calc(37.333px + (48 - 37.333) * ((100vw - 500px) / (1000 - 500))); // 80
 	}
 
@@ -52,7 +52,7 @@ $BREAKPOINT-LG: 125em;
 		--FONT-SIZE-MD: 14.222px;
 		--FONT-SIZE-LG: 16px;
 		--FONT-SIZE-XL: 18.667px;
-		--FONT-SIZE-XXL: 21.333px;
+		--FONT-SIZE-XXL: 28.444px;
 		--FONT-SIZE-XXXL: 37.333px;
 	}
 }

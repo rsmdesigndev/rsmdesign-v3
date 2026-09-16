@@ -33,6 +33,8 @@
 		left: boolean;
 		right: boolean;
 	} | null;
+
+	export type MobileRole = "sticky" | "beneath" | null;
 </script>
 
 <script lang="ts">
@@ -57,6 +59,8 @@
 		currCol: number
 	}
 	export let columns: ColumnsData;
+	export let mobileRole: MobileRole = null;
+	export let carouselHeight: number | undefined = undefined;
 
 	const bleed: BleedData = {
 		left: data.grid_col_start_units === "viewport" ? true : false,
@@ -147,6 +151,8 @@
 	<div bind:offsetHeight={columnHeight}
 		 id={data.column_sticky === "top" ? `sticky-row-${row}-col-${column}` : ""}
 		 class:is-sticky={data.column_sticky != "false"}
+		 class:mobile-sticky={mobileRole === "sticky"}
+		 class:mobile-beneath={mobileRole === "beneath"}
 		 style:--display-on-mobile={data.column_hidden_on_mobile ? "none" : "grid"}
 		 style:--top={data.column_sticky === "top" ? "calc(var(--GRID-CELL) * 1.75)" :
 		 			 (data.column_sticky === "center" ? `calc(50vh - 1px * ${columnHeight} / 2)` :
@@ -165,6 +171,7 @@
 				<Accordion 
 					{data}
 					{bleed}
+					scrollDrivenOnMobile={mobileRole !== null}
 					bind:selectedItem
 				/>
 			{:else if data?.__typename === "page_blocks_v3_molecule_card"}
@@ -176,6 +183,7 @@
 					isActive={!isScrollItem || (excludeFirstItem && i === 0) || (selectedItem === (excludeFirstItem ? i - 1 : i))}
 					{activeHighlight}
 					{isProject}
+					lowTriggerOnMobile={mobileRole !== null}
 					on:selectItem={(e) => selectItem(i - e.detail.subtrahend)}
 				/>
 			{:else if data?.__typename === "page_blocks_v3_organism_card_carousel"}
@@ -185,6 +193,8 @@
 					{column}
 					colItem={i}
 					{bleed}
+					stickyOnMobile={mobileRole === "sticky"}
+					bind:height={carouselHeight}
 					bind:selectedItem
 				/>
 			{:else if data?.__typename === "page_blocks_v3_molecule_contact_form"}
@@ -254,9 +264,38 @@
 			}
 		}
 
-		// hide scrollbar
-		-ms-overflow-style: none;  /* IE and Edge */
-		scrollbar-width: none;  /* Firefox */
+		&.mobile-sticky {
+			@media (max-width: 31.25em) {
+				grid-row: 1 / -1;
+				grid-template-rows: subgrid;
+				// set position explicitly so svelte bindings don't set it inline, 
+				// which would override the sticky functionality
+				position: relative;
+
+				> :global(:not(.carousel-wrapper)) {
+					isolation: isolate;
+				}
+			}
+		}
+
+		&.mobile-beneath {
+			@media (max-width: 31.25em) {
+				grid-row: -2 / -1;
+				margin-top: calc(var(--SPACE-XL) - var(--sticky-column-gap, 0px) + 0.25em);
+				z-index: 1;
+			}
+		}
+
+		// read by Details
+		&.mobile-beneath,
+		&.mobile-sticky > :global(:not(.carousel-wrapper)) {
+			@media (max-width: 31.25em) {
+				--sticky-inset: calc(var(--GRID-CELL) * 1.75 + var(--sticky-carousel-height, 0px) + var(--SPACE-MD));
+			}
+		}
+
+		-ms-overflow-style: none;
+		scrollbar-width: none;
 
 		&::-webkit-scrollbar {
 		  display: none;

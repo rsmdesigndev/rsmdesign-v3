@@ -24,6 +24,25 @@
 	export let activeHighlight: string = "accent";
 	export let isScrollItem: boolean = false;
 
+	export let link: string | null = null;
+
+	$: isExternal = !!link && link.includes("https://") && !link.includes("rsmdesign.com");
+	$: hasSmall = !!(data.heading_has_small_text && data.heading_small);
+	$: hasLarge = !!(data.heading_has_large_text && data.heading_large);
+	$: hasSuperscript = !!(data.heading_has_superscript && data.heading_superscript);
+
+	// Decide which slot is the heading, and which is a kicker, separate from display size
+	$: primarySlot = (data.heading_primary === "small" && hasSmall) ? "small"
+		: hasLarge ? "large"
+		: hasSmall ? "small"
+		: null;
+
+	$: headingLevel = data.heading_type === "feed-item" ? "h3"
+		: data.heading_type === "page" ? "h1"
+		: "h2";
+
+	$: linkSlot = link ? primarySlot : null;
+
 	let weightLarge: number = 300;
 	let weightSmall: number = 600;
 	switch (data.heading_size) {
@@ -71,25 +90,29 @@
 	 style:--active-highlight={`var(--color-${activeHighlight}, var(--color-accent))`}
 	 style:--color-heading-small={activeHighlight === "primary" ? "var(--color-secondary)" : "var(--color-heading)"}
 >
-	{#if data.heading_has_small_text && data.heading_small}
+	{#if hasSmall}
 		<svelte:element 
-			this={data.heading_type === "feed-item" ? "h4" :
-				 (data.heading_type === "page" && data.heading_primary === "small" ? "h1" : 
-				 (data.heading_type === "page" || data.heading_primary === "small" ? "h2" : "h3"))}
+			this={primarySlot === "small" ? headingLevel : "p"}
 			class="heading-small"
 			style:--font-size={`var(--FONT-SIZE-${data.heading_size === "lg" ? "XS" :
 												 (data.heading_size === "xl" ? "SM" : "MD")})`}
 			style:--font-weight={weightSmall}
 			style:--line-height="1.333"
 		>
-			{data.heading_small}
+			{#if linkSlot === "small"}
+				<a class="stretched" data-card-link href={link}
+				   data-sveltekit-preload-data="tap"
+				   target={isExternal ? "_blank" : "_self"}
+				   rel={isExternal ? "noopener" : undefined}
+				>{data.heading_small}</a>
+			{:else}
+				{data.heading_small}
+			{/if}
 		</svelte:element>
 	{/if}
-	{#if data.heading_has_large_text && data.heading_large}
+	{#if hasLarge}
 		<svelte:element 
-			this={data.heading_type === "feed-item" ? "h3" :
-				 (data.heading_type === "page" && data.heading_primary === "large" ? "h1" : 
-				 (data.heading_type === "page" || data.heading_primary === "large" ? "h2" : "h3"))}
+			this={primarySlot === "large" ? headingLevel : "p"}
 			class="heading-large"
 			style:--font-size={`var(--FONT-SIZE-${data.heading_size?.toUpperCase()})`}
 			style:--font-weight={weightLarge}
@@ -97,8 +120,16 @@
 								(data.heading_size === "xl" ? "1.133" : "1")}
 
 		>
-			{data.heading_large}
-			{#if data.heading_has_superscript && data.heading_superscript}
+			{#if linkSlot === "large"}
+				<a class="stretched" data-card-link href={link}
+				   data-sveltekit-preload-data="tap"
+				   target={isExternal ? "_blank" : "_self"}
+				   rel={isExternal ? "noopener" : undefined}
+				>{data.heading_large}</a>
+			{:else}
+				{data.heading_large}
+			{/if}
+			{#if hasSuperscript}
 				<sup>{data.heading_superscript}</sup>
 			{/if}
 		</svelte:element>
@@ -106,6 +137,18 @@
 </div>
 
 <style lang="scss">
+	a.stretched {
+		color: inherit;
+		text-decoration: none;
+
+		&::after {
+			content: "";
+			position: absolute;
+			inset: 0;
+			z-index: 1;
+		}
+	}
+
 	.heading {
 		grid-column: var(--grid-column-start) / var(--grid-column-end);
 		color: var(--color-heading, var(--color-primary, var(--COLOR-BLACK)));
@@ -128,6 +171,7 @@
 		
 		.heading-large, 
 		.heading-small {
+			margin: 0;
 			font-size: var(--font-size);
 			font-weight: var(--font-weight, 600);
 			line-height: var(--line-height);

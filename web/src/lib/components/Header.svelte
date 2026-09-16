@@ -791,13 +791,14 @@
 
 			> a {
 				grid-column: eighth-start 1 / eighth-end 2;
+				font-size: var(--FONT-SIZE-XXL);
 				@media (max-width: 62.5em) {
 					grid-column: third-start 1 / third-end 1;
 				}
 				@media (max-width: 31.25em) {
 					grid-column: 1 / span 1;
+					font-size: var(--FONT-SIZE-XXXL);
 				}
-				font-size: var(--FONT-SIZE-XXL);
 				color: var(--COLOR-DIM-GRAY);
 
 				&:hover {

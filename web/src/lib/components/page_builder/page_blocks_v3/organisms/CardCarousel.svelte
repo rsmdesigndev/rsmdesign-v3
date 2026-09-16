@@ -5,6 +5,7 @@
 		carousel_show_arrows?: boolean | null;
 		carousel_cards_per_slide?: number | null;
 		carousel_cards?: CardData[] | null;
+		carousel_label?: string | null;
 	}
 </script>
 
@@ -12,6 +13,8 @@
 	import { onMount } from "svelte";
 	import Card, { type CardData } from "../molecules/Card.svelte";
 	import type { BleedData } from "./CardColumn.svelte";
+	import { createCarousel, calcZIndex as zIndexFor,
+	         isNextSlide as nextSlide, isPrevSlide as prevSlide } from "../scripts/carousel";
 
 	export let data: CardCarouselData;
 	export let row: number;
@@ -22,99 +25,36 @@
 	let cards: CardData[] = data.carousel_cards;
 	let fullBleed: boolean = bleed.left && bleed.right;
 	let animation: "fade" | "slide" = bleed.right && !fullBleed ? "slide" : "fade";
-	let autoplay: boolean = data.carousel_autoplay ?? true;
-	let interval: number = data.carousel_autoplay_interval ?? 10000;
-
 	export let selectedItem: number;
-	let isAnimating: boolean = false;
-	let animationDir: -1 | 0 | 1 = 0; // -1 for left, 1 for right
-	let animationDuration: number = 200;
-	let intervalId: any = null;
+	export let stickyOnMobile: boolean = false;
+	export let height: number | undefined = undefined;
 
-	function next() {
-		if (isAnimating) return;
+	let cardsPerSlide: number = data.carousel_cards_per_slide;
 
-		selectedItem += 1;
-		if (selectedItem > (cards?.length ?? 0) - 1) {
-			selectedItem = 0;
-		}
+	const carousel = createCarousel({
+		getIndex: () => selectedItem,
+		setIndex: (i) => (selectedItem = i),
+		count: cards?.length ?? 0,
+		perSlide: cardsPerSlide,
+		autoplay: data.carousel_autoplay ?? true,
+		interval: data.carousel_autoplay_interval ?? 10000
+	});
 
-		isAnimating = true;
-		animationDir = 1;
-		setTimeout(() => isAnimating = false, animationDuration - 100);
+	const { isPaused, canAutoplay, rotationEnabled, isAdvancing, animationDir } = carousel;
+	const { next, prev, togglePlayback, suspend, resume } = carousel;
+	const animationDuration = carousel.animationDuration;
 
-		if (autoplay) restartInterval();
-	}
+	$: carousel.setCount(cards?.length ?? 0);
+	$: carousel.setPerSlide(cardsPerSlide);
 
-	function prev() {
-		if (isAnimating) return;
+	$: isNextSlide = (i: number): boolean => nextSlide(i, selectedItem, cards?.length ?? 0);
+	$: isPrevSlide = (i: number): boolean => prevSlide(i, selectedItem, cards?.length ?? 0);
+	$: calcZIndex = (i: number): number => zIndexFor(i, selectedItem, cards?.length ?? 0, $animationDir);
 
-		selectedItem -= 1;
-		if (selectedItem < 0) {
-			selectedItem = (cards?.length ?? 0) - 1;
-		}
+	$: arrowsAbove = !!data.carousel_show_arrows
+		&& (data.carousel_arrow_style === "button" || data.carousel_arrow_style === "both");
 
-		isAnimating = true;
-		animationDir = -1;
-		setTimeout(() => isAnimating = false, animationDuration - 100);
-
-		if (autoplay) restartInterval();
-	}
-
-	$: isNextSlide = (i: number): boolean => {
-		if (cards?.length === 1) {
-			return false;
-		}
-
-		if (selectedItem === cards?.length - 1) {
-			// if on the last slide, "next slide" would be the first slide
-			return i === 0;
-		}
-		
-		return i === selectedItem + 1;
-	}
-
-	$: isPrevSlide = (i: number): boolean => {
-		if (cards?.length === 1) {
-			return false;
-		}
-		
-		if (selectedItem === 0) {
-			// if on the first slide, "prev slide" would be the last slide
-			return i === cards?.length - 1;
-		}
-
-		return i === selectedItem - 1;
-	}
-
-	// Calculates the correct Z index for each slide so that
-	// they dont overlap each other while animating.
-	$: calcZIndex = (i: number): number => {
-		if (i === selectedItem) {
-			return 2;
-		} else if (isNextSlide(i)) {
-			if (animationDir === 1) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (isPrevSlide(i)) {
-			if (animationDir === -1) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else {
-			return 0;
-		}
-	}
-
-	$: restartInterval = () => {
-		if (intervalId !== null) {
-			clearInterval(intervalId);
-		}
-		intervalId = setInterval(next, interval);
-	}
+	$: carouselLabel = data.carousel_label ?? "Card carousel";
 
 	let carouselWidth: number;
 
@@ -126,16 +66,12 @@
 	}
 
 	let innerWidth: number;
-	let cardsPerSlide: number = data.carousel_cards_per_slide;
 
 	onMount(() => {
-		if (autoplay) {
-			restartInterval();
-			return () => clearInterval(intervalId);
-		}
 		if (cardsPerSlide > 2 && innerWidth <= 500) {
 			cardsPerSlide = 2;
-		};
+		}
+		return carousel.start();
 	});
 </script>
 
@@ -144,22 +80,49 @@
 <template>
 	<div id={`colItem-row-${row}-col-${column}-item-${colItem}`}
 		 class={`carousel-wrapper ${fullBleed ? "carousel-width-full-bleed" : ""}`}
+		 role="group"
+		 aria-roledescription="carousel"
+		 aria-label={carouselLabel}
 		 style:--grid-column-start="1"
 		 style:--grid-column-end={fullBleed ? "-1" : (bleed.right ? "-2" : "-1")}
+		 class:sticky-on-mobile={stickyOnMobile}
 		 bind:offsetWidth={carouselWidth}
+		 bind:offsetHeight={height}
 	>
-		<div class={`button-container ${data.carousel_show_arrows ? "visible" : ""} ${data.carousel_show_arrows && (data.carousel_arrow_style === "button" || data.carousel_arrow_style === "both") ? "visible-on-desktop" : ""}`}>
-			<button class="arrow" aria-label="Load previous slide" on:click={prev}>←</button>
-			<button class="arrow" aria-label="Load next slide" on:click={next}>→</button>
+		<div class={`button-container ${data.carousel_show_arrows ? "visible" : ""} ${arrowsAbove ? "visible-on-desktop" : ""}`}>
+			{#if data.carousel_show_arrows}
+				<button class="arrow prev" aria-label="Load previous slide" on:click={prev}
+						on:mouseenter={suspend} on:mouseleave={resume}
+						on:focus={suspend} on:blur={resume}
+				>←</button>
+				{#if $canAutoplay && arrowsAbove}
+					<button class="arrow playback"
+							class:paused={!$isAdvancing}
+							type="button"
+							aria-label={$isPaused ? "Start automatic slide rotation" : "Stop automatic slide rotation"}
+							on:click={togglePlayback}
+					/>
+				{/if}
+				<button class="arrow next" aria-label="Load next slide" on:click={next}
+						on:mouseenter={suspend} on:mouseleave={resume}
+						on:focus={suspend} on:blur={resume}
+				>→</button>
+			{/if}
 		</div>
 		<div class="carousel-container"
+			 on:mouseenter={suspend}
+			 on:mouseleave={resume}
+			 on:focusin={suspend}
+			 on:focusout={resume}
+			 aria-live={$rotationEnabled ? "off" : "polite"}
+			 aria-atomic="false"
 			 style:--grid-template-columns={animation === "fade" ? "1fr" : `repeat(${cards?.length ?? 1}, var(--carousel-card-width))`}
 			 style:--carousel-card-width={`calc((${carouselWidth + "px"} - var(--SPACE-MD) * ${cardsPerSlide - 1}) / ${cardsPerSlide})`}
 			 style:--carousel-width={animation === "fade" ? "100%" : 
 			 	`calc(${carouselWidth + "px"} + (var(--carousel-card-width) + var(--SPACE-MD)) * ${cards?.length - 1})`}
 			 style:--animation-duration={animationDuration}
 			 style:transform={(animation === "slide")
-					? `translateX(calc(${selectedItem * -1} * (var(--carousel-card-width) + var(--SPACE-MD)))`
+					? `translateX(calc(${selectedItem * -1} * (var(--carousel-card-width) + var(--SPACE-MD))))`
 					: "none"
 				}
 			 style={`transition: transform ${animationDuration}ms ease`}
@@ -167,6 +130,9 @@
 			{#each data.carousel_cards as data, i}
 				<div
 					class={`card-wrapper anim-${animation}`}
+					role="group"
+					aria-roledescription="slide"
+					aria-label={`${i + 1} of ${cards?.length ?? 0}`}
 					
 					class:slide-next={isNextSlide(i)}
 					class:slide-prev={isPrevSlide(i)}
@@ -183,10 +149,22 @@
 				</div>
 			{/each}
 		</div>
+		{#if $canAutoplay && !arrowsAbove}
+			<button class="playback below"
+					class:paused={!$isAdvancing}
+					type="button"
+					aria-label={$isPaused ? "Start automatic slide rotation" : "Stop automatic slide rotation"}
+					on:click={togglePlayback}
+			/>
+		{/if}
 	</div>
 	{#if data.carousel_show_arrows && (data.carousel_arrow_style === "cursor" || data.carousel_arrow_style === "both")}
-		<button class="cursor-arrow" aria-label="Load previous slide" on:click={prev}></button>
-		<button class="cursor-arrow" aria-label="Load next slide" on:click={next}></button>
+		<button class="cursor-arrow" aria-label="Load previous slide" on:click={prev}
+				on:focus={suspend} on:blur={resume}
+		></button>
+		<button class="cursor-arrow" aria-label="Load next slide" on:click={next}
+				on:focus={suspend} on:blur={resume}
+		></button>
 	{/if}
 </template>
 
@@ -195,12 +173,84 @@
 		grid-column: var(--grid-column-start) / var(--grid-column-end);
 		grid-row: 1 / span 1;
 		width: 100%;
+		// set position explicitly so svelte bindings don't set it inline, 
+		// which would override the sticky functionality
+		position: relative;
 		
 		@media (max-width: 31.25em) {
 			max-width: 92vw;
 
 			&.carousel-width-full-bleed {
 				max-width: 100vw;
+			}
+		}
+
+		&.sticky-on-mobile {
+			@media (max-width: 31.25em) {
+				position: sticky;
+				top: calc(var(--GRID-CELL) * 1.75);
+				z-index: 2;
+				background-color: var(--color-background, white);
+				transition: background-color 0.3s ease;
+
+				&::after {
+					content: "";
+					position: absolute;
+					top: 100%;
+					left: 0;
+					right: 0;
+					height: var(--SPACE-MD);
+					background-color: inherit;
+					-webkit-mask-image: linear-gradient(black, transparent);
+					mask-image: linear-gradient(black, transparent);
+					pointer-events: none;
+				}
+			}
+		}
+
+		button.playback {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.2em;
+			width: 1em;
+			height: 1em;
+			border: none;
+			box-shadow: none;
+			background: transparent;
+			padding: 0;
+			font-size: var(--FONT-SIZE-MD);
+			line-height: 1;
+			color: inherit;
+			cursor: pointer;
+
+			&::before,
+			&::after {
+				content: "";
+				display: block;
+				width: 2.5px;
+				height: 0.5em;
+				background: var(--color-secondary);
+			}
+
+			&.paused {
+				gap: 0;
+				&::before {
+					width: 0;
+					height: 0;
+					background: none;
+					border-top: 0.3em solid transparent;
+					border-bottom: 0.3em solid transparent;
+					border-left: 0.5em solid var(--color-secondary);
+				}
+				&::after {
+					display: none;
+				}
+			}
+
+			&.below {
+				margin-right: auto;
+				margin-top: var(--SPACE-MD);
 			}
 		}
 
@@ -283,11 +333,19 @@
 				background: transparent;
 				padding: 0;
 				align-self: start;
-				&:first-of-type:not(:last-of-type) {
+				&.prev {
 					padding-right: var(--SPACE-SM)
 				}
-				&:last-of-type {
+				&.next {
 					padding-left: var(--SPACE-SM)
+				}
+				&.playback {
+					align-self: center;
+					margin: 0 -0.5em;
+
+					&.paused {
+						margin: 0 -0.6em 0 -0.4em;
+					}
 				}
 
 				font: "Inter", var(--FONT-FAMILY-PROXIMA-NOVA);

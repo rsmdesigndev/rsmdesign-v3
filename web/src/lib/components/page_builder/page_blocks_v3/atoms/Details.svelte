@@ -1,8 +1,10 @@
 <script lang="ts" context="module">
+	// module-level so toggling one item ends a hold on another
+	let stopActiveHold: (() => void) | undefined;
 </script>
 
 <script lang="ts">
-	import { createEventDispatcher } from "svelte";
+	import { createEventDispatcher, onMount, tick } from "svelte";
 
 	export let summaryText: string = "Open";
 	export let summaryTextOpen: string = summaryText;
@@ -25,29 +27,95 @@
 	}
 
 	let anchor: HTMLElement;
-	let height: number;
+
+	// renderOpen lags isOpen on close and leads it on open
+	let renderOpen: boolean = isOpen;
+	let expanded: boolean = isOpen;
+	let closeTimer: ReturnType<typeof setTimeout>;
+	let ready: boolean = false;
 
 	const dispatch = createEventDispatcher();
 
-	function toggle() {
-		isOpen = !isOpen;
-		const anchorRect = anchor.getBoundingClientRect();
+	onMount(() => {
+		ready = true;
+		return () => clearTimeout(closeTimer);
+	});
 
-		// scroll back to anchor if expanded height pushes anchor out of viewport
-		if (!isOpen && (anchorRect.bottom < 0 || anchorRect.top > window.innerHeight)) {
-			window.scrollTo({
-				top: anchor.offsetTop,
-				behavior: 'smooth'
-			})
+	$: applyOpenState(isOpen);
+
+	async function applyOpenState(open: boolean) {
+		clearTimeout(closeTimer);
+
+		if (!ready) {
+			renderOpen = open;
+			expanded = open;
+			return;
 		}
 
-		dispatch("toggle", isOpen);
+		if (open) {
+			renderOpen = true;
+			await tick();
+			requestAnimationFrame(() => (expanded = true));
+		} else {
+			expanded = false;
+			closeTimer = setTimeout(finishClose, 400);
+		}
+	}
+
+	function finishClose() {
+		clearTimeout(closeTimer);
+		if (!isOpen) renderOpen = false;
+	}
+
+	function onTransitionEnd(e: TransitionEvent) {
+		if (e.propertyName === "grid-template-rows") finishClose();
+	}
+
+	function holdPosition() {
+		stopActiveHold?.();
+
+		const summary = anchor.firstElementChild as HTMLElement;
+		const { top, height } = summary.getBoundingClientRect();
+		const inset = parseFloat(getComputedStyle(anchor).scrollMarginTop);
+		const target = Math.min(Math.max(top, inset), window.innerHeight - height);
+		const end = performance.now() + 450; // add buffer for the 0.3s transitions + margin of error
+		const input = new AbortController();
+		let frame: number;
+
+		function step(now: number) {
+			if (now > end || !summary.isConnected) {
+				stop();
+				return;
+			}
+
+			const drift = summary.getBoundingClientRect().top - target;
+			if (Math.abs(drift) >= 0.5) window.scrollBy(0, drift);
+			frame = requestAnimationFrame(step);
+		}
+
+		function stop() {
+			cancelAnimationFrame(frame);
+			input.abort();
+			if (stopActiveHold === stop) stopActiveHold = undefined;
+		}
+
+		for (const type of ["wheel", "pointerdown", "keydown"]) {
+			window.addEventListener(type, stop, { passive: true, signal: input.signal });
+		}
+
+		stopActiveHold = stop;
+		frame = requestAnimationFrame(step);
+	}
+
+	function toggle() {
+		isOpen = !isOpen;
+		holdPosition();
+		dispatch("toggle", { isOpen });
 	}
 </script>
 
 <template>
-	<details open 
-			 aria-expanded={isOpen} 
+	<details open={renderOpen}
 			 bind:this={anchor}
 			 class:isAccordionItem
 			 class:open={isOpen}
@@ -63,7 +131,7 @@
 				{summaryText}
 			{/if}
 			<span data-icon={summaryIcon}
-				  class={`icon ${isOpen ? "open" : ""}`};
+				  class="icon"
 				  aria-hidden="true"
 			/>
 		</summary>
@@ -74,11 +142,10 @@
 			link back to AEO article page if applicable
 		-->
 		<div class="details-body" 
-			 class:open={isOpen}
-			 style:--height={height}
-			 style:--transition-speed={`${height / 1500}s`}
+			 class:open={expanded}
+			 on:transitionend={onTransitionEnd}
 		>
-			<div bind:offsetHeight={height}>
+			<div>
 				<slot />
 			</div>
 		</div>
@@ -90,6 +157,8 @@
 		display: flex;
 		flex-direction: column;
 		row-gap: var(--SPACE-MD);
+		// menu bar height, or --sticky-inset where more is stuck (see CardColumn)
+		scroll-margin-top: var(--sticky-inset, calc(var(--GRID-CELL) * 1.75));
 
 		color: var(--color-details, var(--color-primary, inherit));
 		transition: color 0.3s ease;
@@ -119,6 +188,7 @@
 			
 			> .details-body {
 				max-width: 80ch;
+				transition: grid-template-rows 0.3s ease, color 0.3s ease, padding-bottom 0.3s ease;
 				&.open {
 					padding-bottom: var(--SPACE-MD);
 				}
@@ -281,9 +351,15 @@
 		> .details-body {
 			overflow: hidden;
 			position: relative;
-			height: 0;
 			color: var(--color-details, var(--color-primary, inherit));
-			transition: height 0.3s ease, color 0.3s ease;
+
+			display: grid;
+			grid-template-rows: 0fr;
+			transition: grid-template-rows 0.3s ease, color 0.3s ease;
+
+			> * {
+				min-height: 0;
+			}
 
 			&::after {
 				content: "";
@@ -294,15 +370,14 @@
 				background: linear-gradient(transparent, var(--color-background, white));
 				transition: opacity 0.3s ease;
 				pointer-events: none;
+				z-index: 1;
 			}
 
 			&.open {
-				height: calc(var(--height) * 1px);
-				transition: height var(--transition-speed) ease;
+				grid-template-rows: 1fr;
 
 				&::after {
 					opacity: 0;
-					transition: opacity var(--transition-speed) ease;
 				}
 			}
 		}

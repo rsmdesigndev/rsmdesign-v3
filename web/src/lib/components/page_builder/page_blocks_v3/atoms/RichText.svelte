@@ -84,6 +84,7 @@
 					text-decoration: var(--color-accent) underline solid 1px;
 					text-decoration-skip: ink;
 					position: relative;
+					z-index: 2;
 
 					&::before {
 						content: "";

@@ -58,9 +58,11 @@
 	function handleClick() {
 		if (button) {
 			dispatch('click');
-			return;
+		} else if (data.cta_link) {
+			goto(data.cta_link);
+		} else {
+			console.warn("CTA used without specified link or action");
 		}
-		if (!data.cta_link) console.warn("CTA used without specified link or action");
 	}
 	function handleMouseover() {
 		dispatch('mouseover');
@@ -76,7 +78,7 @@
 	href={data.cta_link ?? ""}
 	target={data.cta_link?.includes("https://") && !data.cta_link?.includes("rsmdesign.com")
 			? "_blank" : "_self"}
-	class={`cta ${!button && data.cta_type === "button" ? "button" : "link"}
+	class={`cta ${data.cta_type === "button" ? "button" : "link"}
 			hover-highlight-${hoverOverride != "" ? hoverOverride : data.cta_hover_highlight}`}
 	class:active={isActive}
 	style:justify-content={data.cta_text_align === "right" || 
@@ -116,14 +118,11 @@
 
 <style lang="scss">
 	button {
-		border: none;
-		border-radius: 0;
-		background: transparent;
-		padding: 0;
-		font-family: var(--FONT-FAMILY-PROXIMA-NOVA);
+		
 	}
 	.cta {
 		position: relative;
+		z-index: 2;
 		grid-column: var(--grid-column-start) / var(--grid-column-end);
 		display: flex;
 		flex-direction: var(--flex-direction);
@@ -153,6 +152,12 @@
 		}
 
 		&:not(.button) {
+			border: none;
+			border-radius: 0;
+			background: transparent;
+			padding: 0;
+			font-family: var(--FONT-FAMILY-PROXIMA-NOVA);
+
 			strong {
 				font-weight: 600;
 			}
@@ -160,7 +165,8 @@
 			span.icon {
 				&[data-icon="arrow_left"]::after,
 				&[data-icon="arrow_right"]::after,
-				&[data-icon="info"]::after {
+				&[data-icon="info"]::after,
+				&[data-icon="plus"]::after {
 					width: calc((var(--font-size) + var(--font-size) * var(--line-height)) / 2);
 					height: calc((var(--font-size) + var(--font-size) * var(--line-height)) / 2);
 					border-radius: 50%;
@@ -189,6 +195,12 @@
 					
 					border: 1.25px solid var(--color-primary, var(--COLOR-WHITE));
 					color: var(--color-primary, var(--COLOR-WHITE));
+				}
+
+				&[data-icon="plus"]::after {
+					content: "+";
+					font-size: calc(var(--FONT-SIZE-MD) * 2);
+					font-weight: 300;
 				}
 			}
 
@@ -254,6 +266,12 @@
 				&[data-icon="arrow_right"]::after {
 					font-size: calc(var(--font-size) * var(--line-height) * 2);
 					line-height: calc(var(--font-size) * var(--line-height));
+				}
+				&[data-icon="plus"]::after {
+					content: "+";
+					font-size: calc(var(--font-size) * var(--line-height));
+					line-height: calc(var(--font-size) * var(--line-height));
+					font-weight: 300;
 				}
 				&.margin-right {
 					margin-right: var(--SPACE-SM);

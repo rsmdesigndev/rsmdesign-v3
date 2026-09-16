@@ -17,6 +17,7 @@
 	import DataFeedTickerTape from "./DataFeedTickerTape.svelte";
 	import type { CardData } from "../../molecules/Card.svelte";
 	import Heading from "../../atoms/Heading.svelte";
+	import Cta from "../../atoms/Cta.svelte";
 
 	// Types
 	export type DataFeedData = {
@@ -112,7 +113,6 @@
 	}
 
 	// Stateful component variables
-	// Spread prefetched items instead of refetching
 	let feedData: any[] = [...(data.feed_items ?? [])];
 	let pages: any[][] = data.feed_items?.length ? [data.feed_items] : [];
 	let loaded: boolean = pages.length > 0;
@@ -123,7 +123,6 @@
 	let feedGeneration: number = 0;
 	let feedView: "Grid" | "Table" | "Ticker Tape" = data.feed_view;
 
-	// Shared with load, which has to request the same number of items
 	numItems = feedItemsPerLoad(data);
 
 	// A prefetched first page means the browser resumes at the second
@@ -525,7 +524,9 @@
 					<DataFeedTickerTape data={ { feed_cards: data.feed_cards } } />
 				{:else if (feedView === "Grid" || data.feed_source === "Manual" || data.feed_source === "Team" || data.feed_source === "Testimonials") && (data.feed_source != "Awards" && data.feed_source != "Careers")}
 					{#if data.feed_source === "Manual"}
-						<div class="grid-container">
+						<div class="grid-container"
+							 class:parallax-container={data.feed_grid_style === "parallax" && data.feed_grid_parallax_direction === "unidirectional"}
+						>
 							<DataFeedGrid 
 								itemParams={feedItemParams}
 								rowNumber={rowNumber}
@@ -605,11 +606,14 @@
 					View More
 				</button>
 			{:else if data.feed_load_functionality === "button"}
-				<button on:click={loadMore}
-						aria-label="Load more feed items" 
-				>
-					View More
-				</button>
+				<Cta button
+					 data={ { cta_type: "button",
+					 		  cta_text_bold: "View More",
+							  cta_icon: "plus",
+							  cta_hover_highlight: "bold"
+					 } }
+					 on:click={loadMore}
+				/>
 			{/if}
 		{/if}
 		{#if data.feed_load_functionality === "carousel"}
@@ -761,6 +765,9 @@
 						[column-end]
 					;
 					row-gap: var(--SPACE-LG);
+				}
+				&.parallax-container {
+					row-gap: var(--SPACE-XXL);
 				}
 			}
 		}
