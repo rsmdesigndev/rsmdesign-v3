@@ -233,6 +233,7 @@
 	}
 	div.column-container {
 		grid-column: var(--grid-column);
+		display: grid; // above the media queries, or newer sass emits it after them
 
 		@media (max-width: 62.5em) {
 			grid-column: var(--grid-column-tablet);
@@ -242,7 +243,6 @@
 			display: var(--display-on-mobile);
 		}
 
-		display: grid;
 		grid-template-columns: subgrid;
 		row-gap: var(--row-gap);
 		

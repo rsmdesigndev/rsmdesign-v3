@@ -35,6 +35,7 @@
 </script>
 
 <figure 
+	class="media"
 	class:grid={data.media_type === "slider"}
 	class:active={isActive}
 >

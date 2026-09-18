@@ -12,9 +12,6 @@
 		| ({ __typename: "page_blocks_v3_atom_rich_text" } 	& RichTextData)
 		| ({ __typename: "page_blocks_v3_atom_spacer" } 	& SpacerData)
 		;
-
-	export const MOBILE_QUERY = "(max-width: 31.25em)";
-	export const LOW_TRIGGER_LINE = 0.75;
 </script>
 
 <script lang="ts">
@@ -26,6 +23,7 @@
 	import Media, { type MediaData } from "../atoms/Media/index.svelte";
 	import RichText, { type RichTextData } from "../atoms/RichText.svelte";
 	import Spacer, { type SpacerData } from "../atoms/Spacer.svelte";
+	import { onTriggerLine, triggerLine, LOW_TRIGGER_LINE } from "../scripts/triggerLine";
 	
 	export let data: CardData;
 	export let bleed: BleedData;
@@ -49,14 +47,10 @@
 			&& window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 	}
 
-	function lowTrigger(): boolean {
-		return lowTriggerOnMobile && window.matchMedia(MOBILE_QUERY).matches;
-	}
-
 	function center(instant = false) {
 		const behavior = (instant || prefersReducedMotion()) ? "auto" : "smooth";
 
-		if (lowTrigger()) {
+		if (triggerLine(lowTriggerOnMobile) === LOW_TRIGGER_LINE) {
 			window.scrollBy({
 				top: card.getBoundingClientRect().top - (window.innerHeight * LOW_TRIGGER_LINE - 1),
 				behavior
@@ -98,29 +92,7 @@
 	const dispatch = createEventDispatcher();
 
 	function selectItemOnIntersection(node: Element) {
-		const mobile = lowTriggerOnMobile ? window.matchMedia(MOBILE_QUERY) : null;
-		let observer: IntersectionObserver | undefined;
-
-		function observe() {
-			const line = lowTrigger() ? LOW_TRIGGER_LINE : 0.5;
-			observer?.disconnect();
-			observer = new IntersectionObserver(([entry]) => {
-				if (entry.isIntersecting) {
-					selectSelf();
-				}
-			}, { rootMargin: `-${line * 100}% 0% -${(1 - line) * 100}% 0%` });
-			observer.observe(node);
-		}
-
-		observe();
-		mobile?.addEventListener("change", observe);
-
-		return {
-			destroy() {
-				mobile?.removeEventListener("change", observe);
-				observer?.disconnect();
-			}
-		};
+		return onTriggerLine(node, selectSelf, lowTriggerOnMobile);
 	}
 
 	const conditionalSelectItemOnIntersection = isScrollItem ? selectItemOnIntersection : ()=>{};

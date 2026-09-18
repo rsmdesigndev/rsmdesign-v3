@@ -4,6 +4,7 @@
 	import { animate, AnimateTrigger } from "$lib/animate";
 	import { formatDate } from "$lib/format";
 	import Heading from "../../atoms/Heading.svelte";
+	import { onTriggerLine } from "../../scripts/triggerLine";
 	
 	export type dataFeedTableData = {
 		feed_source?: string | null;
@@ -42,37 +43,23 @@
 		}
 	}
 	function selectItemOnIntersection(node: Element, i: number) {
-		const observer = new IntersectionObserver(([entry]) => {
-			if (selectOnScroll && entry.isIntersecting) {
+		return onTriggerLine(node, () => {
+			if (selectOnScroll) {
 				selectedItem = i;
 
 				if (innerWidth > 1000) {
 					selectOnHover = true; // only set to true if screen width < 62.5em
 				}
 			}
-		}, { rootMargin: '-50% 0% -50% 0%' });
-		observer.observe(node);
-		return {
-			destroy() {
-				observer.disconnect();
-			}
-		};
+		});
 	}
 	function deselectItemsOnIntersection(node: Element) {
-		const observer = new IntersectionObserver(([entry]) => {
-			if (entry.isIntersecting) {
-				selectedItem = -1;
-				selectOnScroll = true;
-				selectOnHover = false;
-				//console.log("deselect on scroll");
-			}
-		}, { rootMargin: '-50% 0% -50% 0%' });
-		observer.observe(node);
-		return {
-			destroy() {
-				observer.disconnect();
-			}
-		};
+		return onTriggerLine(node, () => {
+			selectedItem = -1;
+			selectOnScroll = true;
+			selectOnHover = false;
+			//console.log("deselect on scroll");
+		});
 	}
 </script>
 
@@ -333,6 +320,18 @@
 			+ figure > img {
 				opacity: 1;
 				transition-delay: 0.15s;
+
+				@media (max-width: 31.25em) {
+					transition-delay: 0s;
+					pointer-events: auto;
+				}
+			}
+
+			@media (max-width: 31.25em) {
+				+ figure::after {
+					opacity: 1;
+					transition-delay: 0s;
+				}
 			}
 		}
 
@@ -590,6 +589,13 @@
 					height: 100%;
 					//height: 100vh;
 					object-fit: cover;
+
+					@media (max-width: 31.25em) {
+						display: block;
+						width: 100%;
+						height: auto;
+						max-height: calc(100vh / 2);
+					}
 				}
 			}
 
@@ -612,9 +618,7 @@
 			&.image-position-center > picture,
 			&.image-position-right > picture {
 				@media (max-width: 31.25em) {
-					grid-column: viewport;
-					width: calc(50% - 2vw);
-					justify-self: end;
+					grid-column: main;
 				}
 			}
 		}
@@ -644,10 +648,44 @@
 					grid-column: third-start 3 / viewport-end;
 				}
 				@media (max-width: 31.25em) {
-					grid-column: viewport;
-					width: 40%;
-					justify-self: end;
+					grid-column: main;
 				}
+			}
+		}
+
+		// Mobile: active image sits under the menu bar with a fade below
+		@media (max-width: 31.25em) {
+			z-index: 2;
+			grid-template-rows: calc(var(--GRID-CELL) * 1.75) auto var(--SPACE-MD);
+			align-content: start;
+
+			> picture,
+			> img,
+			> div {
+				grid-row: 2;
+			}
+
+			&.table-style-simple > picture,
+			&.table-style-detailed > img {
+				position: static;
+				background-color: var(--color-background, white);
+				// outgoing image stays opaque until the incoming one is in
+				transition: opacity 0.3s ease 0.3s, background-color 0.3s ease;
+			}
+
+			&.table-style-detailed > img {
+				max-height: calc(100vh / 2);
+			}
+
+			&::after {
+				content: "";
+				grid-row: 3;
+				grid-column: main;
+				background-color: var(--color-background, white);
+				-webkit-mask-image: linear-gradient(black, transparent);
+				mask-image: linear-gradient(black, transparent);
+				opacity: 0;
+				transition: opacity 0.3s ease 0.3s, background-color 0.3s ease;
 			}
 		}
 	}

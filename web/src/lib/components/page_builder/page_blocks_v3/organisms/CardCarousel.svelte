@@ -205,6 +205,12 @@
 					mask-image: linear-gradient(black, transparent);
 					pointer-events: none;
 				}
+
+				:global {
+					.card > :not(.media) {
+						display: none;
+					}
+				}
 			}
 		}
 

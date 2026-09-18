@@ -15,7 +15,7 @@
 	import { onMount } from "svelte";
 	import type { BleedData } from "../organisms/CardColumn.svelte";
 	import Details from "../atoms/Details.svelte";
-	import { MOBILE_QUERY, LOW_TRIGGER_LINE } from "./Card.svelte";
+	import { MOBILE_QUERY, LOW_TRIGGER_LINE } from "../scripts/triggerLine";
 
 	export let data: AccordionData;
 	export let bleed: BleedData;
