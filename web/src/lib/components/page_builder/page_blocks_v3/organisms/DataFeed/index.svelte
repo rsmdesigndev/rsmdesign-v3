@@ -746,9 +746,9 @@
 					z-index: 2;
 				}
 
-				@media (max-width: 31.25em) {
+				/*@media (max-width: 31.25em) {
 					grid-column: main;
-				}
+				}*/
 			}
 
 			@media (max-width: 31.25em) {

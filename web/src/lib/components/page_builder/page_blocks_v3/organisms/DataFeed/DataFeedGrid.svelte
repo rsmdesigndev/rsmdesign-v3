@@ -388,6 +388,7 @@
 						grid-row: 1;
 						grid-column: viewport;
 						aspect-ratio: 2 / 1;
+						min-height: 50vh;
 					}
 
 					> figcaption {
@@ -747,7 +748,7 @@
 		}
 
 		@media (max-width: 31.25em) {
-			&.single-card,
+			&.single-card:not(.grid-style-banner),
 			&.half,
 			&.third,
 			&.fourth {
