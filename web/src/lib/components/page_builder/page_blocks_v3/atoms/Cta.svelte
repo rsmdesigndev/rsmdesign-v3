@@ -14,7 +14,7 @@
 </script>
 
 <script lang="ts">
-	import { onMount, createEventDispatcher } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { goto } from "$app/navigation";
 	import type { BleedData } from "../organisms/CardColumn.svelte";
 
@@ -31,28 +31,8 @@
 	export let iconOverride: string = "";
 
 	// Remove <p> tags from rich text fields
-	let boldText: HTMLElement;
-	let lightText: HTMLElement;
-	onMount(() => {
-		if (data.cta_text_bold) {
-			const paragraphsInBoldText = boldText.querySelectorAll('p');
-			if (paragraphsInBoldText.length) {
-				boldText.innerHTML = "";
-				paragraphsInBoldText.forEach((paragraph) => {
-					boldText.innerHTML += paragraph.innerHTML;
-				});
-			}
-		}
-		if (data.cta_text_light) {
-			const paragraphsInLightText = lightText.querySelectorAll('p');
-			if (paragraphsInLightText.length) {
-				lightText.innerHTML = "";
-				paragraphsInLightText.forEach((paragraph) => {
-					lightText.innerHTML += paragraph.innerHTML;
-				});
-			}
-		}
-	});
+	$: boldTextHtml = data.cta_text_bold?.replace(/<\/?p\b[^>]*>/g, "") ?? "";
+	$: lightTextHtml = data.cta_text_light?.replace(/<\/?p\b[^>]*>/g, "") ?? "";
 
 	const dispatch = createEventDispatcher();
 	function handleClick() {
@@ -92,15 +72,13 @@
 >
 	<span class:margin-right={data.cta_icon === "arrow_down" || data.cta_icon === "arrow_up"}>
 		{#if data.cta_style != "light" && data.cta_text_bold}
-			<strong bind:this={boldText}>
-				{@html data.cta_text_bold}
+			<strong>
+				{@html boldTextHtml}
 			</strong>
 		{/if}
 		{#if data.cta_style != "bold" && data.cta_text_light}
-			<span bind:this={lightText}
-				  class="light"
-			>
-				{@html data.cta_text_light}
+			<span class="light">
+				{@html lightTextHtml}
 			</span>
 		{/if}
 	</span>
