@@ -413,7 +413,7 @@
 		interval: 10000
 	});
 
-	const { isPaused, canAutoplay, isAdvancing, animationDir } = carousel;
+	const { isPaused, canAutoplay, rotationEnabled, isAdvancing, animationDir } = carousel;
 	const { next, prev, togglePlayback, suspend, resume } = carousel;
 	const animationDuration = carousel.animationDuration;
 
@@ -430,8 +430,7 @@
 
 	$: pagesTotal = Math.ceil(loadTotalCount / numItems);
 
-	// a server render would otherwise start the autoplay timer
-	$: if (browser) carousel.setCount(pagesTotal);
+	$: carousel.setCount(pagesTotal);
 
 	const pageStartsRight = (pageIndex: number): boolean =>
 		((data.feed_grid_columns === 4) && Boolean(data.feed_grid_rows_per_load % 4) && (pageIndex % 2)) ? !startRight : startRight;
@@ -528,6 +527,33 @@
 				/>
 			</div>
 		{/if}
+		{#if data.feed_load_functionality === "carousel"}
+			<div class="button-container"
+				 class:buttons-centered={data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
+			>
+				{#if current > 0}
+					<button class="carousel-button" aria-label="Load previous group of feed items" on:click={prev}
+							on:mouseenter={suspend} on:mouseleave={resume}
+							on:focus={suspend} on:blur={resume}
+					>←</button>
+				{/if}
+				{#if $canAutoplay}
+					<button class="carousel-button playback"
+							class:paused={!$isAdvancing}
+							type="button"
+							aria-label={$isPaused ? "Start automatic slide rotation" : "Stop automatic slide rotation"}
+							on:click={togglePlayback}
+					/>
+				{/if}
+				{#if current < pagesTotal}
+					<button class="carousel-button" aria-label="Load next group of feed items" on:click={next}
+							on:mouseenter={suspend} on:mouseleave={resume}
+							on:focus={suspend} on:blur={resume}
+					>→</button>
+				{/if}
+			</div>
+		{:else if data.feed_load_functionality === "all"}
+		{/if}
 		{#key loaded}
 			{#if !loaded && data.feed_source != "Manual"}
 				<p>Loading...</p>
@@ -558,31 +584,43 @@
 							/>
 						</div>
 					{:else if data.feed_load_functionality === "carousel"}
-						{#each pages as pageData, i}
-							<div class="grid-container carousel-slide"
-								 class:fullbleed={isFullBleed}
-								 class:slide-next={isNextSlide(i)}
-								 class:slide-prev={isPrevSlide(i)}
-								 class:slide-active={i === current}
-								 style:z-index={calcZIndex(i)}
-								 style:transition={`opacity ${animationDuration}ms ease`}
-								 on:mouseenter={suspend}
-								 on:mouseleave={resume}
-								 on:focusin={suspend}
-								 on:focusout={resume}
-							>
-								<DataFeedGrid 
-									itemParams={feedItemParams}
-									rowNumber={rowNumber}
-									gridNumber={i}
-									feedData={pageData}
-									firstImageIndexes={pageFirstImageIndexes[i]}
-									data={ { ...gridData,
-											 feed_grid_dynamic_start_position: pageStartsRight(i)
-										 } }
-								/>
-							</div>
-						{/each}
+						<div class="carousel-slides"
+							 role="group"
+							 aria-roledescription="carousel"
+							 aria-label={data.feed_source}
+							 aria-live={$rotationEnabled ? "off" : "polite"}
+							 aria-atomic="false"
+						>
+							{#each pages as pageData, i}
+								<div class="grid-container carousel-slide"
+									 role="group"
+									 aria-roledescription="slide"
+									 aria-label={`${i + 1} of ${pagesTotal}`}
+									 inert={i !== current}
+									 class:fullbleed={isFullBleed}
+									 class:slide-next={isNextSlide(i)}
+									 class:slide-prev={isPrevSlide(i)}
+									 class:slide-active={i === current}
+									 style:z-index={calcZIndex(i)}
+									 style:transition={`opacity ${animationDuration}ms ease`}
+									 on:mouseenter={suspend}
+									 on:mouseleave={resume}
+									 on:focusin={suspend}
+									 on:focusout={resume}
+								>
+									<DataFeedGrid 
+										itemParams={feedItemParams}
+										rowNumber={rowNumber}
+										gridNumber={i}
+										feedData={pageData}
+										firstImageIndexes={pageFirstImageIndexes[i]}
+										data={ { ...gridData,
+												 feed_grid_dynamic_start_position: pageStartsRight(i)
+											 } }
+									/>
+								</div>
+							{/each}
+						</div>
 					{:else}
 						<div class="grid-container"
 							 class:fullbleed={isFullBleed}
@@ -637,33 +675,6 @@
 					 on:click={loadMore}
 				/>
 			{/if}
-		{/if}
-		{#if data.feed_load_functionality === "carousel"}
-			<div class="button-container"
-				 class:buttons-centered={data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
-			>
-				{#if current > 0}
-					<button class="carousel-button" aria-label="Load previous group of feed items" on:click={prev}
-							on:mouseenter={suspend} on:mouseleave={resume}
-							on:focus={suspend} on:blur={resume}
-					>←</button>
-				{/if}
-				{#if $canAutoplay}
-					<button class="carousel-button playback"
-							class:paused={!$isAdvancing}
-							type="button"
-							aria-label={$isPaused ? "Start automatic slide rotation" : "Stop automatic slide rotation"}
-							on:click={togglePlayback}
-					/>
-				{/if}
-				{#if current < pagesTotal}
-					<button class="carousel-button" aria-label="Load next group of feed items" on:click={next}
-							on:mouseenter={suspend} on:mouseleave={resume}
-							on:focus={suspend} on:blur={resume}
-					>→</button>
-				{/if}
-			</div>
-		{:else if data.feed_load_functionality === "all"}
 		{/if}
 	</section>
 </template>
@@ -762,6 +773,10 @@
 
 		> p {
 			grid-column: main;
+		}
+
+		.carousel-slides {
+			display: contents;
 		}
 
 		.grid-container {
@@ -878,6 +893,11 @@
 
 		&.buttons-centered {
 			grid-column: eighth-start 1 / eighth-end 4;
+
+			@media (max-width: 62.5em) {
+				grid-column: half-start 1 / half-end 1;
+			}
+
 			justify-content: flex-end;
 
 			margin-top: calc(-1.5 * var(--GRID-CELL));

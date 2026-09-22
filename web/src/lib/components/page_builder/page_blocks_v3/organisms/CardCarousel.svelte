@@ -50,6 +50,10 @@
 	$: isNextSlide = (i: number): boolean => nextSlide(i, selectedItem, cards?.length ?? 0);
 	$: isPrevSlide = (i: number): boolean => prevSlide(i, selectedItem, cards?.length ?? 0);
 	$: calcZIndex = (i: number): number => zIndexFor(i, selectedItem, cards?.length ?? 0, $animationDir);
+	// cards peeking past the current slide count as hidden, so Tab stays on the current slide
+	$: isHiddenSlide = (i: number): boolean => animation === "fade"
+		? !(i === selectedItem || (i === 0 && selectedItem === -1))
+		: i < selectedItem || i >= selectedItem + cardsPerSlide;
 
 	$: arrowsAbove = !!data.carousel_show_arrows
 		&& (data.carousel_arrow_style === "button" || data.carousel_arrow_style === "both");
@@ -133,6 +137,7 @@
 					role="group"
 					aria-roledescription="slide"
 					aria-label={`${i + 1} of ${cards?.length ?? 0}`}
+					inert={isHiddenSlide(i)}
 					
 					class:slide-next={isNextSlide(i)}
 					class:slide-prev={isPrevSlide(i)}

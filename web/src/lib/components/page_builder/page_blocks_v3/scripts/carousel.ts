@@ -1,6 +1,7 @@
 import { writable, derived, get, type Readable, type Writable } from "svelte/store";
 
 export type CarouselInit = {
+	// the component owns the index so Svelte tracks it, even as a bound prop
 	getIndex: () => number;
 	setIndex: (i: number) => void;
 	count: number;
@@ -16,8 +17,8 @@ export function createCarousel(init: CarouselInit) {
 	const animationDuration = init.animationDuration ?? 200;
 	const interval = init.interval ?? 10000;
 
-	const isPaused: Writable<boolean> = writable(false); // explicit, via the playback control
-	const isSuspended: Writable<boolean> = writable(false); // transient, while hovered or focused
+	const isPaused: Writable<boolean> = writable(false);
+	const isSuspended: Writable<boolean> = writable(false);
 	const reduceMotion: Writable<boolean> = writable(false);
 	const animationDir: Writable<-1 | 0 | 1> = writable(0);
 	const count: Writable<number> = writable(init.count);
@@ -29,8 +30,7 @@ export function createCarousel(init: CarouselInit) {
 		([$autoplay, $reduce, $count, $perSlide]) => $autoplay && !$reduce && $count > $perSlide
 	);
 
-	// rotationEnabled = the persistent user setting; drives the accessible name and aria-live.
-	// isAdvancing = whether slides are actually moving right now; drives the visible glyph.
+	// the label follows the user's choice; the glyph also shows hover and focus holds
 	const rotationEnabled: Readable<boolean> = derived(
 		[canAutoplay, isPaused],
 		([$can, $paused]) => $can && !$paused
@@ -41,6 +41,8 @@ export function createCarousel(init: CarouselInit) {
 	);
 
 	let isAnimating = false;
+	// $: statements also run during a server render, where nothing clears the timer
+	let isStarted = false;
 	let intervalId: ReturnType<typeof setInterval> | null = null;
 
 	function stopInterval() {
@@ -52,10 +54,9 @@ export function createCarousel(init: CarouselInit) {
 
 	function startInterval() {
 		stopInterval();
-		if (!get(canAutoplay) || get(isPaused)) return;
+		if (!isStarted || !get(canAutoplay) || get(isPaused)) return;
 		intervalId = setInterval(() => {
-			// Swallowed while hovered or focused, so the timer keeps its own schedule
-			// and moving between the carousel and its arrows doesn't reset it.
+			// skipped, not stopped, so moving between slides and arrows keeps the schedule
 			if (get(isSuspended)) return;
 			step(1);
 		}, interval);
@@ -64,6 +65,7 @@ export function createCarousel(init: CarouselInit) {
 	function step(dir: -1 | 1) {
 		if (isAnimating) return;
 
+		// wrap early so the last slide stays full
 		const last = Math.max(0, get(count) - get(perSlide));
 		let i = init.getIndex() + dir;
 		if (i > last) i = 0;
@@ -76,7 +78,6 @@ export function createCarousel(init: CarouselInit) {
 		startInterval();
 	}
 
-	// Call from onMount. Returns the teardown.
 	function start() {
 		const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 		reduceMotion.set(motionQuery.matches);
@@ -87,9 +88,11 @@ export function createCarousel(init: CarouselInit) {
 		};
 		motionQuery.addEventListener("change", onMotionChange);
 
+		isStarted = true;
 		startInterval();
 
 		return () => {
+			isStarted = false;
 			motionQuery.removeEventListener("change", onMotionChange);
 			stopInterval();
 		};
@@ -126,16 +129,15 @@ export function createCarousel(init: CarouselInit) {
 	};
 }
 
+// Stacking helpers
 export function isNextSlide(i: number, index: number, count: number): boolean {
 	if (count === 1) return false;
-	// if on the last slide, "next slide" would be the first slide
 	if (index === count - 1) return i === 0;
 	return i === index + 1;
 }
 
 export function isPrevSlide(i: number, index: number, count: number): boolean {
 	if (count === 1) return false;
-	// if on the first slide, "prev slide" would be the last slide
 	if (index === 0) return i === count - 1;
 	return i === index - 1;
 }
