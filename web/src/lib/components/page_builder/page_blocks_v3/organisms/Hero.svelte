@@ -8,6 +8,7 @@
 		hero_video_native?: any | null;
 		hero_video_native_mobile?: any | null;
 		hero_headline?: string | null;
+		hero_style?: string | null;
 	}
 </script>
 
@@ -58,22 +59,17 @@
 	let heroVideoNative: HTMLVideoElement;
 	let heroVideoNativeMobile: HTMLVideoElement;
 
-	// Remove <p> tags from hero headline
-	let headline: HTMLElement;
-	onMount(() => {
-		// `headline` is only bound when hero_style is "project" or "above".
-		// Other styles render no headline element, so guard against the binding
-		// being undefined — an unhandled throw here strands the page lifecycle
-		// (and with it, afterNavigate / the loader dismiss).
-		if (data.hero_headline && headline) {
-			const paragraphsInHeadline = headline.querySelectorAll('p');
-			headline.innerHTML = "";
-			paragraphsInHeadline.forEach((paragraph) => {
-				headline.innerHTML += paragraph.innerHTML;
-			});
-		}
+	$: projectLocation = [
+		projectData?.project_location_city,
+		projectData?.project_location_state,
+		projectData?.project_location_country === "United States of America" ? null : projectData?.project_location_country
+	].filter(Boolean).join(", ");
 
-		// Guard against the same bind:this-undefined hazard: heroVideoNative is
+	// Remove <p> tags from hero headline
+	$: headlineHtml = data.hero_headline?.replace(/<\/?p\b[^>]*>/g, "") ?? "";
+
+	onMount(() => {
+		// Guard against a bind:this-undefined hazard: heroVideoNative is
 		// only bound inside the "Video" media-type branch, and heroVideoNativeMobile
 		// has no bind:this in the current template at all. An unhandled throw here
 		// strands the page lifecycle and prevents afterNavigate from firing.
@@ -122,26 +118,31 @@
 					/>
 				{:else}
 					{#if data.hero_video_native?.filename_disk}
-						<video 
-							class:desktop={data.hero_video_native_mobile?.filename_disk}
-							bind:this={heroVideoNative} 
-							loop autoplay muted playsinline preload="none"
-						>
-							<source src={rawAssetUrl(data.hero_video_native?.filename_disk)} type={data.hero_video_native?.type} />
-							<track kind="captions" />
-						</video>
+						<!-- keyed because a new <source> doesn't reload a video -->
+						{#key data.hero_video_native?.filename_disk}
+							<video 
+								class:desktop={data.hero_video_native_mobile?.filename_disk}
+								bind:this={heroVideoNative} 
+								loop autoplay muted playsinline preload="none"
+							>
+								<source src={rawAssetUrl(data.hero_video_native?.filename_disk)} type={data.hero_video_native?.type} />
+								<track kind="captions" />
+							</video>
+						{/key}
 					{:else}
 						Video selected, but no video attached.
 					{/if}
 					{#if data.hero_video_native_mobile?.filename_disk}
-						<video 
-							class="mobile"
-							bind:this={heroVideoNativeMobile} 
-							loop autoplay muted playsinline preload="none"
-						>
-							<source src={rawAssetUrl(data.hero_video_native_mobile?.filename_disk)} type={data.hero_video_native_mobile?.type} />
-							<track kind="captions" />
-						</video>
+						{#key data.hero_video_native_mobile?.filename_disk}
+							<video 
+								class="mobile"
+								bind:this={heroVideoNativeMobile} 
+								loop autoplay muted playsinline preload="none"
+							>
+								<source src={rawAssetUrl(data.hero_video_native_mobile?.filename_disk)} type={data.hero_video_native_mobile?.type} />
+								<track kind="captions" />
+							</video>
+						{/key}
 					{/if}
 				{/if}
 			</div>
@@ -149,7 +150,7 @@
 	{:else}
 		<img
 			src={assetUrl(data.hero_image?.filename_disk)}
-			alt={data.hero_image?.description}
+			alt={data.hero_image?.description ?? ""}
 		/>
 	{/if}
 	<div class="hero-scrim-top" />
@@ -161,10 +162,6 @@
 			{#if data.hero_media_type === "Video"}
 				<div class="hero-animation-trigger"
 					 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#hero-video-wrapper", animClass: "hero-media-animate" } }
-				/>
-			{:else}
-				<div class="hero-animation-trigger"
-					 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "img", animClass: "hero-media-animate" } }
 				/>
 			{/if}
 			<div class="hero-animation-trigger"
@@ -182,15 +179,7 @@
 					id="project-hero-h3" 
 					class="lg lowercase"
 				>
-					{projectData?.project_location_city},
-					{#if projectData?.project_location_state && (projectData?.project_location_country === "United States of America")}
-						{projectData?.project_location_state}
-					{:else if projectData?.project_location_state}
-						{projectData?.project_location_state},
-					{/if}
-					{#if projectData?.project_location_country != "United States of America"}
-						{projectData?.project_location_country}
-					{/if}
+					{projectLocation}
 				</h3>
 				<div bind:offsetHeight={h1ContainerHeight}
 					 class="project-hero-h1-container"
@@ -203,11 +192,11 @@
 					</h1>
 				</div>
 				<h2 bind:offsetHeight={h2Height}
-					bind:this={headline}
 					id="project-hero-h2" 
 					class="xxxl"
 				>
-					{@html data.hero_headline}
+					<!-- span keeps innerHTML updates from deleting the h2's size listener -->
+					<span>{@html headlineHtml}</span>
 				</h2>
 			</div>
 
@@ -254,11 +243,10 @@
 				 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: "#hero-h1", animClass: `hero-h1-${data.hero_style}` } }
 			/>
 			<div class="hero-headline">
-				<h1 bind:this={headline}
-					id="hero-h1" 
+				<h1 id="hero-h1" 
 					class="xxxl"
 				>
-					{@html data.hero_headline}
+					{@html headlineHtml}
 				</h1>
 			</div>
 		</div>
@@ -297,6 +285,13 @@
 			align-items: center;
 			justify-content: center;
 
+			&:has(~ .project-details) {
+				@media (max-width: 31.25em) {
+					position: relative;
+					animation: none;
+				}
+			}
+
 			.video-container {
 				//z-index: 5; // stack this on top of the header background
 				height: 100%;
@@ -334,6 +329,15 @@
 			object-fit: cover;
 			position: sticky;
 			top: 0;
+
+			&:has(~ .project-details) {
+				@media (max-width: 31.25em) {
+					position: relative;
+					display: block;
+					// sized so the expertise ends one cell above the viewport bottom
+					height: calc(100svh - (var(--GRID-CELL) + var(--expertise-height) * 1px - var(--GRID-CELL) * 4));
+				}
+			}
 		}
 
 		.hero-scrim-top {
@@ -358,6 +362,12 @@
 				rgba(26,24,24,0) 100%
 			);
 			mix-blend-mode: hard-light;
+
+			&:has(~ .project-details) {
+				@media (max-width: 31.25em) {
+					display: none;
+				}
+			}
 		}
 
 		.hero-scrim-bottom {
@@ -389,6 +399,14 @@
 					position: absolute;
 					bottom: 0;
 					height: 50vh;
+				}
+			}
+
+			&.project {
+				@media (max-width: 31.25em) {
+					position: absolute;
+					top: 0;
+					height: 100%;
 				}
 			}
 		}
@@ -441,10 +459,21 @@
 				top: 0;
 				//margin-bottom: calc(1px * var(--expertise-height));
 
+				// must come after height and position to override them
+				@media (max-width: 31.25em) {
+					height: 100%;
+					position: relative;
+				}
+
 				> h3 {
 					color: var(--color-background);
 					transition: color 0.3s ease;
 					margin-bottom: 0.15em;
+
+					@media (max-width: 31.25em) {
+						opacity: 0;
+						animation: none;
+					}
 				}
 
 				> .project-hero-h1-container {
@@ -453,10 +482,22 @@
 					height: calc(100vh - (var(--GRID-CELL) * 2 + (var(--h3-height) + var(--h2-height)) * 1px + var(--GRID-CELL) * 4));
 					margin-bottom: 0.5em;
 
+					@media (max-width: 31.25em) {
+						height: calc(100% - ((var(--h3-height) + var(--h2-height)) * 1px + var(--GRID-CELL) * 4));
+					}
+
 					> h1 {
 						position: absolute;
 						color: var(--color-background);
 						transition: color 0.3s ease;
+
+						@media (max-width: 31.25em) {
+							top: calc((var(--h1-container-height) - var(--h1-height)) * 1px);
+							font-size: var(--FONT-SIZE-LG);
+							font-weight: 600;
+							color: var(--color-primary);
+							animation: none;
+						}
 					}
 				}
 
@@ -465,6 +506,11 @@
 					color: var(--color-primary);
 					transition: color 0.3s ease;
 					width: clamp(100%, 22ch, 96vw);
+
+					@media (max-width: 31.25em) {
+						opacity: 1;
+						animation: none;
+					}
 				}
 			}
 			> .project-expertise {
@@ -479,10 +525,12 @@
 				margin-bottom: calc(100vh - (var(--GRID-CELL) * 2 + (var(--headings-height) + var(--expertise-height)) * 1px));
 
 				@media (max-width: 31.25em) {
+					top: calc(100% - var(--GRID-CELL) * 4);
+					bottom: auto;
 					grid-column: main;
 					display: flex;
 					flex-direction: row;
-					row-gap: var(--GRID-CELL);
+					column-gap: var(--GRID-CELL);
 				}
 
 				> .project-type,
