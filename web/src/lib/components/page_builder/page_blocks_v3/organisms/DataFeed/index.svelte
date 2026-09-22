@@ -388,14 +388,19 @@
 	}
 
 	// Svelte action for infinite scroll functionality.
-	function loadMoreOnIntersection(node: Element) {
+	function loadMoreOnIntersection(node: Element, loadedOffset: number) {
 		const observer = new IntersectionObserver(([entry]) => {
 			if (entry.isIntersecting && loadOffset < loadTotalCount) {
 				loadMore();
 			}
-		});
+		}, { rootMargin: "0px 0px 200% 0px" }); // two screens ahead
 		observer.observe(node);
 		return {
+			// the observer only reports changes, so observing again re-checks a trigger still in reach
+			update() {
+				observer.unobserve(node);
+				observer.observe(node);
+			},
 			destroy() {
 				observer.disconnect();
 			}
@@ -660,7 +665,7 @@
 		{/if}
 		{#if loadOffset < loadTotalCount}
 			{#if data.feed_load_functionality === "scroll"}
-				<button class="infinite-scroll" on:click={loadMore} use:loadMoreOnIntersection
+				<button class="infinite-scroll" on:click={loadMore} use:loadMoreOnIntersection={loadOffset}
 						aria-label="Load more feed items" 
 				>
 					View More
@@ -911,10 +916,10 @@
 		font-family: "Inter", var(--FONT-FAMILY-PROXIMA-NOVA);
 
 		&.infinite-scroll {
+			position: absolute;
+			bottom: 0;
 			height: 0;
 			overflow: hidden;
-			margin-top: -100vh;
-			margin-bottom: 1000vh;
 		}
 		&.carousel-button {
 			padding: 0;
