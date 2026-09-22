@@ -1,26 +1,9 @@
 import { writable, derived, get, type Readable, type Writable } from "svelte/store";
 
-/**
- * Shared autoplay/stepping logic for CardCarousel and Media/Slider.
- *
- * The index stays owned by the component rather than living in a store here,
- * because CardCarousel's is an exported prop bound up to CardColumn while
- * Slider's is local. Passing getIndex/setIndex covers both without a two-way
- * store-to-prop sync.
- */
-
 export type CarouselInit = {
-	/** Read the component's current index. */
 	getIndex: () => number;
-	/** Write it back. Defined in the component so Svelte sees the assignment. */
 	setIndex: (i: number) => void;
-	/** Total number of items. */
 	count: number;
-	/**
-	 * How many items are visible at once. Doubles as the number of positions
-	 * reserved at the end before wrapping, so the last slide is always full,
-	 * and as the threshold above which autoplay is worthwhile.
-	 */
 	perSlide?: number;
 	autoplay?: boolean | null;
 	interval?: number | null;
@@ -33,7 +16,7 @@ export function createCarousel(init: CarouselInit) {
 	const animationDuration = init.animationDuration ?? 200;
 	const interval = init.interval ?? 10000;
 
-	const isPaused: Writable<boolean> = writable(false);    // explicit, via the playback control
+	const isPaused: Writable<boolean> = writable(false); // explicit, via the playback control
 	const isSuspended: Writable<boolean> = writable(false); // transient, while hovered or focused
 	const reduceMotion: Writable<boolean> = writable(false);
 	const animationDir: Writable<-1 | 0 | 1> = writable(0);
@@ -93,7 +76,7 @@ export function createCarousel(init: CarouselInit) {
 		startInterval();
 	}
 
-	/** Call from onMount. Returns the teardown. */
+	// Call from onMount. Returns the teardown.
 	function start() {
 		const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 		reduceMotion.set(motionQuery.matches);
@@ -130,7 +113,6 @@ export function createCarousel(init: CarouselInit) {
 		suspend: () => isSuspended.set(true),
 		resume: () => isSuspended.set(false),
 
-		/** Keep the controller in sync when the component's inputs change. */
 		setCount: (n: number) => {
 			count.set(n);
 			startInterval();
@@ -143,12 +125,6 @@ export function createCarousel(init: CarouselInit) {
 		start
 	};
 }
-
-/* ------------------------------------------------------------------ */
-/* Stacking helpers. Pure functions of the index, so they take it as an
-   argument rather than reading a store. Wrapping here is always by a
-   single position, independent of perSlide.                           */
-/* ------------------------------------------------------------------ */
 
 export function isNextSlide(i: number, index: number, count: number): boolean {
 	if (count === 1) return false;

@@ -5,8 +5,8 @@
 	import { animate, AnimateTrigger } from "$lib/animate";
 	import Card, { type CardData } from "../../molecules/Card.svelte";
 	import Heading from "../../atoms/Heading.svelte";
-	import Cta, { type CtaData } from "../../atoms/Cta.svelte";
-	import Blockquote, { type BlockquoteData } from "../../atoms/Blockquote.svelte";
+	import Cta from "../../atoms/Cta.svelte";
+	import { feedGridLayout, type BreakpointNumbers } from "$lib/cms/dataFeed/dataFeedGridLayout";
 	
 	export type dataFeedGridData = {
 		feed_source?: string | null;
@@ -24,38 +24,43 @@
 	export let rowNumber: number;
 	export let gridNumber: number = 0;
 	export let itemParams: string = "";
+	export let hasMoreItems: boolean = false;
+	export let firstImageIndexes: BreakpointNumbers = {};
+
+	$: startRight = String(data.feed_grid_dynamic_start_position) === "true";
+
+	$: items = (data.feed_source === "Manual" ? data.feed_cards : feedData) ?? [];
+
+	$: gridLayout = feedGridLayout(
+		items.length,
+		data.feed_grid_dynamic_images?.length ?? 0,
+		{ columns: data.feed_grid_columns, style: data.feed_grid_style, startRight },
+		hasMoreItems,
+		firstImageIndexes
+	);
+
+	$: gridClasses = [
+		data.feed_grid_columns === 2 ? "half" : (data.feed_grid_columns === 3 ? "third" : (data.feed_grid_columns === 4 ? "fourth" : "single-card")),
+		`grid-style-${data.feed_grid_style}`,
+		startRight ? "start-right" : "start-left"
+	].join(" ");
 
 	const itemHeading = {
 		heading_type: "feed-item",
 		heading_primary: "large",
-		heading_size: data.feed_grid_columns === 1 ? (data.feed_grid_style === "banner" ? "xxl" : "xxl") : "lg",
+		heading_size: data.feed_grid_columns === 1 ? "xxl" : "lg",
 		heading_weight: "regular",
 		heading_has_small_text: data.feed_grid_columns === 1 ? false : true,
 		heading_has_large_text: true,
 		heading_has_superscript: false
 	}
 
+	// inset slots are square and keep the grid image
+	const usesHeroImage = (gridColumn?: string): boolean => Boolean(gridColumn?.includes("viewport-"));
+
 	let innerWidth: number;
 	let gridColumns: number = data.feed_grid_columns;
 
-	const imageIndexes: number[] = [2, 6, 14, 18, 26, 30, 38, 42, 51];
-
-	function chooseImage(i: number) {
-		if (data.feed_grid_columns === 4) {
-			if (data.feed_grid_dynamic_start_position) {
-				if (i % 2 == 0) {
-					return 3 * (1 + 8 * i / 2);
-				} else {
-					return 3 * (1 + 8 * Math.floor(i / 2)) + 8;
-				}
-			} else {
-				// TODO
-			}
-		}
-	}
-	function chooseImageMobile(i: number) {
-		// TODO
-	}
 	onMount(() => {
 		if (innerWidth <= 500) {
 			gridColumns = 2;
@@ -66,72 +71,39 @@
 <svelte:window bind:innerWidth />
 
 <template>
-	{#if data.feed_source === "Manual"}
-		{#each data.feed_cards as card, i}
-			<div
-				id={`row-${rowNumber}-grid-${gridNumber}-item-${i}`}
-				class={`grid-item 
-						${data.feed_grid_columns === 2 ? "half" : 
-						 (data.feed_grid_columns === 3 ? "third" : 
-						 (data.feed_grid_columns === 4 ? "fourth" : "single-card"))}
-						grid-style-${data.feed_grid_style}
-						${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
-					  `}
-				style:--grid-item={i}
-				style:--grid-columns={gridColumns}
-				style:--position-in-grid-row={data.feed_grid_parallax_direction === "unidirectional" ? `calc(mod(${i}, var(--grid-columns)))` : (Math.floor(i / gridColumns) % 2 == 0 ? `calc(mod(${i}, var(--grid-columns)))` : `calc(var(--grid-columns) - mod(${i}, var(--grid-columns)))`)}
-				style:--animation-direction={data.feed_grid_parallax_direction === "unidirectional" ? 1 : (Math.floor(i / gridColumns) % 2 == 0 ? 1 : -1)}
+	{#each gridLayout.cells as cell (cell.image?.key ?? items[cell.itemIndex]?.id ?? cell.itemIndex)}
+		{@const i = cell.itemIndex}
+		{@const item = items[i]}
+		{#if cell.image}
+			<div class={`grid-item dynamic-image ${gridClasses} ${cell.image.classes}`}
+				 style:--grid-column={cell.image.gridColumns.desktop}
+				 style:--grid-column-tablet={cell.image.gridColumns.tablet}
+				 style:--grid-column-mobile={cell.image.gridColumns.mobile}
 			>
-				{#if data.feed_grid_style === "parallax"}
-					<div class="parallax-animation-trigger"
-						 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#row-${rowNumber}-grid-${gridNumber}-item-${i}`, animClass: "feed-grid-parallax-animate" } }
-					/>
-				{/if}
-				<Card data={card} 
-					  bleed={ { left: false, 
-								right: false 
-							} } 
-					  isScrollItem={false}
-					  isActive={true}
-					  hasDropShadow={data.feed_grid_image_drop_shadow}
-				/>
+				<figure>
+					<picture>
+						<img src={assetUrl(data.feed_grid_dynamic_images?.[cell.image.index]?.directus_files_id.filename_disk)}
+							 alt={data.feed_grid_dynamic_images?.[cell.image.index]?.directus_files_id.description}
+						/>
+					</picture>
+				</figure>
 			</div>
-		{/each}
-	{:else}
-		{#each feedData as item, i}
-			{#if data.feed_source === "Team" && data.feed_grid_dynamic_images && imageIndexes.includes(i) && (data.feed_grid_dynamic_images.length > imageIndexes.indexOf(i))}
-				<div class={`grid-item 
-							${data.feed_grid_columns === 2 ? "half" : 
-							 (data.feed_grid_columns === 3 ? "third" : 
-							 (data.feed_grid_columns === 4 ? "fourth" : "single-card"))}
-							grid-style-${data.feed_grid_style}
-							${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
-						  `}
-				>
-					<figure>
-						<picture>
-							<img src={assetUrl(data.feed_grid_dynamic_images?.[imageIndexes.indexOf(i)]?.directus_files_id.filename_disk)}
-								 alt={data.feed_grid_dynamic_images?.[imageIndexes.indexOf(i)]?.directus_files_id.description}
-							/>
-						</picture>
-					</figure>
-				</div>
-			{/if}
+		{:else}
 			<svelte:element 
 				this={data.feed_source === "Projects" ? "a" :
 					 (data.feed_source === "Articles" ? "a" :
 					 (data.feed_source === "Team" && item.has_profile_page ? "a" : "div"))}
-				href={`/${data.feed_source === "Projects" ? "work/" : (data.feed_source === "Articles" ? "news/" : (data.feed_source === "Team" ? "team/" : ""))}${item.slug}${itemParams}`}
+				href={data.feed_source === "Manual" ? undefined : `/${data.feed_source === "Projects" ? "work/" : (data.feed_source === "Articles" ? "news/" : (data.feed_source === "Team" ? "team/" : ""))}${item.slug}${itemParams}`}
 				id={`row-${rowNumber}-grid-${gridNumber}-item-${i}`}
 				class={`grid-item 
 						${data.feed_source === "Team" ? "team" : ""}
 						${data.feed_source === "Testimonials" ? "testimonial" : ""}
-						${data.feed_grid_columns === 2 ? "half" : 
-						 (data.feed_grid_columns === 3 ? "third" : 
-						 (data.feed_grid_columns === 4 ? "fourth" : "single-card"))}
-						grid-style-${data.feed_grid_style}
-						${data.feed_grid_dynamic_start_position === "true" ? "start-right" : "start-left"}
+						${gridClasses}
+						${gridLayout.itemClasses[i]}
 					  `}
+				style:--grid-column={gridLayout.itemGridColumns[i]?.desktop}
+				style:--grid-column-tablet={gridLayout.itemGridColumns[i]?.tablet}
+				style:--grid-column-mobile={gridLayout.itemGridColumns[i]?.mobile}
 				style:--grid-item={i}
 				style:--grid-columns={gridColumns}
 				style:--position-in-grid-row={data.feed_grid_parallax_direction === "unidirectional" ? `calc(mod(${i}, var(--grid-columns)))` : (Math.floor(i / gridColumns) % 2 == 0 ? `calc(mod(${i}, var(--grid-columns)))` : `calc(var(--grid-columns) - mod(${i}, var(--grid-columns)))`)}
@@ -142,121 +114,96 @@
 						 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: `#row-${rowNumber}-grid-${gridNumber}-item-${i}`, animClass: "feed-grid-parallax-animate" } }
 					/>
 				{/if}
-				<figure><!-- class:testimonial={data.feed_source === "Testimonials"}>-->
-					<picture>
-						{#if data.feed_source === "Team"}
-							<img src={assetUrl(item.headshot?.filename_disk)}
-								 alt={item.headshot?.title}
-							/>
-						<!--{:else if data.feed_source === "Testimonials"}
-							<img src={assetUrl(item.banner_image?.filename_disk)}
-								 alt={item.banner_image?.title}
-							/>-->
-						{:else if data.feed_grid_style === "dynamic"}
-							<source media="(max-width: 31.25em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
-							{#if data.feed_grid_columns === 3 && (i === 1 || i === 11 || i % 14 === 0 || i % 14 === 10)}
+				{#if data.feed_source === "Manual"}
+					<Card data={item} 
+						  bleed={ { left: false, 
+									right: false 
+								} } 
+						  isScrollItem={false}
+						  isActive={true}
+						  hasDropShadow={data.feed_grid_image_drop_shadow}
+					/>
+				{:else}
+					<figure><!-- class:testimonial={data.feed_source === "Testimonials"}>-->
+						<picture>
+							{#if data.feed_source === "Team"}
+								<img src={assetUrl(item.headshot?.filename_disk)}
+									 alt={item.headshot?.title}
+								/>
+							<!--{:else if data.feed_source === "Testimonials"}
+								<img src={assetUrl(item.banner_image?.filename_disk)}
+									 alt={item.banner_image?.title}
+								/>-->
+							{:else if data.feed_grid_style === "dynamic"}
+								{#if usesHeroImage(gridLayout.itemGridColumns[i]?.desktop)}
+									<source media="not all and (max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
+								{/if}
+								<img src={assetUrl(item.grid_image?.filename_disk)}
+									 alt={item.grid_image?.title}
+								/>
+							{:else if data.feed_grid_style === "banner"}
 								<img src={assetUrl(item.hero_image?.filename_disk)}
 									 alt={item.hero_image?.title}
 								/>
-							{:else if data.feed_grid_columns === 4}
-								{#if data.feed_grid_dynamic_start_position}
-									{#if (i === 2 || i === 6 || i % 10 === 1 || i % 10 === 5)}
-										<source media="(max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
-									{:else}
-										<source media="(max-width: 62.5em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
-									{/if}
-									{#if (i === 3 || i === 8 || i % 14 === 2 || i % 14 === 7)}
-										<img src={assetUrl(item.hero_image?.filename_disk)}
-											 alt={item.hero_image?.title}
-										/>
-									{:else}
-										<img src={assetUrl(item.grid_image?.filename_disk)}
-											 alt={item.grid_image?.title}
-										/>
-									{/if}
-								{:else}
-									{#if (i === 1 || i === 7 || i % 10 === 0 || i % 10 === 6)}
-										<source media="(max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
-									{:else}
-										<source media="(max-width: 62.5em)" srcset={assetUrl(item.grid_image?.filename_disk)} />
-									{/if}
-									{#if (i === 1 || i === 10 || i % 14 === 0 || i % 14 === 9)}
-										<img src={assetUrl(item.hero_image?.filename_disk)}
-											 alt={item.hero_image?.title}
-										/>
-									{:else}
-										<img src={assetUrl(item.grid_image?.filename_disk)}
-											 alt={item.grid_image?.title}
-										/>
-									{/if}
-								{/if}
 							{:else}
 								<img src={assetUrl(item.grid_image?.filename_disk)}
 									 alt={item.grid_image?.title}
 								/>
 							{/if}
-						{:else if data.feed_grid_style === "banner"}
-							<img src={assetUrl(item.hero_image?.filename_disk)}
-								 alt={item.hero_image?.title}
-							/>
-						{:else}
-							<img src={assetUrl(item.grid_image?.filename_disk)}
-								 alt={item.grid_image?.title}
-							/>
-						{/if}
-					</picture>
-					<figcaption>
-						{#if data.feed_source === "Projects"}
-							<Heading 
-								data={ {...itemHeading, 
-										heading_small: item.location,
-										heading_large: item.project_title
-									 } }
-							/>
-						{:else if data.feed_source === "Articles"}
-							<Heading 
-								data={ {...itemHeading, 
-										heading_small: item.topics?.[0]?.news_topics_id?.name,
-										heading_large: item.post_title
-									 } }
-							/>
-						{:else if data.feed_source === "Team"}
-							<Heading 
-								data={ {...itemHeading, 
-										heading_small: item.short_title,
-										heading_large: item.name
-									 } }
-							/>
-						<!--{:else if data.feed_source === "Testimonials"}
-							<Blockquote 
-								data={ { blockquote_size: "md",
-										 blockquote_text: item.quote ?? "",
-										 blockquote_has_attribution: true,
-										 blockquote_attribution: `${item.quote_attribution ?? ""} \n`,
-										 blockquote_has_citation: true,
-										 blockquote_citation_newline: true,
-										 blockquote_citation: `${item.quote_attribution_job_title ?? ""} \n${item.company_name ?? ""}`,
-										 blockquote_link: null
-									 } }
-							/>-->
-						{/if}
-						{#if data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
-							<!--<p class="headline">[Insert hero headline here lorem ipsum dolor sit amet.]</p>-->
+						</picture>
+						<figcaption>
 							{#if data.feed_source === "Projects"}
-								<Cta data={ { cta_type: "link",
-											  cta_icon: "arrow_right", 
-											  cta_style: "bold",
-											  cta_text_bold: "View project",
-											  cta_text_align: "right"
-										  } }
+								<Heading 
+									data={ {...itemHeading, 
+											heading_small: item.location,
+											heading_large: item.project_title
+										 } }
 								/>
+							{:else if data.feed_source === "Articles"}
+								<Heading 
+									data={ {...itemHeading, 
+											heading_small: item.topics?.[0]?.news_topics_id?.name,
+											heading_large: item.post_title
+										 } }
+								/>
+							{:else if data.feed_source === "Team"}
+								<Heading 
+									data={ {...itemHeading, 
+											heading_small: item.short_title,
+											heading_large: item.name
+										 } }
+								/>
+							<!--{:else if data.feed_source === "Testimonials"}
+								<Blockquote 
+									data={ { blockquote_size: "md",
+											 blockquote_text: item.quote ?? "",
+											 blockquote_has_attribution: true,
+											 blockquote_attribution: `${item.quote_attribution ?? ""} \n`,
+											 blockquote_has_citation: true,
+											 blockquote_citation_newline: true,
+											 blockquote_citation: `${item.quote_attribution_job_title ?? ""} \n${item.company_name ?? ""}`,
+											 blockquote_link: null
+										 } }
+								/>-->
 							{/if}
-						{/if}
-					</figcaption>
-				</figure>
+							{#if data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
+								<!--<p class="headline">[Insert hero headline here lorem ipsum dolor sit amet.]</p>-->
+								{#if data.feed_source === "Projects"}
+									<Cta data={ { cta_type: "link",
+												  cta_icon: "arrow_right", 
+												  cta_style: "bold",
+												  cta_text_bold: "View project",
+												  cta_text_align: "right"
+											  } }
+									/>
+								{/if}
+							{/if}
+						</figcaption>
+					</figure>
+				{/if}
 			</svelte:element>
-		{/each}
-	{/if}
+		{/if}
+	{/each}
 </template>
 
 <style lang="scss">
@@ -387,6 +334,7 @@
 					> picture {
 						grid-row: 1;
 						grid-column: viewport;
+						justify-self: stretch;
 						aspect-ratio: 2 / 1;
 						min-height: 50vh;
 					}
@@ -516,196 +464,78 @@
 			}
 		}
 
-		@media (min-width: 62.5em) {
-			&.third {
-				&:nth-child(3n+1) {
-					grid-column: sixth-start 1 / sixth-end 2;
-				}
-				&:nth-child(3n+2) {
-					grid-column: sixth-start 3 / sixth-end 4;
-				}
-				&:nth-child(3n) {
-					grid-column: sixth-start 5 / sixth-end 6;
-				}
+		@media not all and (max-width: 62.5em) {
+			&.third,
+			&.fourth {
+				grid-column: var(--grid-column);
 
-				&.grid-style-dynamic {
-					position: relative;
-
-					&:nth-child(14n+2),
-					&:nth-child(14n+3),
-					&:nth-child(14n+9),
-					&:nth-child(14n+10) {
-						align-self: stretch;
-						figure {
-							align-self: start;
-							position: sticky;
-							top: calc(var(--GRID-CELL) * 1.75);
-						}
+				&.desktop-fullbleed-left {
+					figcaption {
+						grid-column-start: 2;
 					}
+				}
+				&.desktop-fullbleed-right {
+					figcaption {
+						grid-column-end: -2;
+					}
+				}
+			}
 
-					&:nth-child(14n+1) {
-						grid-column: viewport-start / sixth-end 4;
+			&.third {
+				&.desktop-sticky {
+					align-self: stretch;
+					figure {
+						align-self: start;
+						position: sticky;
+						top: calc(var(--GRID-CELL) * 1.75);
+					}
+				}
+				&.desktop-fullbleed-left,
+				&.desktop-fullbleed-right {
+					picture {
+						aspect-ratio: 3 / 2;
+					}
+				}
+			}
 
-						picture {
-							aspect-ratio: 3 / 2;
-						}
+			&.fourth {
+				&.desktop-fullbleed-left,
+				&.desktop-fullbleed-right {
+					picture {
+						aspect-ratio: 16 / 9;
+					}
+				}
+			}
 
+			&.desktop-hidden {
+				display: none;
+			}
+		}
+
+		@media (max-width: 62.5em) {
+			@media not all and (max-width: 31.25em) {
+				&.third,
+				&.fourth {
+					grid-column: var(--grid-column-tablet);
+
+					&.tablet-fullbleed-left {
 						figcaption {
 							grid-column-start: 2;
 						}
 					}
-					&:nth-child(7n+2) {
-						grid-column: sixth-start 5 / sixth-end 6;
-					}
-					&:nth-child(7n+3) {
-						grid-column: sixth-start 1 / sixth-end 2;
-					}
-					&:nth-child(14n+4) {
-						grid-column: sixth-start 3 / sixth-end 6;
-					}
-					&:nth-child(7n+5) {
-						grid-column: sixth-start 1 / sixth-end 2;
-					}
-					&:nth-child(7n+6) {
-						grid-column: sixth-start 3 / sixth-end 4;
-					}
-					&:nth-child(7n) {
-						grid-column: sixth-start 5 / sixth-end 6;
-					}
-					&:nth-child(14n+8) {
-						grid-column: sixth-start 1 / sixth-end 4;
-					}
-					&:nth-child(14n+11) {
-						grid-column: sixth-start 3 / viewport-end;
-
-						picture {
-							aspect-ratio: 3 / 2;
-						}
-
+					&.tablet-fullbleed-right {
 						figcaption {
 							grid-column-end: -2;
 						}
 					}
 				}
-			}
 
-			&.fourth {
-				&:nth-child(4n+1) {
-					grid-column: eighth-start 1 / eighth-end 2;
-				}
-				&:nth-child(4n+2) {
-					grid-column: eighth-start 3 / eighth-end 4;
-				}
-				&:nth-child(4n+3) {
-					grid-column: eighth-start 5 / eighth-end 6;
-				}
-				&:nth-child(4n) {
-					grid-column: eighth-start 7 / eighth-end 8;
-				}
-				&.grid-style-dynamic {
-					&:nth-child(7n+4) {
-						grid-column: eighth-start 1 / eighth-end 2;
-					}
-					&:nth-child(7n+5) {
-						grid-column: eighth-start 3 / eighth-end 4;
-					}
-					&:nth-child(7n+6) {
-						grid-column: eighth-start 5 / eighth-end 6;
-					}
-					&:nth-child(7n) {
-						grid-column: eighth-start 7 / eighth-end 8;
-					}
-					&.start-left {
-						&:nth-child(14n+1) {
-							grid-column: viewport-start / eighth-end 4;
-
-							picture {
-								aspect-ratio: 16 / 9;
-							}
-
-							figcaption {
-								grid-column-start: 2;
-							}
-						}
-						&:nth-child(14n+2) {
-							grid-column: eighth-start 5 / eighth-end 6;
-						}
-						&:nth-child(14n+3) {
-							grid-column: eighth-start 7 / eighth-end 8;
-						}
-						&:nth-child(14n+8) {
-							grid-column: eighth-start 1 / eighth-end 2;
-						}
-						&:nth-child(14n+9) {
-							grid-column: eighth-start 3 / eighth-end 4;
-						}
-						&:nth-child(14n+10) {
-							grid-column: eighth-start 5 / viewport-end;
-
-							picture {
-								aspect-ratio: 16 / 9;
-							}
-
-							figcaption {
-								grid-column-end: -2;
-							}
-						}
-					}
-					&.start-right {
-						&:nth-child(14n+1) {
-							grid-column: eighth-start 1 / eighth-end 2;
-						}
-						&:nth-child(14n+2) {
-							grid-column: eighth-start 3 / eighth-end 4;
-						}
-						&:nth-child(14n+3) {
-							grid-column: eighth-start 5 / viewport-end;
-
-							picture {
-								aspect-ratio: 16 / 9;
-							}
-
-							figcaption {
-								grid-column-end: -2;
-							}
-						}
-						&:nth-child(14n+8) {
-							grid-column: viewport-start / eighth-end 4;
-
-							picture {
-								aspect-ratio: 16 / 9;
-							}
-
-							figcaption {
-								grid-column-start: 2;
-							}
-						}
-						&:nth-child(14n+9) {
-							grid-column: eighth-start 5 / eighth-end 6;
-						}
-						&:nth-child(14n+10) {
-							grid-column: eighth-start 7 / eighth-end 8;
-						}
-					}
-				}
-			}
-		}
-
-		@media (max-width: 62.5em) {
-			&.third,
-			&.fourth {
-				&:nth-child(3n+1) {
-					grid-column: third-start 1 / third-end 1;
-				}
-				&:nth-child(3n+2) {
-					grid-column: third-start 2 / third-end 2;
-				}
-				&:nth-child(3n) {
-					grid-column: third-start 3 / third-end 3;
+				&.tablet-hidden {
+					display: none;
 				}
 			}
 
-			&.grid-style-dynamic {
+			&:where(.half, .single-card).grid-style-dynamic {
 				&:nth-child(10n+1) {
 					grid-column: viewport-start / third-end 2;
 
@@ -749,9 +579,7 @@
 
 		@media (max-width: 31.25em) {
 			&.single-card:not(.grid-style-banner),
-			&.half,
-			&.third,
-			&.fourth {
+			&.half {
 				&:nth-child(2n+1),
 				&.grid-style-dynamic:nth-child(2n+1) {
 					grid-column: column-start 1 / column-end 1;
@@ -760,6 +588,26 @@
 				&.grid-style-dynamic:nth-child(2n) {
 					grid-column: column-start 2 / column-end 2;
 				}
+			}
+
+			// one card per row in slides, so none sits alone
+			:global(.carousel-slide) > &.single-card:not(.grid-style-banner):not(.grid-style-dynamic) {
+				grid-column: column-start 1 / column-end 2;
+
+				> figure,
+				> figure > picture,
+				> figure > figcaption {
+					grid-column: 1 / -1;
+				}
+			}
+
+			&.third,
+			&.fourth {
+				grid-column: var(--grid-column-mobile);
+			}
+
+			&.mobile-hidden {
+				display: none;
 			}
 		}
 

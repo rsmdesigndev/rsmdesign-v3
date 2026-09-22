@@ -624,8 +624,6 @@
 		}
 
 		&.table-style-detailed {
-			foo: bar; // why is this needed?
-
 			&.image-position-left > img,
 			&.image-position-center > img,
 			&.image-position-left > div,

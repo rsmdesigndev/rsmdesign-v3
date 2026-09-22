@@ -3,6 +3,7 @@
 	import type { ImageAssetRelation } from "$lib/cms";
 	import { assetUrl } from "$lib/cms/assets";
 	import { feedItemsPerLoad, generateQuery } from "$lib/cms/dataFeed/dataFeedQueries";
+	import { feedGridFirstImageIndexes } from "$lib/cms/dataFeed/dataFeedGridLayout";
 	import { feedFilterGroups, feedFiltersFromUrlParams, feedFiltersToUrlParams, filtersArrayToGraphql,
 			 firstFilterName, sanitizeSearchText, searchTextFromUrlParams, searchToGraphql,
 			 shouldApplyUrlFilters, type FeedFilters } from "$lib/cms/dataFeed/dataFeedFilters";
@@ -18,6 +19,7 @@
 	import type { CardData } from "../../molecules/Card.svelte";
 	import Heading from "../../atoms/Heading.svelte";
 	import Cta from "../../atoms/Cta.svelte";
+	import { createCarousel } from "../../scripts/carousel";
 
 	// Types
 	export type DataFeedData = {
@@ -95,6 +97,17 @@
 	export let data: DataFeedData;
 	export let rowNumber: number;
 
+	const startRight: boolean = String(data.feed_grid_dynamic_start_position) === "true";
+	const isFullBleed: boolean = data.feed_grid_columns === 1 && data.feed_grid_style === "banner";
+
+	$: gridData = {
+		feed_source: data.feed_source,
+		feed_grid_columns: data.feed_grid_columns,
+		feed_grid_style: data.feed_grid_style,
+		feed_grid_parallax_direction: data.feed_grid_parallax_direction,
+		feed_grid_dynamic_images: data.feed_grid_dynamic_images
+	};
+
 	// Color theme
 	const dispatch = createEventDispatcher();
 
@@ -130,7 +143,7 @@
 		loadOffset = numItems ?? 0;
 	}
 
-	// URL params apply if and only if the menu is shown and a recognised param is present
+	// URL params apply if and only if the menu is shown and a recognized param is present
 	const urlFilters: boolean = browser
 		&& shouldApplyUrlFilters(data.feed_show_filter_menu, $page.url.searchParams);
 	let feedFilters: FeedFilters = urlFilters
@@ -142,12 +155,25 @@
 	// Needed for next entry component
 	$: feedItemParams = feedFiltersToUrlParams(feedFilters, searchText);
 
-	function addPage(items: any[], generation: number) {
+	function addPage(items: any[], generation: number, pageOffset: number) {
 		if (generation !== feedGeneration) {
 			return;
 		}
 
+		const isRefresh: boolean = pageOffset === 0 && pages.length > 0;
+		// items published between loads shift offsets, so a page can repeat loaded items
+		const loadedIds: string[] = feedData.slice(isRefresh ? pages[0].length : 0).map(item => item.id);
+		items = items?.filter(item => item.id === undefined || !loadedIds.includes(item.id));
+
 		if (!items || items.length === 0) {
+			return;
+		}
+
+		if (isRefresh) {
+			feedData.splice(0, pages[0].length, ...items);
+			feedData = feedData;
+			pages[0] = items;
+			pages = pages;
 			return;
 		}
 
@@ -194,8 +220,9 @@
 		loadMore();
 	}
 
-	async function fetchPage() {
+	async function fetchPage(pageOffset: number = loadOffset) {
 		const generation: number = feedGeneration;
+		const pageItemCount: number | undefined = feedItemsPerLoad(data, pageOffset);
 		switch (data.feed_source) {
 			case "Projects": {
 				let filters: string[] = filtersArrayToGraphql(feedFilters);
@@ -205,14 +232,14 @@
 				let query = generateQuery("projects", filters, data.feed_filter_logic, searchFilter);
 
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
-					limit: numItems,
-					offset: loadOffset,
-					skipCount: loadOffset > 0,
+					limit: pageItemCount,
+					offset: pageOffset,
+					skipCount: pageOffset > 0,
 					search: searchTerm,
 				});
 
 				if(response) {
-					addPage(response.projects, generation);
+					addPage(response.projects, generation, pageOffset);
 					loaded = true;
 
 					if (response.projects_aggregated) {
@@ -230,13 +257,13 @@
 				let query = generateQuery("articles", filters, data.feed_filter_logic, searchFilter);
 
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
-					limit: numItems,
-					offset: loadOffset,
+					limit: pageItemCount,
+					offset: pageOffset,
 					search: searchTerm,
 				});
 
 				if(response) {
-					addPage(response.news_posts, generation);
+					addPage(response.news_posts, generation, pageOffset);
 					loaded = true;
 					loadTotalCount = response.news_posts_aggregated?.[0]?.count?.id ?? 0;
 				}
@@ -247,12 +274,12 @@
 				let query = generateQuery("team");
 
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
-					limit: numItems,
-					offset: loadOffset,
+					limit: pageItemCount,
+					offset: pageOffset,
 				});
 
 				if(response) {
-					addPage(response.team, generation);
+					addPage(response.team, generation, pageOffset);
 					loaded = true;
 					loadTotalCount = response.team_aggregated?.[0]?.count?.id ?? 0;
 				}
@@ -277,12 +304,12 @@
 				let query = generateQuery("awards");
 
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
-					limit: numItems,
-					offset: loadOffset,
+					limit: pageItemCount,
+					offset: pageOffset,
 				});
 
 				if(response) {
-					addPage(response.awards, generation);
+					addPage(response.awards, generation, pageOffset);
 					loaded = true;
 					loadTotalCount = response.awards_aggregated?.[0]?.count?.id ?? 0;
 				}
@@ -293,12 +320,12 @@
 				let query = generateQuery("testimonials");
 
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
-					limit: numItems,
-					offset: loadOffset,
+					limit: pageItemCount,
+					offset: pageOffset,
 				});
 
 				if(response) {
-					addPage(response.testimonials, generation);
+					addPage(response.testimonials, generation, pageOffset);
 					loaded = true;
 					loadTotalCount = response.testimonials_aggregated?.[0]?.count?.id ?? 0;
 				}
@@ -309,12 +336,12 @@
 				let query = generateQuery("careers");
 
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
-					limit: numItems,
-					offset: loadOffset,
+					limit: pageItemCount,
+					offset: pageOffset,
 				});
 
 				if(response) {
-					addPage(response.careers, generation);
+					addPage(response.careers, generation, pageOffset);
 					loaded = true;
 					loadTotalCount = response.careers_aggregated?.[0]?.count?.id ?? 0;
 				}
@@ -325,12 +352,12 @@
 				let query = generateQuery("studios");
 
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
-					limit: numItems,
-					offset: loadOffset,
+					limit: pageItemCount,
+					offset: pageOffset,
 				});
 
 				if(response) {
-					addPage(response.studio_locations, generation);
+					addPage(response.studio_locations, generation, pageOffset);
 					loaded = true;
 					loadTotalCount = response.studio_locations_aggregated?.[0]?.count?.id ?? 0;
 				}
@@ -342,8 +369,8 @@
 			}
 		}
 
-		if (generation === feedGeneration) {
-			loadOffset += numItems;
+		if (generation === feedGeneration && pageOffset === loadOffset) {
+			loadOffset += pageItemCount;
 		}
 	}
 
@@ -376,49 +403,44 @@
 	}
 
 	// Carousel pagination functionality
-	let autoplay: boolean = data.feed_grid_columns === 1;
-	let interval: number = 10000;
-
 	let current: number = 0;
-	let isAnimating: boolean = false;
-	let animationDir: -1 | 0 | 1 = 0; // -1 for left, 1 for right
-	let animationDuration: number = 200;
-	let intervalId: any = null;
+
+	const carousel = createCarousel({
+		getIndex: () => current,
+		setIndex: showPage,
+		count: 0,
+		autoplay: data.feed_load_functionality === "carousel" && data.feed_grid_columns === 1,
+		interval: 10000
+	});
+
+	const { isPaused, canAutoplay, isAdvancing, animationDir } = carousel;
+	const { next, prev, togglePlayback, suspend, resume } = carousel;
+	const animationDuration = carousel.animationDuration;
 
 	$: currentDisplay = String(current+1);
 
-	async function next() {
-		if (isAnimating) return;
-
-		isAnimating = true;
-		animationDir = 1;
-
-		if (current >= pages.length - 1 && loadOffset < loadTotalCount) {
+	async function showPage(pageIndex: number) {
+		if (pageIndex >= pages.length && loadOffset < loadTotalCount) {
 			await loadMore();
 		}
 
-		// Last page loops back to first page
-		current = current < pages.length - 1 ? current + 1 : 0;
+		current = pageIndex < pages.length ? pageIndex : 0;
 		prefetchNextPage();
-
-		setTimeout(() => isAnimating = false, animationDuration - 100);
-
-		if (autoplay) restartInterval();
-	}
-
-	function prev() {
-		if (isAnimating) return;
-
-		current -= 1;
-
-		isAnimating = true;
-		animationDir = -1;
-		setTimeout(() => isAnimating = false, animationDuration - 100);
-
-		if (autoplay) restartInterval();
 	}
 
 	$: pagesTotal = Math.ceil(loadTotalCount / numItems);
+
+	// a server render would otherwise start the autoplay timer
+	$: if (browser) carousel.setCount(pagesTotal);
+
+	const pageStartsRight = (pageIndex: number): boolean =>
+		((data.feed_grid_columns === 4) && Boolean(data.feed_grid_rows_per_load % 4) && (pageIndex % 2)) ? !startRight : startRight;
+
+	$: pageFirstImageIndexes = feedGridFirstImageIndexes(
+		pages.map(pageData => pageData.length),
+		data.feed_grid_dynamic_images?.length ?? 0,
+		pages.map((_, pageIndex) => ({ columns: data.feed_grid_columns, style: data.feed_grid_style, startRight: pageStartsRight(pageIndex) }))
+	);
 
 	$: isNextSlide = (i: number): boolean => {
 		if (pagesTotal === 1) {
@@ -440,13 +462,13 @@
 		if (i === current) {
 			return 2;
 		} else if (isNextSlide(i)) {
-			if (animationDir === 1) {
+			if ($animationDir === 1) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else if (isPrevSlide(i)) {
-			if (animationDir === -1) {
+			if ($animationDir === -1) {
 				return 0;
 			} else {
 				return 1;
@@ -456,13 +478,6 @@
 		}
 	}
 
-	$: restartInterval = () => {
-		if (intervalId !== null) {
-			clearInterval(intervalId);
-		}
-		intervalId = setInterval(next, interval);
-	}
-
 	// Lifecycle
 	onMount(async () => {
 		if (pages.length === 0) {
@@ -470,14 +485,13 @@
 		} else if (urlFilters && !data.feed_url_filtered) {
 			reload();
 		} else {
+			// prerendered at build time, so the first page may be stale
+			fetchPage(0);
 			prefetchNextPage();
 		}
-
-		if (autoplay) {
-			restartInterval();
-			return () => clearInterval(intervalId);
-		}
 	});
+
+	onMount(() => carousel.start());
 </script>
 
 <template>
@@ -526,55 +540,63 @@
 					{#if data.feed_source === "Manual"}
 						<div class="grid-container"
 							 class:parallax-container={data.feed_grid_style === "parallax" && data.feed_grid_parallax_direction === "unidirectional"}
+							 class:fullbleed={isFullBleed}
 						>
 							<DataFeedGrid 
 								itemParams={feedItemParams}
 								rowNumber={rowNumber}
-								data={ { feed_source: data.feed_source,
+								data={ { ...gridData,
 										 feed_cards: data.feed_cards,
-										 feed_grid_columns: data.feed_grid_columns,
-										 feed_grid_style: data.feed_grid_style,
-										 feed_grid_parallax_direction: data.feed_grid_parallax_direction,
 										 feed_grid_image_drop_shadow: data.feed_grid_image_drop_shadow,
 										 feed_grid_dynamic_start_position: 
 										 	((data.feed_grid_columns === 4) && Boolean(data.feed_grid_rows_per_load % 4))
 										 	? 
-										 		!data.feed_grid_dynamic_start_position 
+										 		!startRight 
 										 	: 
-										 		data.feed_grid_dynamic_start_position
+										 		startRight
 									 } }
 							/>
 						</div>
-					{:else}
+					{:else if data.feed_load_functionality === "carousel"}
 						{#each pages as pageData, i}
-							<div class="grid-container"
-								 class:carousel-slide={data.feed_load_functionality === "carousel"}
+							<div class="grid-container carousel-slide"
+								 class:fullbleed={isFullBleed}
 								 class:slide-next={isNextSlide(i)}
 								 class:slide-prev={isPrevSlide(i)}
 								 class:slide-active={i === current}
 								 style:z-index={calcZIndex(i)}
-								 style:transition={data.feed_load_functionality === "carousel" ? `opacity ${animationDuration}ms ease` : ""}
+								 style:transition={`opacity ${animationDuration}ms ease`}
+								 on:mouseenter={suspend}
+								 on:mouseleave={resume}
+								 on:focusin={suspend}
+								 on:focusout={resume}
 							>
 								<DataFeedGrid 
 									itemParams={feedItemParams}
 									rowNumber={rowNumber}
 									gridNumber={i}
 									feedData={pageData}
-									data={ { feed_source: data.feed_source,
-											 feed_grid_columns: data.feed_grid_columns,
-											 feed_grid_style: data.feed_grid_style,
-											 feed_grid_parallax_direction: data.feed_grid_parallax_direction,
-											 feed_grid_dynamic_images: data.feed_grid_dynamic_images,
-											 feed_grid_dynamic_start_position: 
-											 	((data.feed_grid_columns === 4) && Boolean(data.feed_grid_rows_per_load % 4) && (i % 2))
-											 	? 
-											 		!data.feed_grid_dynamic_start_position 
-											 	: 
-											 		data.feed_grid_dynamic_start_position
+									firstImageIndexes={pageFirstImageIndexes[i]}
+									data={ { ...gridData,
+											 feed_grid_dynamic_start_position: pageStartsRight(i)
 										 } }
 								/>
 							</div>
 						{/each}
+					{:else}
+						<div class="grid-container"
+							 class:fullbleed={isFullBleed}
+						>
+							<DataFeedGrid 
+								itemParams={feedItemParams}
+								rowNumber={rowNumber}
+								feedData={feedData}
+								hasMoreItems={(data.feed_load_functionality === "scroll" || data.feed_load_functionality === "button") && loadOffset < loadTotalCount}
+								data={ { ...gridData,
+										 feed_grid_dynamic_start_position: startRight
+									 } }
+							/>
+						</div>
 					{/if}
 				{:else}
 					<DataFeedTable
@@ -621,10 +643,24 @@
 				 class:buttons-centered={data.feed_grid_columns === 1 && data.feed_grid_style != "banner"}
 			>
 				{#if current > 0}
-					<button class="carousel-button" aria-label="Load previous group of feed items" on:click={prev}>←</button>
+					<button class="carousel-button" aria-label="Load previous group of feed items" on:click={prev}
+							on:mouseenter={suspend} on:mouseleave={resume}
+							on:focus={suspend} on:blur={resume}
+					>←</button>
+				{/if}
+				{#if $canAutoplay}
+					<button class="carousel-button playback"
+							class:paused={!$isAdvancing}
+							type="button"
+							aria-label={$isPaused ? "Start automatic slide rotation" : "Stop automatic slide rotation"}
+							on:click={togglePlayback}
+					/>
 				{/if}
 				{#if current < pagesTotal}
-					<button class="carousel-button" aria-label="Load next group of feed items" on:click={next}>→</button>
+					<button class="carousel-button" aria-label="Load next group of feed items" on:click={next}
+							on:mouseenter={suspend} on:mouseleave={resume}
+							on:focus={suspend} on:blur={resume}
+					>→</button>
 				{/if}
 			</div>
 		{:else if data.feed_load_functionality === "all"}
@@ -735,6 +771,7 @@
 				grid-column: viewport;
 				display: grid;
 				grid-template-columns: subgrid;
+				align-content: start;
 				row-gap: var(--SPACE-XL);
 
 				position: relative;
@@ -746,9 +783,22 @@
 					z-index: 2;
 				}
 
-				/*@media (max-width: 31.25em) {
-					grid-column: main;
-				}*/
+				@media (max-width: 31.25em) {
+					row-gap: var(--SPACE-LG);
+
+					&:not(.fullbleed) {
+						grid-column: main;
+						grid-template-columns:
+							[column-start]
+							 1fr
+							[column-end]
+							 4vw
+							[column-start]
+							 1fr
+							[column-end]
+						;
+					}
+				}
 			}
 
 			@media (max-width: 31.25em) {
@@ -765,6 +815,11 @@
 						[column-end]
 					;
 					row-gap: var(--SPACE-LG);
+
+					&.fullbleed {
+						grid-column: viewport;
+						grid-template-columns: subgrid;
+					}
 				}
 				&.parallax-container {
 					row-gap: var(--SPACE-XXL);
@@ -813,6 +868,7 @@
 	.button-container {
 		grid-row: 1;
 		grid-column: main;
+		align-self: start;
 
 		margin-top: calc(-1 * var(--SPACE-LG));
 
@@ -843,7 +899,7 @@
 		&.carousel-button {
 			padding: 0;
 			align-self: start;
-			&:first-of-type:not(:last-of-type) {
+			&:first-of-type:not(:last-of-type):not(.playback) {
 				padding-right: var(--SPACE-SM)
 			}
 			&:last-of-type {
@@ -857,6 +913,45 @@
 			&:hover {
 				color: var(--color-accent);
 				cursor: pointer;
+			}
+
+			&.playback {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 0.2em;
+				width: 1em;
+				height: 1em;
+				flex-shrink: 0;
+				align-self: center;
+				margin: 0 -0.5em;
+				line-height: 1;
+
+				&::before,
+				&::after {
+					content: "";
+					display: block;
+					width: 2.5px;
+					height: 0.5em;
+					background: var(--color-secondary);
+				}
+
+				&.paused {
+					gap: 0;
+					margin: 0 -0.6em 0 -0.4em;
+
+					&::before {
+						width: 0;
+						height: 0;
+						background: none;
+						border-top: 0.3em solid transparent;
+						border-bottom: 0.3em solid transparent;
+						border-left: 0.5em solid var(--color-secondary);
+					}
+					&::after {
+						display: none;
+					}
+				}
 			}
 		}
 	}

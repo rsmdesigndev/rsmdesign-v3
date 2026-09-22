@@ -279,7 +279,7 @@ export const hasUrlFilters = (
 	return searchParams.has(urlSearchParam) || filterTypes.some(filterType => searchParams.has(filterType));
 };
 
-// URL params apply if and only if the menu is shown and a recognised param is present
+// URL params apply if and only if the menu is shown and a recognized param is present
 export const shouldApplyUrlFilters = (
 	showFilterMenu?: boolean | null,
 	searchParams?: URLSearchParams | null

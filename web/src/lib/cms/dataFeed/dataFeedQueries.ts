@@ -1,4 +1,5 @@
 import { filterIdToGraphql, filterStringToGraphql } from "$lib/cms/dataFeed/dataFeedFilters";
+import { feedGridItemsPerLoad } from "$lib/cms/dataFeed/dataFeedGridLayout";
 
 export type QuerySource = "projects" | "articles" | "team" | "awards" | "testimonials" | "careers" | "studios" | "services" | "markets" | "topics";
 
@@ -43,11 +44,14 @@ export const feedAggregate = (collection: string): string => `${collection}_aggr
 // takes only the properties it reads, so needs no import from the component.
 export const feedItemsPerLoad = (feed: {
 	feed_view?: string | null;
+	feed_load_functionality?: string | null;
 	feed_grid_style?: string | null;
 	feed_grid_columns?: number | null;
 	feed_grid_rows_per_load?: number | null;
+	feed_grid_dynamic_start_position?: boolean | null;
+	feed_grid_dynamic_images?: unknown[] | null;
 	feed_table_items_per_load?: number | null;
-}): number | undefined => {
+}, loadedItemCount: number = 0): number | undefined => {
 	if (feed.feed_view !== "Grid") {
 		return feed.feed_table_items_per_load ?? undefined;
 	}
@@ -56,11 +60,16 @@ export const feedItemsPerLoad = (feed: {
 	const rows = feed.feed_grid_rows_per_load;
 
 	if (feed.feed_grid_style === "dynamic") {
-		if (columns === 4) {
-			return rows ? (columns * rows) - (Math.floor(rows / 2) + (rows % 2)) : undefined;
+		if (columns === 3 || columns === 4) {
+			// carousel pages each start the pattern over
+			const appendsToGrid = feed.feed_load_functionality === "scroll" || feed.feed_load_functionality === "button";
+			const config = { columns, style: feed.feed_grid_style, startRight: String(feed.feed_grid_dynamic_start_position) === "true" };
+
+			return rows
+				? feedGridItemsPerLoad(appendsToGrid ? loadedItemCount : 0, rows, feed.feed_grid_dynamic_images?.length ?? 0, config, appendsToGrid)
+				: undefined;
 		}
 
-		// TODO: for 3-col dynamic: if rows == 1, subtract 1; if rows == 2, subtract 2; if rows = 3, subtract 2; 
 		return 14;
 	}
 
@@ -102,9 +111,7 @@ export const generateNextEntryQuery = (options: {
 		? `,\n\t\t\t\t\t\t\t\t{ slug: { _neq: ${currentSlug} } }`
 		: `,\n\t\t\t\t\t\t\t\t{ ${source.cursorField}: { ${after}: ${filterIdToGraphql(String(options.cursor))} } }`;
 
-	const visibility: string = source.querySource === "articles"
-		? `{ visibility: { _eq: "visible" } }`
-		: `{ visibility: { _nin: ["draft", "archived"] } }`;
+	const visibility: string = `{ visibility: { _nin: ["draft", "archived"] } }`;
 
 	const selection: string = `slug\n\t\t\t\t\t\t\t${source.titleField}`;
 
@@ -174,6 +181,7 @@ export const generateQuery = (
 								]
 							}
 						) {
+							id
 							slug
 							project_title
 							grid_image {
@@ -237,7 +245,7 @@ export const generateQuery = (
 							sort: [ "-published_date" ]
 							filter: {
 								_and: [
-									{ visibility: { _eq: "visible" } },
+									{ visibility: { _nin: ["draft", "archived"] } },
 									{
 										_and: [
 											${filterString}
@@ -246,6 +254,7 @@ export const generateQuery = (
 								]
 							}
 						) {
+							id
 							slug
 							post_title
 							published_date
@@ -292,6 +301,7 @@ export const generateQuery = (
 								visibility: { _in: ["visible", "visibleInFeeds"] } 
 							}
 						) {
+							id
 							slug
 							name
 							full_title
@@ -327,6 +337,7 @@ export const generateQuery = (
 								visibility: { _nin: ["draft", "archived"] } 
 							}
 						) {
+							id
 							award_body_designation
 							award_category
 							year
@@ -377,6 +388,7 @@ export const generateQuery = (
 								visibility: { _eq: "visible" } 
 							}
 						) {
+							id
 							quote_attribution
 							quote_attribution_job_title
 							company_name
@@ -418,6 +430,7 @@ export const generateQuery = (
 								visibility: { _eq: "visible" } 
 							}
 						) {
+							id
 							slug
 							name
 							grid_image {
@@ -453,6 +466,7 @@ export const generateQuery = (
 								visibility: { _eq: "visible" } 
 							}
 						) {
+							id
 							slug
 							location
 							grid_image {
