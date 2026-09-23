@@ -90,6 +90,7 @@
 		feed_table_style?: string | null;
 		feed_table_image_position?: string | null;
 		feed_table_items_per_load?: number | null;
+		feed_ticker_sizing?: string | null;
 		feed_cards?: CardData[] | null;
 	}
 
@@ -565,8 +566,15 @@
 			{:else if feedData.length === 0 && data.feed_source != "Manual"}
 				<p>No results match your query. Try another search or set of filters.</p>
 			{:else}
-				{#if feedView === "Ticker Tape" && data.feed_source === "Manual"}
-					<DataFeedTickerTape data={ { feed_cards: data.feed_cards } } />
+				{#if feedView === "Ticker Tape"}
+					<DataFeedTickerTape
+						itemParams={feedItemParams}
+						{feedData}
+						data={ { feed_source: data.feed_source,
+								 feed_ticker_sizing: data.feed_ticker_sizing,
+								 feed_cards: data.feed_cards
+							 } }
+					/>
 				{:else if (feedView === "Grid" || data.feed_source === "Manual" || data.feed_source === "Team" || data.feed_source === "Testimonials") && (data.feed_source != "Awards" && data.feed_source != "Careers")}
 					{#if data.feed_source === "Manual"}
 						<div class="grid-container"
