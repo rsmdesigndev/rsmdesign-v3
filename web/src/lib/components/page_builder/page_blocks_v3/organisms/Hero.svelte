@@ -261,6 +261,9 @@
 		<div class="hero-animation-trigger"
 			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: data.hero_media_type === "Video" ? "#hero-video-wrapper" : "#hero-image", animClass: "hero-mask-animate" } }
 		/>
+		<div class="hero-animation-trigger"
+			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: ".mask", animClass: "hero-mask-wrapper-animate" } }
+		/>
 		<div class="main-column-measure" aria-hidden="true">
 			<div class="main-column" bind:offsetWidth={mainColumnWidth} />
 		</div>
@@ -300,7 +303,7 @@
 		}
 
 		.video-wrapper {
-			width: 100vw;
+			width: 100%;
 			height: 100vh;
 
 			position: sticky;
@@ -702,9 +705,48 @@
 			}
 			60% {
 				clip-path: inset(calc(var(--GRID-CELL) * 1.75) calc((100% - var(--main-column-width) * 1px) / 2));
+				z-index: 3;
 			}
 			100% {
 				clip-path: inset(calc(var(--GRID-CELL) * 1.75) calc((100% - var(--main-column-width) * 1px) / 2));
+			}
+		}
+
+		.hero-mask-wrapper-animate {
+			/*animation: hero-mask-wrapper-animate 1s linear forwards;
+
+			@media (max-width: 31.25em) {
+				animation: hero-mask-wrapper-animate-mobile 1s linear forwards;
+			}*/
+		}
+
+		@keyframes hero-mask-wrapper-animate {
+			0% {
+				z-index: 5;
+			}
+			66.666% {
+				z-index: 5;
+			}
+			66.667% {
+				z-index: 3;
+			}
+			100% {
+				z-index: 3;
+			}
+		}
+
+		@keyframes hero-mask-wrapper-animate-mobile {
+			0% {
+				z-index: 5;
+			}
+			59.999% {
+				z-index: 5;
+			}
+			60% {
+				z-index: 3;
+			}
+			100% {
+				z-index: 3;
 			}
 		}
 
