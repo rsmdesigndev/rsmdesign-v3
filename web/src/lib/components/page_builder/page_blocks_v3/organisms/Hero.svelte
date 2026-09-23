@@ -293,6 +293,10 @@
 
 		&.mask {
 			height: 200vh;
+
+			@media (max-width: 31.25em) {
+				height: 150vh;
+			}
 		}
 
 		.video-wrapper {
@@ -668,6 +672,10 @@
 
 		.hero-mask-animate {
 			animation: hero-mask-animate 1s linear forwards;
+
+			@media (max-width: 31.25em) {
+				animation: hero-mask-animate-mobile 1s linear forwards;
+			}
 		}
 
 		@keyframes hero-mask-animate {
@@ -678,6 +686,21 @@
 				clip-path: inset(0);
 			}
 			66.667% {
+				clip-path: inset(calc(var(--GRID-CELL) * 1.75) calc((100% - var(--main-column-width) * 1px) / 2));
+			}
+			100% {
+				clip-path: inset(calc(var(--GRID-CELL) * 1.75) calc((100% - var(--main-column-width) * 1px) / 2));
+			}
+		}
+
+		@keyframes hero-mask-animate-mobile {
+			0% {
+				clip-path: inset(0);
+			}
+			40% {
+				clip-path: inset(0);
+			}
+			60% {
 				clip-path: inset(calc(var(--GRID-CELL) * 1.75) calc((100% - var(--main-column-width) * 1px) / 2));
 			}
 			100% {
