@@ -313,6 +313,7 @@ export const _query = gql`
 						feed_table_style
 						feed_table_image_position
 						feed_table_items_per_load
+						feed_ticker_sizing
 						feed_cards {
 							card_item_spacing
 							card_atoms {
