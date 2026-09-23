@@ -671,14 +671,16 @@
 					View More
 				</button>
 			{:else if data.feed_load_functionality === "button"}
-				<Cta button
-					 data={ { cta_type: "button",
-					 		  cta_text_bold: "View More",
-							  cta_icon: "plus",
-							  cta_hover_highlight: "bold"
-					 } }
-					 on:click={loadMore}
-				/>
+				<div class="view-more-container">
+					<Cta button
+						 data={ { cta_type: "button",
+						 		  cta_text_bold: "View More",
+								  cta_icon: "plus",
+								  cta_hover_highlight: "bold"
+						 } }
+						 on:click={loadMore}
+					/>
+				</div>
 			{/if}
 		{/if}
 	</section>
@@ -907,6 +909,10 @@
 
 			margin-top: calc(-1.5 * var(--GRID-CELL));
 		}
+	}
+
+	.view-more-container {
+		grid-column: main;
 	}
 
 	button {

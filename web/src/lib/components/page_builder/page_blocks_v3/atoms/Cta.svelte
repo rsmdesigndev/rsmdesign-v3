@@ -220,7 +220,8 @@
 		}
 
 		&.button {
-			min-height: calc(var(--GRID-CELL) * 1.5);
+			box-sizing: border-box;
+			min-height: calc(var(--GRID-CELL) * 2.25);
 			padding: 0.333em var(--SPACE-MD) 0.5em;
 			border: 2px solid var(--color-cta, var(--color-primary, inherit));
 			border-radius: var(--SPACE-LG);
