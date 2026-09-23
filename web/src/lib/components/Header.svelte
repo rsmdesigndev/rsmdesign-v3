@@ -436,7 +436,7 @@
 			position: fixed;
 			top: 0;
 			left: 0;
-			width: 100%;
+			width: 100vw;
 
 			height: calc(var(--GRID-CELL) * 1.75);
 			margin-bottom: calc(-1 * calc(var(--GRID-CELL) * 1.75));
