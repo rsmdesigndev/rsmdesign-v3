@@ -47,6 +47,7 @@
 	$: h2Height = 0;
 	$: headingsHeight = h3Height + h1ContainerHeight + h2Height;
 	$: expertiseHeight = 0;
+	$: mainColumnWidth = 0;
 
 	const expertiseCta = {
 		cta_type: "link",
@@ -84,12 +85,14 @@
 </script>
 
 <section class="hero"
+		 class:mask={data.hero_style === "mask"}
 		 style:--expertise-height={expertiseHeight}
 		 style:--headings-height={headingsHeight}
 		 style:--h1-height={h1Height}
 		 style:--h1-container-height={h1ContainerHeight}
 		 style:--h2-height={h2Height}
 		 style:--h3-height={h3Height}
+		 style:--main-column-width={mainColumnWidth}
 
 		 use:selectHeroOnIntersection
 >
@@ -149,14 +152,17 @@
 		</div>
 	{:else}
 		<img
+			id="hero-image"
 			src={assetUrl(data.hero_image?.filename_disk)}
 			alt={data.hero_image?.description ?? ""}
 		/>
 	{/if}
-	<div class="hero-scrim-top" />
-	<div class="hero-scrim-bottom" 
-		 class:project={data.hero_style === "project"}
-	/>
+	{#if data.hero_style !== "mask"}
+		<div class="hero-scrim-top" />
+		<div class="hero-scrim-bottom" 
+			 class:project={data.hero_style === "project"}
+		/>
+	{/if}
 	{#if data.hero_style === "project"}
 		<div class="project-details">
 			{#if data.hero_media_type === "Video"}
@@ -251,6 +257,13 @@
 			</div>
 		</div>
 	{:else if data.hero_style === "below"}
+	{:else if data.hero_style === "mask"}
+		<div class="hero-animation-trigger"
+			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: data.hero_media_type === "Video" ? "#hero-video-wrapper" : "#hero-image", animClass: "hero-mask-animate" } }
+		/>
+		<div class="main-column-measure" aria-hidden="true">
+			<div class="main-column" bind:offsetWidth={mainColumnWidth} />
+		</div>
 	{/if}
 </section>
 
@@ -278,13 +291,17 @@
 			--media-shrink: 20vh;
 		}
 
+		&.mask {
+			height: 200vh;
+		}
+
 		.video-wrapper {
 			width: 100vw;
 			height: 100vh;
 
 			position: sticky;
 			top: 0;
-			overflow-x: hidden;
+			overflow: hidden;
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -318,6 +335,7 @@
 
 				> iframe,
 				> video {
+					display: block;
 					height: 100%;
 					width: 100%;
 
@@ -348,7 +366,6 @@
 				@media (max-width: 31.25em) {
 					position: relative;
 					display: block;
-					// with the margin, ends the expertise one cell above the viewport bottom
 					height: calc(100svh - (var(--GRID-CELL) + var(--media-shrink) + var(--expertise-height) * 1px - var(--GRID-CELL) * 4));
 					margin-bottom: var(--media-shrink);
 				}
@@ -432,6 +449,21 @@
 			left: 0;
 			height: 100%;
 			pointer-events: none;
+		}
+
+		.main-column-measure {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 0;
+			display: grid;
+			grid-template-columns: var(--GRID-WRAPPER);
+			visibility: hidden;
+
+			> .main-column {
+				grid-column: main;
+			}
 		}
 
 		.project-details {
@@ -631,6 +663,25 @@
 			}
 			100% {
 				opacity: 0;
+			}
+		}
+
+		.hero-mask-animate {
+			animation: hero-mask-animate 1s linear forwards;
+		}
+
+		@keyframes hero-mask-animate {
+			0% {
+				clip-path: inset(0);
+			}
+			33.333% {
+				clip-path: inset(0);
+			}
+			66.667% {
+				clip-path: inset(calc(var(--GRID-CELL) * 1.75) calc((100% - var(--main-column-width) * 1px) / 2));
+			}
+			100% {
+				clip-path: inset(calc(var(--GRID-CELL) * 1.75) calc((100% - var(--main-column-width) * 1px) / 2));
 			}
 		}
 
