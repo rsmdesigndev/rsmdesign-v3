@@ -274,6 +274,10 @@
 		position: relative;
 		margin-bottom: calc(var(--expertise-height) * 1px);
 
+		@media (max-width: 31.25em) {
+			--media-shrink: 20vh;
+		}
+
 		.video-wrapper {
 			width: 100vw;
 			height: 100vh;
@@ -289,6 +293,16 @@
 				@media (max-width: 31.25em) {
 					position: relative;
 					animation: none;
+					height: calc(100svh - (var(--GRID-CELL) + var(--media-shrink) + var(--expertise-height) * 1px - var(--GRID-CELL) * 4));
+					margin-bottom: var(--media-shrink);
+
+					// without this, portrait videos leave gaps at the sides on shorter phones
+					video {
+						position: absolute;
+						top: 0;
+						left: 0;
+						object-fit: cover;
+					}
 				}
 			}
 
@@ -334,8 +348,9 @@
 				@media (max-width: 31.25em) {
 					position: relative;
 					display: block;
-					// sized so the expertise ends one cell above the viewport bottom
-					height: calc(100svh - (var(--GRID-CELL) + var(--expertise-height) * 1px - var(--GRID-CELL) * 4));
+					// with the margin, ends the expertise one cell above the viewport bottom
+					height: calc(100svh - (var(--GRID-CELL) + var(--media-shrink) + var(--expertise-height) * 1px - var(--GRID-CELL) * 4));
+					margin-bottom: var(--media-shrink);
 				}
 			}
 		}
@@ -406,7 +421,7 @@
 				@media (max-width: 31.25em) {
 					position: absolute;
 					top: 0;
-					height: 100%;
+					height: calc(100% - var(--media-shrink));
 				}
 			}
 		}
@@ -510,6 +525,8 @@
 					@media (max-width: 31.25em) {
 						opacity: 1;
 						animation: none;
+						width: 100%;
+						//font-size: var(--FONT-SIZE-XXL);
 					}
 				}
 			}
