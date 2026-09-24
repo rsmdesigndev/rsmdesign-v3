@@ -61,7 +61,6 @@
 		: data.feed_source === "Team" && item.has_profile_page ? `/team/${item.slug}${itemParams}`
 		: undefined;
 
-	// not inert, so copies stay clickable
 	function removeCopiesFromTabOrder(track: HTMLElement, tickerItems: any[]) {
 		const removeFromTabOrder = () => track
 			.querySelectorAll(":scope > :not(:first-child) :is(a[href], button, iframe, [tabindex])")
@@ -194,7 +193,7 @@
 
 		display: flex;
 		align-items: center;
-		justify-content: flex-end; // the glyph itself meets the main column's right edge
+		justify-content: flex-end;
 		gap: 0.2em;
 		width: 1em;
 		height: 1em;
@@ -255,7 +254,6 @@
 			> div {
 				grid-column: var(--grid-column);
 
-				// tablet and mobile have no eighth or sixth lines
 				@media (max-width: 62.5em) {
 					grid-column: third-start 1 / third-end 1;
 				}
@@ -279,7 +277,7 @@
 				padding-right: var(--SPACE-MD);
 
 				> .ticker-item {
-					display: grid; // without it, cards collapse at logos sizing
+					display: grid;
 					width: calc(var(--column-width) * 1px);
 				}
 			}
@@ -323,12 +321,12 @@
 				}
 			}
 
-			// each logo covers the area of a --SPACE-LG square
+			// each logo covers the area of a --SPACE-XL square, within the height limits
 			> .sized-by-area {
 				:global {
 					img {
-						width: calc(var(--SPACE-XL) * sqrt(var(--logo-ratio)));
-						height: calc(var(--SPACE-XL) / sqrt(var(--logo-ratio)));
+						height: clamp(var(--SPACE-MD), calc(var(--SPACE-XL) / sqrt(var(--logo-ratio))), var(--SPACE-XL));
+						aspect-ratio: var(--logo-ratio);
 						max-width: none;
 					}
 				}
