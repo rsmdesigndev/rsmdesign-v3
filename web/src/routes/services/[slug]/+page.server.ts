@@ -753,6 +753,8 @@ export const _query = gql`
 										media_type
 										media_image {
 											filename_disk
+											width
+											height
 											title
 											description
 										}
