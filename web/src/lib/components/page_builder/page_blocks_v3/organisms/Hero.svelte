@@ -157,7 +157,7 @@
 			alt={data.hero_image?.description ?? ""}
 		/>
 	{/if}
-	{#if data.hero_style !== "mask"}
+	{#if data.hero_style !== "mask" && data.hero_style !== "below"}
 		<div class="hero-scrim-top" />
 		<div class="hero-scrim-bottom" 
 			 class:project={data.hero_style === "project"}
@@ -201,7 +201,7 @@
 					id="project-hero-h2" 
 					class="xxxl"
 				>
-					<!-- span keeps innerHTML updates from deleting the h2's size listener -->
+					<!-- span keeps innerHTML updates from deleting h2's size listener -->
 					<span>{@html headlineHtml}</span>
 				</h2>
 			</div>
@@ -257,6 +257,9 @@
 			</div>
 		</div>
 	{:else if data.hero_style === "below"}
+		<div class="hero-animation-trigger"
+			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: data.hero_media_type === "Video" ? "#hero-video-wrapper" : "#hero-image", animClass: "hero-media-below" } }
+		/>
 	{:else if data.hero_style === "mask"}
 		<div class="hero-animation-trigger"
 			 use:animate={ { trigger: AnimateTrigger.WhileScrollingInView, targetSelector: data.hero_media_type === "Video" ? "#hero-video-wrapper" : "#hero-image", animClass: "hero-mask-animate" } }
@@ -386,7 +389,7 @@
 			left: 0;
 			width: 100%;
 			height: 50vh;
-			//0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100
+			// quadratic falloff: 0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100
 			background: linear-gradient(
 				rgba(26,24,24,0.5) 0%,
 				rgba(26,24,24,0.405) 10%,
@@ -418,18 +421,19 @@
 				transparent 0%,  
 				white 100%
 			);
-			//0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100
+			// φt² for the first 61.8%, then 1 - φ²(1 - t)²: gradual over the image, steeper into the background
 			background: linear-gradient(
 				rgba(255,255,255,0) 0%,
-				rgba(255,255,255,0.01) 10%,
-				rgba(255,255,255,0.04) 20%,
-				rgba(255,255,255,0.09) 30%,
-				rgba(255,255,255,0.16) 40%,
-				rgba(255,255,255,0.25) 50%,
-				rgba(255,255,255,0.36) 60%,
-				rgba(255,255,255,0.49) 70%,
-				rgba(255,255,255,0.64) 80%,
-				rgba(255,255,255,0.81) 90%,
+				rgba(255,255,255,0.016) 10%,
+				rgba(255,255,255,0.065) 20%,
+				rgba(255,255,255,0.146) 30%,
+				rgba(255,255,255,0.259) 40%,
+				rgba(255,255,255,0.405) 50%,
+				rgba(255,255,255,0.582) 60%,
+				rgba(255,255,255,0.618) 61.8%,
+				rgba(255,255,255,0.764) 70%,
+				rgba(255,255,255,0.895) 80%,
+				rgba(255,255,255,0.974) 90%,
 				rgba(255,255,255,1) 100%
 			);
 
@@ -484,6 +488,20 @@
 			display: grid;
 			grid-template-columns: var(--GRID-WRAPPER);
 
+			// hide the menu until the project details scroll past
+			&::before {
+				content: "";
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: calc(100% + var(--expertise-height) * 1px - var(--GRID-CELL) * 4); // offset expertise block's negative bottom margin
+				background-color: var(--color-background);
+				transition: background-color 0.3s ease;
+				z-index: -1;
+				pointer-events: none;
+			}
+
 			// prevent line beneath hero
 			&::after {
 				content: "";
@@ -513,7 +531,6 @@
 				top: 0;
 				//margin-bottom: calc(1px * var(--expertise-height));
 
-				// must come after height and position to override them
 				@media (max-width: 31.25em) {
 					height: 100%;
 					position: relative;
@@ -577,7 +594,7 @@
 				width: 100%;
 				display: grid;
 				grid-template-columns: var(--GRID-WRAPPER);
-				padding-top: calc(var(--GRID-CELL) * 2);
+				padding: calc(var(--GRID-CELL) * 2) 0 calc(var(--GRID-CELL) / 2);
 				margin-bottom: calc(100vh - (var(--GRID-CELL) * 2 + (var(--headings-height) + var(--expertise-height)) * 1px));
 
 				@media (max-width: 31.25em) {
@@ -670,6 +687,39 @@
 			}
 			100% {
 				opacity: 0;
+			}
+		}
+
+		.hero-media-below {
+			// 1 - φt² for the first 61.8%, then φ²(1 - t)²: gradual over the image, steeper into the background
+			mask-image: linear-gradient(
+				rgba(0,0,0,1) 100vh,
+				rgba(0,0,0,0.984) calc(90vh + 10%),
+				rgba(0,0,0,0.935) calc(80vh + 20%),
+				rgba(0,0,0,0.854) calc(70vh + 30%),
+				rgba(0,0,0,0.741) calc(60vh + 40%),
+				rgba(0,0,0,0.595) calc(50vh + 50%),
+				rgba(0,0,0,0.418) calc(40vh + 60%),
+				rgba(0,0,0,0.382) calc(38.2vh + 61.8%),
+				rgba(0,0,0,0.236) calc(30vh + 70%),
+				rgba(0,0,0,0.105) calc(20vh + 80%),
+				rgba(0,0,0,0.026) calc(10vh + 90%),
+				rgba(0,0,0,0) 100%
+			);
+			mask-position: bottom;
+			mask-repeat: no-repeat;
+			animation: hero-media-below 1s linear forwards;
+		}
+
+		@keyframes hero-media-below {
+			0% {
+				mask-size: 100% 100%;
+			}
+			50% {
+				mask-size: 100% 100%;
+			}
+			100% {
+				mask-size: 100% calc(100% + 100vh);
 			}
 		}
 
