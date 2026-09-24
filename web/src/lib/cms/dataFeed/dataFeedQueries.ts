@@ -188,6 +188,8 @@ export const generateQuery = (
 								filename_disk
 								title
 								description
+								width
+								height
 							}
 							hero_image {
 								filename_disk
@@ -261,6 +263,8 @@ export const generateQuery = (
 							grid_image {
 								filename_disk
 								description
+								width
+								height
 							}
 							hero_image {
 								filename_disk
@@ -311,6 +315,8 @@ export const generateQuery = (
 								title
 								description
 								filename_disk
+								width
+								height
 							}
 							has_profile_page
 						}
@@ -437,6 +443,8 @@ export const generateQuery = (
 								filename_disk
 								title
 								description
+								width
+								height
 							}
 							studios {
 								studio_locations_id {
@@ -473,6 +481,8 @@ export const generateQuery = (
 								filename_disk
 								title
 								description
+								width
+								height
 							}
 							studio_contact_person {
 								slug

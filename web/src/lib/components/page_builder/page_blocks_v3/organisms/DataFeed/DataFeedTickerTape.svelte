@@ -19,7 +19,7 @@
 		fourth: "eighth-start 1 / eighth-end 2"
 	};
 
-	$: gridColumn = sizingGridColumns[data.feed_ticker_sizing ?? "logos"];
+	$: gridColumn = sizingGridColumns[data.feed_ticker_sizing ?? "logo"];
 	$: usesGridSizing = Boolean(gridColumn);
 
 	let columnWidth: number = 0;
@@ -50,6 +50,11 @@
 		heading_has_superscript: false
 	}
 
+	$: itemImage = (item: any) =>
+		data.feed_source === "Manual" ? item.card_atoms?.find((atom: any) => atom?.item?.__typename === "page_blocks_v3_atom_media")?.item?.media_image
+		: data.feed_source === "Team" ? item.headshot
+		: item.grid_image;
+
 	$: itemLink = (item: any): string | undefined =>
 		data.feed_source === "Projects" ? `/work/${item.slug}${itemParams}`
 		: data.feed_source === "Articles" ? `/news/${item.slug}${itemParams}`
@@ -70,105 +75,122 @@
 </script>
 
 <template>
-	{#if items.length}
-		<button class="playback"
-				class:paused={!isAdvancing}
-				type="button"
-				aria-label={isPaused ? "Start automatic scrolling" : "Stop automatic scrolling"}
-				on:click={togglePlayback}
-		/>
-	{/if}
-	<div class="ticker"
-		 class:logos={!usesGridSizing}
-		 style:--column-width={columnWidth}
-	>
-		{#if usesGridSizing}
-			<div class="column-measure" aria-hidden="true">
-				<div style:--grid-column={gridColumn} bind:offsetWidth={columnWidth} />
-			</div>
+	<div class="ticker-wrapper">
+		{#if items.length}
+			<button class="playback"
+					class:paused={!isAdvancing}
+					type="button"
+					aria-label={isPaused ? "Start automatic scrolling" : "Stop automatic scrolling"}
+					on:click={togglePlayback}
+			/>
 		{/if}
-		<div class="ticker-track"
-			 class:paused={!isAdvancing}
-			 style:--item-count={items.length}
-			 style:--copy-count={copyCount}
-			 use:removeCopiesFromTabOrder={items}
-			 on:mouseenter={suspendOnHover}
-			 on:mouseleave={resumeOnLeave}
-			 on:focusin={suspendOnFocus}
-			 on:focusout={resumeOnBlur}
+		<div class="ticker"
+			 class:logos={!usesGridSizing}
+			 style:--column-width={columnWidth}
 		>
-			{#each Array(copyCount) as _, copyIndex}
-				<div class="ticker-copy" aria-hidden={copyIndex > 0 ? "true" : undefined}>
-					{#each items as item}
-						{@const image = data.feed_source === "Team" ? item.headshot : item.grid_image}
-						{@const link = itemLink(item)}
-						{#if data.feed_source === "Manual"}
-							<div class="ticker-item">
-								<Card data={item}
-									  bleed={ { left: false,
-												right: false
-											} }
-									  isScrollItem={false}
-									  isActive={true}
-								/>
-							</div>
-						{:else}
-							<svelte:element
-								this={link ? "a" : "div"}
-								href={link}
-								class="ticker-item"
-							>
-								{#if usesGridSizing}
-									<figure>
-										<picture>
-											<img src={assetUrl(image?.filename_disk)}
-												 alt={image?.title}
-											/>
-										</picture>
-										<figcaption>
-											{#if data.feed_source === "Projects"}
-												<Heading
-													data={ {...itemHeading,
-															heading_small: item.location,
-															heading_large: item.project_title
-														 } }
-												/>
-											{:else if data.feed_source === "Articles"}
-												<Heading
-													data={ {...itemHeading,
-															heading_small: item.topics?.[0]?.news_topics_id?.name,
-															heading_large: item.post_title
-														 } }
-												/>
-											{:else if data.feed_source === "Team"}
-												<Heading
-													data={ {...itemHeading,
-															heading_small: item.short_title,
-															heading_large: item.name
-														 } }
-												/>
-											{/if}
-										</figcaption>
-									</figure>
-								{:else}
-									<img src={assetUrl(image?.filename_disk)}
-										 alt={image?.title}
-									/>
-								{/if}
-							</svelte:element>
-						{/if}
-					{/each}
+			{#if usesGridSizing}
+				<div class="column-measure" aria-hidden="true">
+					<div style:--grid-column={gridColumn} bind:offsetWidth={columnWidth} />
 				</div>
-			{/each}
+			{/if}
+			<div class="ticker-tape"
+				 class:paused={!isAdvancing}
+				 style:--item-count={items.length}
+				 style:--copy-count={copyCount}
+				 use:removeCopiesFromTabOrder={items}
+				 on:mouseenter={suspendOnHover}
+				 on:mouseleave={resumeOnLeave}
+				 on:focusin={suspendOnFocus}
+				 on:focusout={resumeOnBlur}
+			>
+				{#each Array(copyCount) as _, copyIndex}
+					<div class="ticker-copy" aria-hidden={copyIndex > 0 ? "true" : undefined}>
+						{#each items as item}
+							{@const image = itemImage(item)}
+							{@const link = itemLink(item)}
+							{@const logoRatio = !usesGridSizing && image?.width && image?.height ? image.width / image.height : undefined}
+							{#if data.feed_source === "Manual"}
+								<div class="ticker-item"
+									 class:sized-by-area={Boolean(logoRatio)}
+									 style:--logo-ratio={logoRatio}
+								>
+									<Card data={item}
+										  bleed={ { left: false,
+													right: false
+												} }
+										  isScrollItem={false}
+										  isActive={true}
+									/>
+								</div>
+							{:else}
+								<svelte:element
+									this={link ? "a" : "div"}
+									href={link}
+									class="ticker-item"
+									class:sized-by-area={Boolean(logoRatio)}
+									style:--logo-ratio={logoRatio}
+								>
+									{#if usesGridSizing}
+										<figure>
+											<picture>
+												<img src={assetUrl(image?.filename_disk)}
+													 alt={image?.title}
+												/>
+											</picture>
+											<figcaption>
+												{#if data.feed_source === "Projects"}
+													<Heading
+														data={ {...itemHeading,
+																heading_small: item.location,
+																heading_large: item.project_title
+															 } }
+													/>
+												{:else if data.feed_source === "Articles"}
+													<Heading
+														data={ {...itemHeading,
+																heading_small: item.topics?.[0]?.news_topics_id?.name,
+																heading_large: item.post_title
+															 } }
+													/>
+												{:else if data.feed_source === "Team"}
+													<Heading
+														data={ {...itemHeading,
+																heading_small: item.short_title,
+																heading_large: item.name
+															 } }
+													/>
+												{/if}
+											</figcaption>
+										</figure>
+									{:else}
+										<img src={assetUrl(image?.filename_disk)}
+											 alt={image?.title}
+										/>
+									{/if}
+								</svelte:element>
+							{/if}
+						{/each}
+					</div>
+				{/each}
+			</div>
 		</div>
 	</div>
 </template>
 
 <style lang="scss">
+	.ticker-wrapper {
+		grid-column: viewport;
+		display: grid;
+		grid-template-columns: subgrid;
+	}
+
 	.playback {
+		grid-row: 1;
 		grid-column: main;
 		justify-self: end;
-		margin-bottom: var(--SPACE-SM);
+		align-self: start;
+
+		margin-top: calc(-1 * var(--SPACE-LG));
 
 		display: flex;
 		align-items: center;
@@ -215,6 +237,7 @@
 	}
 
 	.ticker {
+		grid-row: 1;
 		grid-column: viewport;
 		position: relative;
 		overflow-x: clip;
@@ -239,7 +262,7 @@
 			}
 		}
 
-		> .ticker-track {
+		> .ticker-tape {
 			display: flex;
 			width: max-content;
 			// no fill mode, so reduced motion leaves the first copy in view
@@ -281,7 +304,8 @@
 			}
 		}
 
-		&.logos > .ticker-track > .ticker-copy {
+		&.logos > .ticker-tape > .ticker-copy {
+			align-items: center;
 			column-gap: var(--SPACE-XL);
 			padding-right: var(--SPACE-XL);
 
@@ -296,6 +320,17 @@
 					height: var(--SPACE-LG);
 					max-width: var(--SPACE-XXL);
 					object-fit: contain;
+				}
+			}
+
+			// each logo covers the area of a --SPACE-LG square
+			> .sized-by-area {
+				:global {
+					img {
+						width: calc(var(--SPACE-XL) * sqrt(var(--logo-ratio)));
+						height: calc(var(--SPACE-XL) / sqrt(var(--logo-ratio)));
+						max-width: none;
+					}
 				}
 			}
 		}
