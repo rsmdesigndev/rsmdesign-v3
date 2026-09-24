@@ -5,6 +5,7 @@
 
 <script lang="ts">
 	import { createEventDispatcher, onMount, tick } from "svelte";
+	import { MOBILE_QUERY } from "../scripts/triggerLine";
 
 	export let summaryText: string = "Open";
 	export let summaryTextOpen: string = summaryText;
@@ -72,6 +73,7 @@
 	}
 
 	function holdPosition() {
+		if (window.matchMedia(MOBILE_QUERY).matches) return;
 		stopActiveHold?.();
 
 		const summary = anchor.firstElementChild as HTMLElement;
