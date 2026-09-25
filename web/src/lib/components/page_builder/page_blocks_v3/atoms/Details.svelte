@@ -73,7 +73,7 @@
 	}
 
 	function holdPosition() {
-		if (window.matchMedia(MOBILE_QUERY).matches) return;
+		if (!window.matchMedia(MOBILE_QUERY).matches) return;
 		stopActiveHold?.();
 
 		const summary = anchor.firstElementChild as HTMLElement;
