@@ -196,18 +196,21 @@ function init(element: HTMLElement, options: AnimateOptions) {
 		const unsubscribe = subscribeToScroll({ measure, apply });
 		window.addEventListener("resize", handleResize, { passive: true });
 
+		// trigger WhileScrollingInView on client-side navigation
+		const resizeObserver = new ResizeObserver(handleResize);
+		resizeObserver.observe(element);
+		resizeObserver.observe(document.documentElement);
+
 		if (document.readyState === "complete") {
 			refresh();
 		} else {
 			window.addEventListener("load", refresh);
 		}
 
-		// TODO: Figure out how to make this work on navigate 
-		// without the kludge in src/routes/+layout.svelte
-
 		return {
 			destroy() {
 				unsubscribe();
+				resizeObserver.disconnect();
 				window.removeEventListener("resize", handleResize);
 				window.removeEventListener("load", refresh);
 				
