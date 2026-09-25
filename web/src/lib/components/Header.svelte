@@ -774,7 +774,7 @@
 				width: auto;
 				background: transparent;
 				margin: 0;
-				padding: 0 0.5em 0 0;
+				padding: 0 0.333em 0 0;
 				border: 0;
 				border-radius: 0;
 				color: white;
