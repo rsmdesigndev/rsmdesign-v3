@@ -4,13 +4,21 @@
 	import Footer from "$lib/components/Footer.svelte";
 	import { env } from "$env/dynamic/public";
 	import { afterNavigate, beforeNavigate } from "$app/navigation";
-	import { onMount } from "svelte";
+	import { onMount, tick } from "svelte";
 	import { loading } from "$lib/loading";
 	import Loading from "$lib/components/Loading.svelte";
 
 	export let data: PageData;
 
 	let headerHeight = "75px";
+	let mainElement: HTMLElement;
+	let isSkipPending = false;
+
+	// main can't take focus until the loader clears
+	$: if (isSkipPending && $loading.status !== "active") {
+		isSkipPending = false;
+		tick().then(() => mainElement.focus());
+	}
 
 	function updateHeaderSize() {
 		const header = document.querySelector<HTMLElement>("body > header");
@@ -73,9 +81,21 @@
 <svelte:window on:resize={() => setTimeout(updateHeaderSize, 600)} />
 
 <template>
+	<!-- sveltekit only scrolls, without focusing, when the url already has this hash -->
+	<a
+		class="skip-link"
+		href="#main-content"
+		on:click|preventDefault={() => (isSkipPending = true)}
+		on:blur={() => (isSkipPending = false)}
+	>
+		Skip to main content
+	</a>
 	<Loading />
 	<Header {headerHeight} navMenu={data.nav_menu} />
 	<main
+		bind:this={mainElement}
+		id="main-content"
+		tabindex="-1"
 		style:--header-height={headerHeight}
 		class:is-loading={$loading.status === "active"}
 	>
@@ -94,5 +114,24 @@
 
 	main.is-loading {
 		visibility: hidden;
+	}
+
+	main:focus {
+		outline: none;
+	}
+
+	a.skip-link {
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: 9;
+		padding: var(--SPACE-SM) var(--SPACE-MD);
+		background-color: var(--COLOR-BLACK);
+		color: white;
+		transform: translateY(-100%);
+
+		&:focus {
+			transform: none;
+		}
 	}
 </style>
