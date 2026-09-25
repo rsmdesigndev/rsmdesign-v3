@@ -468,7 +468,7 @@
 <style lang="scss">
 	header {
 		display: contents;
-		--menu-button-width: max(1.25rem, calc(var(--GRID-CELL) / 2));
+		--menu-button-width: clamp(1rem, 6px + 1vw, 1.5625rem);
 		--search-icon-size: calc(var(--menu-button-width) * 21 / 25);
 
 		> div {
@@ -672,6 +672,9 @@
 				width: 100%;
 				height: 2px;
 				margin: 4px 0;
+				@media (max-width: 78.125em) {
+					margin: 3px 0;
+				}
 
 				transition: all 0.3s ease;
 
@@ -691,6 +694,9 @@
 			&.active {
 				// one bar pitch (2px + 4px) along the 45° diagonal
 				--menu-button-transform: calc(6px / 1.4142);
+				@media (max-width: 78.125em) {
+					--menu-button-transform: calc(5px / 1.4142);
+				}
 
 				> div {
 					background-color: white;
