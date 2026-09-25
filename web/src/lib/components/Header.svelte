@@ -352,7 +352,7 @@
 				{/if}
 
 				<div class="menu-buttons">
-					<button
+					<!--<button
 						type="button"
 						class="search-button"
 						class:active={menuOpen}
@@ -363,7 +363,7 @@
 							<rect width="10" height="2.25" transform="matrix(-0.707107 -0.707107 -0.707107 0.707107 20.6621 19.0703)" />
 							<circle cx="6.875" cy="6.875" r="6.875" transform="matrix(-1 0 0 1 14.8125 1.0625)" stroke-width="2.125"/>
 						</svg>
-					</button>
+					</button>-->
 					<div
 						bind:this={menuButton}
 						role="button"
