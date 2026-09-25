@@ -31,7 +31,7 @@
 		loading.start(navigation.to.url.pathname);
 	});
 
-	afterNavigate(() => {
+	afterNavigate(({ to }) => {
 		// Schedule the dismiss FIRST so a throw later in this handler
 		// (e.g. an unsupported scrollTo option) can't leave the loader stuck.
 		loading.finish();
@@ -39,15 +39,18 @@
 		setTimeout(updateHeaderSize, 0);
 
 		// Reset scroll while the loader is still covering, so the new page
-		// reveals at the top without a visible scroll animation. Wrapped so
+		// reveals at the top (or its #anchor) without a visible scroll animation. Wrapped so
 		// older Safari rejecting "instant" can't break the dismiss.
 		try {
-			window.scrollTo({ top: 0, behavior: 'smooth' });
+			const anchorTarget = to?.url.hash ? document.getElementById(decodeURIComponent(to.url.hash.slice(1))) : null;
+			const landingTop = () => anchorTarget ? anchorTarget.getBoundingClientRect().top + window.scrollY : 0;
+
+			window.scrollTo({ top: landingTop(), behavior: 'smooth' });
 			// Annoying kludge to ensure WhileScrollingInView animations trigger on navigate
-			window.scrollTo({ top: 10, behavior: 'smooth' })
+			window.scrollTo({ top: landingTop() + 10, behavior: 'smooth' })
 
 			setTimeout( () => {
-				window.scrollTo({ top: 0, behavior: 'instant' })
+				window.scrollTo({ top: landingTop(), behavior: 'instant' })
 			}, 100);
 		} catch {
 			window.scrollTo(0, 0);
