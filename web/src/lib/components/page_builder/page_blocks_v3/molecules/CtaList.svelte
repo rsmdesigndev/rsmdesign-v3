@@ -200,6 +200,81 @@
 						  } }
 				/>
 			{/if}
+		{:else if data.cta_list_source === "policies"}
+			<article>
+				<h3 class={`heading heading-caps`}
+					style:--font-size="var(--FONT-SIZE-MD)"
+					style:--font-weight="600"
+					style:--line-height="1.333"
+				>
+					Website Policies
+				</h3>
+				<Cta data={ {...personCta, 
+							 cta_text_light: "Privacy Policy",
+							 cta_link: "/info/privacy-policy"
+						  } }
+					 {sizeOverride}
+					 {hoverOverride}
+					 {iconOverride}
+				/>
+				<Cta data={ {...personCta, 
+							 cta_text_light: "Terms of Use",
+							 cta_link: "/info/terms-of-use"
+						  } }
+					 {sizeOverride}
+					 {hoverOverride}
+					 {iconOverride}
+				/>
+				<Cta data={ {...personCta, 
+							 cta_text_light: "Accessibility Policy",
+							 cta_link: "/info/accessibility"
+						  } }
+					 {sizeOverride}
+					 {hoverOverride}
+					 {iconOverride}
+				/>
+			</article>
+			<article>
+				<h3 class={`heading heading-caps`}
+					style:--font-size="var(--FONT-SIZE-MD)"
+					style:--font-weight="600"
+					style:--line-height="1.333"
+				>
+					Corporate Responsibility
+				</h3>
+				<Cta data={ {...personCta, 
+							 cta_text_light: "Overview",
+							 cta_link: "/info/corporate-responsibility"
+						  } }
+					 {sizeOverride}
+					 {hoverOverride}
+					 {iconOverride}
+				/>
+				<Cta data={ {...personCta, 
+							 cta_text_light: "Sustainability",
+							 cta_link: "/info/corporate-responsibility#sustainability"
+						  } }
+					 {sizeOverride}
+					 {hoverOverride}
+					 {iconOverride}
+				/>
+				<Cta data={ {...personCta, 
+							 cta_text_light: "Diversity",
+							 cta_link: "/info/corporate-responsibility#diversity"
+						  } }
+					 {sizeOverride}
+					 {hoverOverride}
+					 {iconOverride}
+				/>
+				<Cta data={ {...personCta, 
+							 cta_text_light: "Women Business Enterprise",
+							 cta_link: "/info/corporate-responsibility#women-business-enterprise"
+						  } }
+					 {sizeOverride}
+					 {hoverOverride}
+					 {iconOverride}
+				/>
+			</article>
 		{:else}
 			<article>
 				<h3 class={`heading heading-caps`}
