@@ -10,7 +10,7 @@
 
 		&:hover,
 		&:focus {
-			color: car(--color-accent, var(--COLOR-ORANGE));
+			color: var(--color-accent, var(--COLOR-ORANGE));
 		}
 	}
 	
