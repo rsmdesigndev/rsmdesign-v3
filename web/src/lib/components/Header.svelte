@@ -596,7 +596,7 @@
 				height: calc(var(--menu-button-width) * 19.5 / 25);
 				margin-bottom: calc(var(--menu-button-width) * 1.5 / 25); // lifts it so its top is level with the search icon's
 				background-color: var(--color-primary, var(--COLOR-BLACK));
-				opacity: 0.64;
+				opacity: 0.382;
 				transition: background-color 0.3s ease;
 			}
 
