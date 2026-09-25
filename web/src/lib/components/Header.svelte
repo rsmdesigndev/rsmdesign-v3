@@ -22,12 +22,18 @@
 
 	let menuOpen: boolean = false;
 	let menuButton: HTMLElement;
+	let searchInput: HTMLInputElement;
 
 	function toggleMenu() {
 		menuOpen = !menuOpen;
 	}
 	function closeMenu() {
 		menuOpen = false;
+	}
+	async function openMenuWithSearch() {
+		menuOpen = true;
+		await tick();
+		searchInput.focus({ preventScroll: true }); // the menu is still opening; scrolling it would make the form jump
 	}
 
 	function onMenuButtonKeypress(event: KeyboardEvent) {
@@ -344,27 +350,41 @@
 		<div class="nav-wrapper">
 			<div class="nav-container">
 				{#if navParentText != ""}
-					<div class="menu-breadcrumbs">
+					<div class="menu-breadcrumbs" class:active={menuOpen}>
 						<a href={navParentLink}>
 							{navParentCta} {navParentText}
 						</a>
 					</div>
 				{/if}
 
-				<div
-					bind:this={menuButton}
-					role="button"
-					class="menu-button"
-					class:active={menuOpen}
-					aria-label="Toggle visibility of site menu"
-					aria-expanded={menuOpen}
-					tabindex="0"
-					on:click={toggleMenu}
-					on:keypress={onMenuButtonKeypress}
-				>
-					<div />
-					<div />
-					<div />
+				<div class="menu-buttons">
+					<button
+						type="button"
+						class="search-button"
+						class:active={menuOpen}
+						aria-label="Search"
+						on:click={openMenuWithSearch}
+					>
+						<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<rect width="10" height="2.25" transform="matrix(-0.707107 -0.707107 -0.707107 0.707107 20.6621 19.0703)" />
+							<circle cx="6.875" cy="6.875" r="6.875" transform="matrix(-1 0 0 1 14.8125 1.0625)" stroke-width="2.125"/>
+						</svg>
+					</button>
+					<div
+						bind:this={menuButton}
+						role="button"
+						class="menu-button"
+						class:active={menuOpen}
+						aria-label="Toggle visibility of site menu"
+						aria-expanded={menuOpen}
+						tabindex="0"
+						on:click={toggleMenu}
+						on:keypress={onMenuButtonKeypress}
+					>
+						<div />
+						<div />
+						<div />
+					</div>
 				</div>
 			</div>
 		</div>
@@ -383,7 +403,7 @@
 						</svg>
 					</button>
 				{/if}
-				<input class:active={searchResults.length} placeholder="Search" aria-label="Search bar" bind:value={query} />
+				<input bind:this={searchInput} class:active={searchResults.length} placeholder="Search" aria-label="Search bar" bind:value={query} />
 			</form>
 			<p class="search-status" role="status">{searching ? "Searching..." : resultsHeading}</p>
 			{#if searching}
@@ -463,6 +483,9 @@
 <style lang="scss">
 	header {
 		display: contents;
+		// lockup measurements, scaled from its 25px hamburger width
+		--menu-button-width: max(1.25rem, calc(var(--GRID-CELL) / 2));
+		--search-icon-size: calc(var(--menu-button-width) * 21 / 25);
 
 		> div {
 			position: fixed;
@@ -555,19 +578,101 @@
 		pointer-events: auto;
 
 		display: flex;
-		column-gap: var(--SPACE-MD);
+		// half of SPACE-MD on each side of the breadcrumbs' 1px rule, less the search button's outer padding
+		column-gap: calc((var(--SPACE-MD) - 1px) / 2 - max(0px, 24px - var(--search-icon-size)));
 
 		font-size: var(--FONT-SIZE-SM);
+
+		> div.menu-breadcrumbs {
+			display: flex;
+			align-items: center;
+			column-gap: calc((var(--SPACE-MD) - 1px) / 2);
+
+			transition: opacity 0.3s ease, visibility 0s;
+
+			&::after {
+				content: "";
+				width: 1px;
+				height: calc(var(--menu-button-width) * 19.5 / 25);
+				margin-bottom: calc(var(--menu-button-width) * 1.5 / 25); // lifts it so its top is level with the search icon's
+				background-color: var(--color-primary, var(--COLOR-BLACK));
+				opacity: 0.64;
+				transition: background-color 0.3s ease;
+			}
+
+			&.active {
+				opacity: 0;
+				visibility: hidden;
+				transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+			}
+		}
 
 		> div.menu-breadcrumbs > a {
 			color: var(--color-primary, var(--COLOR-BLACK));
 			transition: color 0.3s ease;
+
+			&:hover {
+				color: var(--color-accent, var(--COLOR-ORANGE));
+			}
 		}
 
-		> div.menu-button {
+		> div.menu-buttons {
+			display: flex;
+			align-items: center;
+			align-self: center;
+			column-gap: calc(var(--menu-button-width) * 1.6 / 25); // lockup spacing
+		}
+
+		> div.menu-buttons > button.search-button {
 			background: none;
 			border: none;
-			padding: 0;
+			border-radius: 0;
+			margin: 0;
+			// pads to the 24px minimum target size, on the outer side to keep the icons' spacing
+			box-sizing: border-box;
+			min-width: 24px;
+			min-height: 24px;
+			padding: calc((24px - var(--search-icon-size)) / 2) 0;
+			padding-left: calc(24px - var(--search-icon-size));
+			cursor: pointer;
+
+			transition: opacity 0.3s ease, visibility 0s;
+
+			> svg {
+				display: block;
+				width: var(--search-icon-size);
+				height: var(--search-icon-size);
+				rect {
+					fill: var(--color-primary, var(--COLOR-BLACK));
+					transition: fill 0.3s ease;
+				}
+				circle {
+					stroke: var(--color-primary, var(--COLOR-BLACK));
+					transition: stroke 0.3s ease;
+				}
+			}
+
+			&:hover > svg {
+				rect {
+					fill: var(--COLOR-ORANGE);
+				}
+				circle {
+					stroke: var(--COLOR-ORANGE);
+				}
+			}
+
+			&.active {
+				opacity: 0;
+				visibility: hidden;
+				transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+			}
+		}
+
+		> div.menu-buttons > div.menu-button {
+			background: none;
+			border: none;
+			padding: 5px max(0px, calc(24px - var(--menu-button-width))) 5px 0; // 24px minimum target size, padded on the outer side
+			margin-right: min(0px, calc(var(--menu-button-width) - 24px)); // keeps the bars flush with the grid column
 			//margin: 0;
 			align-self: center;
 
@@ -577,16 +682,14 @@
 
 			cursor: pointer;
 
-			--menu-button-width: calc(1rem * 20 / 16);
-
 			width: var(--menu-button-width);
 
 			> div {
 				background-color: var(--color-primary, var(--COLOR-BLACK));
 
 				width: 100%;
-				height: calc(var(--menu-button-width) * 0.1);
-				margin: calc(var(--menu-button-width) * 0.2) 0;
+				height: 2px; // whole pixels, so the bars don't round to uneven heights
+				margin: 4px 0;
 
 				transition: all 0.3s ease;
 
@@ -595,15 +698,16 @@
 				}
 
 				&:last-of-type {
-					width: 62.5%;
+					width: 80%;
 					margin-bottom: 0;
+					margin-left: auto;
 				}
 			}
 
 			transition: transform 0.3s ease;
 
 			&.active {
-				--menu-button-transform: calc(var(--menu-button-width) * 3.333 / 16);
+				--menu-button-transform: calc(6px / 1.4142); // one bar pitch (2px + 4px) along the 45° diagonal
 				//transform: translateX(var(--menu-button-transform));
 
 				> div {
@@ -689,7 +793,7 @@
 				line-height: 0;
 				> svg {
 					margin-top: 0.111em;
-					height: calc(var(--GRID-CELL) * 0.618);
+					height: var(--search-icon-size);
 					width: auto;
 					rect {
 						fill: white;
@@ -718,12 +822,12 @@
 				max-width: 100%;
 				padding: 0;
 				color: white;
-				font-size: var(--FONT-SIZE-LG);
+				font-size: var(--FONT-SIZE-MD);
 				caret-color: var(--COLOR-MID-GRAY);
 
 				&::placeholder {
 					color: white;
-					font-size: var(--FONT-SIZE-LG);
+					font-size: var(--FONT-SIZE-MD);
 				}
 
 				&.active {
