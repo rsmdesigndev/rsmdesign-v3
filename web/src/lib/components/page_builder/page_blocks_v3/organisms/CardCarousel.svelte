@@ -192,6 +192,20 @@
 			}
 		}
 
+		&.carousel-width-full-bleed {
+			display: grid;
+			grid-template-columns: subgrid;
+
+			> .button-container,
+			> .carousel-container {
+				grid-column: 1 / -1;
+			}
+
+			> button.playback.below {
+				grid-column: main-start -1 / -1;
+			}
+		}
+
 		&.sticky-on-mobile {
 			@media (max-width: 31.25em) {
 				position: sticky;
