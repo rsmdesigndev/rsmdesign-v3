@@ -562,7 +562,7 @@
 
 		display: flex;
 		// half of SPACE-MD on each side of the breadcrumbs' 1px rule, minus the search button's outer padding
-		column-gap: calc((var(--SPACE-MD) - 1px) / 2 - max(0px, 24px - var(--search-icon-size)));
+		column-gap: calc((var(--SPACE-MD) - 1px) / 2);
 
 		font-size: var(--FONT-SIZE-SM);
 
