@@ -56,23 +56,25 @@
 		 style:--grid-column-end={bleed.right ? "-2" : "-1"}
 	>
 		{#if data.cta_list_source === "manual"}
-			{#if data.cta_list_has_heading}
-				<h3 class={`heading heading-${data.cta_list_heading_style}`}
-					style:--font-size={sizeOverride === "xxxl" ? "var(--FONT-SIZE-XL)" : `var(--FONT-SIZE-${sizeOverride?.toUpperCase()})`}
-					style:--font-weight={sizeOverride === "xxxl" ? "500" : "600"}
-					style:--line-height={sizeOverride === "lg" ? "1.167" : "1.333"}
-				>
-					{data.cta_list_heading}
-				</h3>
-			{/if}
-			{#each data.cta_list_items as data}
-				<Cta 
-					{data} 
-					{sizeOverride} 
-					{hoverOverride} 
-					{iconOverride} 
-				/>
-			{/each}
+			<article>
+				{#if data.cta_list_has_heading}
+					<h3 class={`heading heading-${data.cta_list_heading_style}`}
+						style:--font-size={sizeOverride === "xxxl" ? "var(--FONT-SIZE-XL)" : `var(--FONT-SIZE-${sizeOverride?.toUpperCase()})`}
+						style:--font-weight={sizeOverride === "xxxl" ? "500" : "600"}
+						style:--line-height={sizeOverride === "lg" ? "1.167" : "1.333"}
+					>
+						{data.cta_list_heading}
+					</h3>
+				{/if}
+				{#each data.cta_list_items as data}
+					<Cta 
+						{data} 
+						{sizeOverride} 
+						{hoverOverride} 
+						{iconOverride} 
+					/>
+				{/each}
+			</article>
 		{:else if data.cta_list_source === "expertise"}
 			{#if expertiseData.team_leaders}
 				<article>
