@@ -21,6 +21,7 @@
 	let logoHeight: number;
 
 	let menuOpen: boolean = false;
+	let menuButton: HTMLElement;
 
 	function toggleMenu() {
 		menuOpen = !menuOpen;
@@ -33,6 +34,22 @@
 		if (event.code === "Space" || event.code === "Enter") {
 			event.preventDefault();
 			toggleMenu();
+		}
+	}
+
+	function closeMenuOnEscape(event: KeyboardEvent) {
+		if (menuOpen && event.key === "Escape") {
+			closeMenu();
+			menuButton.focus();
+		}
+	}
+
+	// focus leaving the header would otherwise land behind the open menu
+	function closeMenuOnFocusLeave(event: FocusEvent) {
+		const header = event.currentTarget as HTMLElement;
+		const focusTarget = event.relatedTarget as Node | null; // null for clicks on the menu's background
+		if (menuOpen && focusTarget && !header.contains(focusTarget)) {
+			closeMenu();
 		}
 	}
 
@@ -183,14 +200,23 @@
 	let searching = false;
 	let error = "";
 	let searchResults: SearchResult[] = [];
+	let searchedQuery: string | null = null;
+
+	$: resultsHeading = searchedQuery === null
+		? ""
+		: error || `${searchResults.length || "No"} result${searchResults.length === 1 ? "" : "s"} for “${searchedQuery}”`;
 
 	function clearSearch() {
 		searchResults = [];
 		query = "";
+		searchedQuery = null;
+		error = "";
 	}
 
 	async function search() {
 		searching = true;
+		searchedQuery = query;
+		error = "";
 		try {
 			const url = new URL($page.url);
 			url.searchParams.set("query", query);
@@ -290,8 +316,10 @@
 	});
 </script>
 
+<svelte:window on:keydown={closeMenuOnEscape} />
+
 <template>
-	<header style:--logo-height={logoHeight}>
+	<header style:--logo-height={logoHeight} on:focusout={closeMenuOnFocusLeave}>
 		<div class="menu-bar" />
 
 		<div class="logo-container" bind:offsetHeight={logoHeight} bind:offsetWidth={innerWidth}>
@@ -324,11 +352,12 @@
 				{/if}
 
 				<div
+					bind:this={menuButton}
 					role="button"
 					class="menu-button"
 					class:active={menuOpen}
 					aria-label="Toggle visibility of site menu"
-					aria-pressed="false"
+					aria-expanded={menuOpen}
 					tabindex="0"
 					on:click={toggleMenu}
 					on:keypress={onMenuButtonKeypress}
@@ -342,8 +371,8 @@
 
 		<div class="menu-wrapper" class:active={menuOpen}>
 			<form on:submit|preventDefault={search}>
-				{#if searchResults.length}
-					<button aria-label="Clear search" on:click={clearSearch}>
+				{#if resultsHeading}
+					<button type="button" aria-label="Clear search" on:click={clearSearch}>
 						‹
 					</button>
 				{:else}
@@ -356,10 +385,11 @@
 				{/if}
 				<input class:active={searchResults.length} placeholder="Search" aria-label="Search bar" bind:value={query} />
 			</form>
+			<p class="search-status" role="status">{searching ? "Searching..." : resultsHeading}</p>
 			{#if searching}
 				<div>Searching...</div>
-			{:else if searchResults.length}
-				<h2>Search results for “{query}”</h2>
+			{:else if resultsHeading}
+				<h2>{resultsHeading}</h2>
 				{#each searchResults as result}
 					<a href={result.link} class="result">
 						<figure>
@@ -382,6 +412,7 @@
 							href={item.link_path}
 							class:active={selectedItem === i}
 							on:mouseover|preventDefault={() => selectItemOnMouseover(i)}
+							on:focus={() => (selectedItem = i)}
 						><!--
 							on:click|preventDefault={() => selectItemOnClick(i, item.link_path, !item.link_children.length)}
 							data-sveltekit-preload-data="off"
@@ -395,6 +426,7 @@
 								{#each item.link_children.map((c) => c?.nav_menu_links_child_id) as child}
 									<a 
 										href={child.link_path}
+										on:focus={() => (selectedItem = i)}
 									><!--
 										data-sveltekit-preload-data="off"
 										data-sveltekit-reload
@@ -606,12 +638,14 @@
 		width: 100vw;
 		height: 0;
 		opacity: 0;
-		transition: height 0.3s ease, opacity 0.3s ease;
+		visibility: hidden; // keeps the closed menu out of the tab order and screen readers
+		transition: height 0.3s ease, opacity 0.3s ease, visibility 0s linear 0.3s;
 
 		&.active {
 			visibility: visible;
 			height: 100vh;
 			opacity: 1;
+			transition: height 0.3s ease, opacity 0.3s ease, visibility 0s;
 		}
 
 		background-color: var(--COLOR-BLACK);
@@ -696,6 +730,15 @@
 					color: var(--COLOR-ORANGE);
 				}
 			}
+		}
+
+		> p.search-status {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
 		}
 
 		> h2 {
