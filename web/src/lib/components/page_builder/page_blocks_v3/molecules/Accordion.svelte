@@ -14,8 +14,8 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import type { BleedData } from "../organisms/CardColumn.svelte";
-	import Details from "../atoms/Details.svelte";
-	import { MOBILE_QUERY, LOW_TRIGGER_LINE } from "../scripts/triggerLine";
+	import Details, { holdInPlace } from "../atoms/Details.svelte";
+	import { MOBILE_QUERY, LOW_TRIGGER_LINE, scrollToLowTriggerLine } from "../scripts/triggerLine";
 
 	export let data: AccordionData;
 	export let bleed: BleedData;
@@ -32,19 +32,24 @@
 		selectedItem = isOpen ? i : -1;
 	}
 
-	// Mobile: every item starts open and drives selectItem on scroll
+	// Mobile: only the item on the trigger line is open, and it drives selectedItem
 	let accordion: HTMLElement;
 	let scrollDriven: boolean = scrollDrivenOnMobile
 		&& typeof window !== "undefined"
 		&& window.matchMedia(MOBILE_QUERY).matches;
-	let openItems: boolean[] = (data.accordion_items ?? []).map(() => true);
+	let openItem: number = selectedItem;
 
 	function handleToggle(i: number, isOpen: boolean) {
 		if (scrollDriven) {
-			openItems[i] = isOpen;
+			openItem = isOpen ? i : -1;
 		} else {
 			selectItem(i, isOpen);
 		}
+	}
+
+	function alignTappedItem(e: MouseEvent) {
+		const summary = (e.target as Element).closest("summary");
+		if (scrollDriven && summary) scrollToLowTriggerLine(summary);
 	}
 
 	onMount(() => {
@@ -54,13 +59,17 @@
 		const line = LOW_TRIGGER_LINE * 100;
 		const observer = new IntersectionObserver((entries) => {
 			for (const entry of entries) {
-				if (entry.isIntersecting) selectedItem = [...accordion.children].indexOf(entry.target);
+				if (!entry.isIntersecting) continue;
+				const i = [...accordion.children].indexOf(entry.target);
+				if (i !== openItem) holdInPlace(entry.target);
+				selectedItem = openItem = i;
 			}
 		}, { rootMargin: `-${line}% 0% -${100 - line}% 0%` });
 
 		// also runs when the viewport crosses the mobile breakpoint
 		function update() {
 			scrollDriven = mobile.matches;
+			openItem = selectedItem;
 			observer.disconnect();
 			if (scrollDriven) {
 				for (const item of accordion.children) observer.observe(item);
@@ -69,9 +78,11 @@
 
 		update();
 		mobile.addEventListener("change", update);
+		accordion.addEventListener("click", alignTappedItem, true);
 
 		return () => {
 			mobile.removeEventListener("change", update);
+			accordion.removeEventListener("click", alignTappedItem, true);
 			observer.disconnect();
 		};
 	});
@@ -88,7 +99,7 @@
 					 summaryIcon="arrow_down"
 					 isAccordionItem
 					 headingSize={data.accordion_heading_size}
-					 isOpen={scrollDriven ? openItems[i] : selectedItem === i}
+					 isOpen={(scrollDriven ? openItem : selectedItem) === i}
 					 on:toggle={(e) => handleToggle(i, e.detail.isOpen)}
 			>
 				{@html item.item_rich_text}

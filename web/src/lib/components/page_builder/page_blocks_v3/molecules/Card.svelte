@@ -23,7 +23,7 @@
 	import Media, { type MediaData } from "../atoms/Media/index.svelte";
 	import RichText, { type RichTextData } from "../atoms/RichText.svelte";
 	import Spacer, { type SpacerData } from "../atoms/Spacer.svelte";
-	import { onTriggerLine, triggerLine, LOW_TRIGGER_LINE } from "../scripts/triggerLine";
+	import { onTriggerLine, triggerLine, LOW_TRIGGER_LINE, scrollToLowTriggerLine } from "../scripts/triggerLine";
 	
 	export let data: CardData;
 	export let bleed: BleedData;
@@ -51,10 +51,7 @@
 		const behavior = (instant || prefersReducedMotion()) ? "auto" : "smooth";
 
 		if (triggerLine(lowTriggerOnMobile) === LOW_TRIGGER_LINE) {
-			window.scrollBy({
-				top: card.getBoundingClientRect().top - (window.innerHeight * LOW_TRIGGER_LINE - 1),
-				behavior
-			});
+			scrollToLowTriggerLine(card, behavior);
 			return;
 		}
 

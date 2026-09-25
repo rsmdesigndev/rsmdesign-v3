@@ -6,6 +6,13 @@ export function triggerLine(lowOnMobile: boolean): number {
 	return lowOnMobile && window.matchMedia(MOBILE_QUERY).matches ? LOW_TRIGGER_LINE : 0.5;
 }
 
+export function scrollToLowTriggerLine(element: Element, behavior: ScrollBehavior = "auto") {
+	window.scrollBy({
+		top: element.getBoundingClientRect().top - (window.innerHeight * LOW_TRIGGER_LINE - 1),
+		behavior
+	});
+}
+
 export function onTriggerLine(node: Element, onIntersect: () => void, lowOnMobile: boolean = true) {
 	const mobile = window.matchMedia(MOBILE_QUERY);
 	let observer: IntersectionObserver | undefined;

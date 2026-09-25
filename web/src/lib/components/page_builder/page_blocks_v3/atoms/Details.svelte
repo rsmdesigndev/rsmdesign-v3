@@ -1,6 +1,46 @@
 <script lang="ts" context="module">
-	// module-level so toggling one item ends a hold on another
+	// module-level so a new hold ends the one before it
 	let stopActiveHold: (() => void) | undefined;
+
+	// pinnedTop holds element there until the reader's input; without it, only layout shifts are undone
+	export function holdInPlace(element: Element, pinnedTop?: number) {
+		stopActiveHold?.();
+
+		let documentTop = element.getBoundingClientRect().top + window.scrollY;
+		const end = performance.now() + 450; // add buffer for the 0.3s transitions + margin of error
+		const input = new AbortController();
+		let frame: number;
+
+		function step(now: number) {
+			if (now > end || !element.isConnected) {
+				stop();
+				return;
+			}
+
+			const top = element.getBoundingClientRect().top;
+			const drift = pinnedTop === undefined ? top + window.scrollY - documentTop : top - pinnedTop;
+			if (Math.abs(drift) >= 0.5) {
+				window.scrollBy(0, drift);
+				documentTop += drift;
+			}
+			frame = requestAnimationFrame(step);
+		}
+
+		function stop() {
+			cancelAnimationFrame(frame);
+			input.abort();
+			if (stopActiveHold === stop) stopActiveHold = undefined;
+		}
+
+		if (pinnedTop !== undefined) {
+			for (const type of ["wheel", "pointerdown", "keydown"]) {
+				window.addEventListener(type, stop, { passive: true, signal: input.signal });
+			}
+		}
+
+		stopActiveHold = stop;
+		frame = requestAnimationFrame(step);
+	}
 </script>
 
 <script lang="ts">
@@ -74,39 +114,11 @@
 
 	function holdPosition() {
 		if (!window.matchMedia(MOBILE_QUERY).matches) return;
-		stopActiveHold?.();
 
 		const summary = anchor.firstElementChild as HTMLElement;
 		const { top, height } = summary.getBoundingClientRect();
 		const inset = parseFloat(getComputedStyle(anchor).scrollMarginTop);
-		const target = Math.min(Math.max(top, inset), window.innerHeight - height);
-		const end = performance.now() + 450; // add buffer for the 0.3s transitions + margin of error
-		const input = new AbortController();
-		let frame: number;
-
-		function step(now: number) {
-			if (now > end || !summary.isConnected) {
-				stop();
-				return;
-			}
-
-			const drift = summary.getBoundingClientRect().top - target;
-			if (Math.abs(drift) >= 0.5) window.scrollBy(0, drift);
-			frame = requestAnimationFrame(step);
-		}
-
-		function stop() {
-			cancelAnimationFrame(frame);
-			input.abort();
-			if (stopActiveHold === stop) stopActiveHold = undefined;
-		}
-
-		for (const type of ["wheel", "pointerdown", "keydown"]) {
-			window.addEventListener(type, stop, { passive: true, signal: input.signal });
-		}
-
-		stopActiveHold = stop;
-		frame = requestAnimationFrame(step);
+		holdInPlace(summary, Math.min(Math.max(top, inset), window.innerHeight - height));
 	}
 
 	function toggle() {
@@ -190,7 +202,7 @@
 			
 			> .details-body {
 				max-width: 80ch;
-				transition: grid-template-rows 0.3s ease, color 0.3s ease, padding-bottom 0.3s ease;
+				transition: grid-template-rows 0.4s ease, color 0.4s ease, padding-bottom 0.4s ease;
 				&.open {
 					padding-bottom: var(--SPACE-MD);
 				}
