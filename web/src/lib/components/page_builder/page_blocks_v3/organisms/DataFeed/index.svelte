@@ -506,7 +506,7 @@
 					 ${feedView}
 				   `}
 			 class:tall={feedView === "Grid" && data.feed_grid_style === "dynamic" && data.feed_grid_columns === 3}
-			 style:--z-index={feedView === "Table" && data.feed_table_style === "simple" ? "3" : "2"}
+			 style:--z-index={feedView === "Table" && data.feed_table_style === "simple" ? "auto" : "2"}
 			 use:selectFeedOnIntersection
 	>
 		{#if data.feed_show_filter_menu && (data.feed_source === "Projects" || data.feed_source === "Articles")}
@@ -679,16 +679,14 @@
 					View More
 				</button>
 			{:else if data.feed_load_functionality === "button"}
-				<div class="view-more-container">
-					<Cta button
-						 data={ { cta_type: "button",
-						 		  cta_text_bold: "View More",
-								  cta_icon: "plus",
-								  cta_hover_highlight: "bold"
-						 } }
-						 on:click={loadMore}
-					/>
-				</div>
+				<Cta button
+					 data={ { cta_type: "button",
+					 		  cta_text_bold: "View More",
+							  cta_icon: "plus",
+							  cta_hover_highlight: "bold"
+					 } }
+					 on:click={loadMore}
+				/>
 			{/if}
 		{/if}
 	</section>
@@ -917,10 +915,6 @@
 
 			margin-top: calc(-1.5 * var(--GRID-CELL));
 		}
-	}
-
-	.view-more-container {
-		grid-column: main;
 	}
 
 	button {

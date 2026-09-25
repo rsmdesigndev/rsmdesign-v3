@@ -26,9 +26,13 @@
 	let selectOnScroll: boolean = true;
 	let selectOnHover: boolean = false;
 
+	// Mobile: holds the last selection so the sticky image never goes blank
+	let stickyImageIndex: number = 0;
+	$: if (selectedItem >= 0) stickyImageIndex = selectedItem;
+
 	function selectItemOnMouseover(i: number) {
 		if (selectOnHover && innerWidth > 1000) {
-			selectedItem = i; // only fire on screen width > 62.5em
+			selectedItem = i;
 
 			selectOnScroll = false;
 
@@ -39,7 +43,7 @@
 	}
 	function deselectItemOnMouseout() {
 		if (selectOnHover && innerWidth > 1000) {
-			selectedItem = -1; // only fire on screen width > 62.5em
+			selectedItem = -1;
 		}
 	}
 	function selectItemOnIntersection(node: Element, i: number) {
@@ -48,7 +52,7 @@
 				selectedItem = i;
 
 				if (innerWidth > 1000) {
-					selectOnHover = true; // only set to true if screen width < 62.5em
+					selectOnHover = true;
 				}
 			}
 		});
@@ -66,200 +70,231 @@
 <svelte:window bind:innerWidth />
 
 <template>
-	<div class="deselectionTrigger above"
-		 use:deselectItemsOnIntersection
-	/>
-	{#if data.feed_table_style === "simple" && (data.feed_source === "Projects" || data.feed_source === "Articles")}
-		<div class={`table-heading image-position-${data.feed_table_image_position}`}>
-			{#if data.first_filter}
-				<Heading 
-					data={ { heading_type: "section",
-							 heading_primary: "large",
-							 heading_size: "xxxl",
-							 heading_weight: "bold",
-							 heading_has_small_text: false,
-							 heading_has_large_text: true,
-							 heading_has_superscript: false, 
-							 heading_large: data.first_filter
-						 } }
-				/>
-			{:else}
-				<Heading 
-					data={ { heading_type: "section",
-							 heading_primary: "large",
-							 heading_size: "xxxl",
-							 heading_weight: "bold",
-							 heading_has_small_text: false,
-							 heading_has_large_text: true,
-							 heading_has_superscript: false, 
-							 heading_large: `Recent ${data.feed_source}`
-						 } }
-				/>
-			{/if}
-		</div>
-	{/if}
-	{#each feedData as item, i}
-		<svelte:element 
-			this={data.feed_source === "Awards" && item.project_name ? "div" : "a"}
-			href={`/${
-						data.feed_source === "Articles" ? "news" : 
-						(data.feed_source === "Careers" ? "careers" : "work")
-				  }/${
-						data.feed_source === "Awards" && item.project ? 
-							item.project.slug : item.slug
-				  }${itemParams}`}
-			class={`table-item
-					table-style-${data.feed_table_style}
-					${data.feed_source === "Studios" ? "table-item-studio" : ""}
-					image-position-${data.feed_table_image_position}
-				  `}
-			class:active={selectedItem === i}
-			on:mouseover|preventDefault={() => selectItemOnMouseover(i)}
-			on:mouseout={() => deselectItemOnMouseout()}
-			use:selectItemOnIntersection={i}
-		><!-- TODO: add on:click|preventDefault={selectItemOnClick(i)} -->
-			{#if data.feed_table_style === "simple"}
-				{#if data.feed_source === "Projects" || data.feed_source === "Articles"}
-					<div class="table-item-heading-container">
-						{#if data.feed_source === "Projects"}
-							{item.location}
-						{:else if data.feed_source === "Articles"}
-							{item.topics?.[0]?.news_topics_id?.name}
-						{/if}
-						<strong>
-							{#if data.feed_source === "Projects"}
-								{item.project_title}
-							{:else if data.feed_source === "Articles"}
-								{item.post_title}
-							{/if}
-						</strong>
-					</div>
-				{:else if data.feed_source === "Studios"}
-					<article>
-						<a href={`/studios/${item.slug}`}>
-							{item.location}
-						</a>
-						<a href={`/team/${item.studio_contact_person.slug}`}>
-							{item.studio_contact_person.name}
-						</a>
-						<p>
-							{@html item.studio_contact_block}
-						</p>
-					</article>
-				{/if}
-			{:else}
-				<!--
-					Projects
-						Col1: Project Title / Project Location
-						Col2: Studio Location
-						Col3: First Market + #
-					Articles
-						Col1: Post Title
-						Col2: Date
-						Col3: First Tag + #
-					Awards
-						Col1: Designation / Category (if applicable)
-						Col2: Project Title / Project Location
-						Col3: Year
-				-->
-				<div class="table-item-cols-container">
-					<div class="table-item-col1">
-						<strong>
-							{#if data.feed_source === "Projects"}
-								{item.project_title}
-							{:else if data.feed_source === "Articles"}
-								{item.post_title}
-							{:else if data.feed_source === "Awards"}
-								{item.award_body_designation}
-							{:else if data.feed_source === "Careers"}
-								{item.name}
-							{/if}
-						</strong>
-						{#if data.feed_source === "Awards" && item.award_category}
-							{item.award_category}
-						{/if}
-					</div>
-					<div class="table-item-col2" class:small={data.feed_source === "Projects"}>
-						{#if data.feed_source === "Projects"}
-							{item.location}
-						{:else if data.feed_source === "Articles"}
-							{formatDate(item.published_date, { fullMonth: false })}
-						{:else if data.feed_source === "Awards"}
-							<strong>
-								{#if item.project}
-									{item.project.project_title}
-								{:else if item.project_name}
-									{item.project_name}
-								{:else}
-									No project linked or entered
-								{/if}
-							</strong>
-							{#if item.project}
-								{item.project.location}
-							{:else if item.project_name}
-								{item.project_location}
-							{:else}
-								No project linked or entered
-							{/if}
-						{:else if data.feed_source === "Careers"}
-							{#each item.studios as studio}
-								<span>{studio.studio_locations_id.location}</span>
-							{/each}
-						{/if}
-					</div>
-				</div>
-				<div class="table-item-col3">
-					{#if data.feed_source === "Projects"}
-					{:else if data.feed_source === "Articles"}
-						{item.topics?.[0]?.news_topics_id?.name}
-						{#if item.topics?.length > 1}
-							<span title={item.topics.map((topic) => topic.news_topics_id.name).join("\n")}>+&nbsp;{item.topics?.length - 1}</span>
-						{/if}
-					{:else if data.feed_source === "Awards"}
-						{item.year}
-					{:else if data.feed_source === "Careers"}
-						{item.years_experience} years
-					{/if}
-				</div>
-			{/if}
-		</svelte:element >
-		<figure class={`table-style-${data.feed_table_style}
-						image-position-${data.feed_table_image_position}
-					  `}
-		>
-			{#if data.feed_table_style === "simple"}
-				<picture>
-					{#if data.feed_source === "Projects"}
-						<source media="(min-width: 31.25em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
-					{/if}
-					<img src={assetUrl(item.grid_image?.filename_disk)}
-						 alt={item.grid_image?.title}
+	<div class="table-container">
+		<div class="deselectionTrigger above"
+			 use:deselectItemsOnIntersection
+		/>
+		{#if data.feed_table_style === "simple" && (data.feed_source === "Projects" || data.feed_source === "Articles")}
+			<div class={`table-heading image-position-${data.feed_table_image_position}`}>
+				{#if data.first_filter}
+					<Heading 
+						data={ { heading_type: "section",
+								 heading_primary: "large",
+								 heading_size: "xxxl",
+								 heading_weight: "bold",
+								 heading_has_small_text: false,
+								 heading_has_large_text: true,
+								 heading_has_superscript: false, 
+								 heading_large: data.first_filter
+							 } }
 					/>
-				</picture>
-			{:else}
-				<div bind:offsetWidth={imgHeight} />
+				{:else}
+					<Heading 
+						data={ { heading_type: "section",
+								 heading_primary: "large",
+								 heading_size: "xxxl",
+								 heading_weight: "bold",
+								 heading_has_small_text: false,
+								 heading_has_large_text: true,
+								 heading_has_superscript: false, 
+								 heading_large: `Recent ${data.feed_source}`
+							 } }
+					/>
+				{/if}
+			</div>
+		{/if}
+		<div class={`sticky-image table-style-${data.feed_table_style}`}>
+			{#each feedData as item, i}
 				{#if data.feed_source === "Awards"}
 					{#if item.project}
-						<img style:--top={`calc(50vh - 1px * ${imgHeight} / 2)`}
+						<img class:active={i === stickyImageIndex}
 							 src={assetUrl(item.project.grid_image?.filename_disk)}
 							 alt={item.project.grid_image?.title}
+							 loading="lazy"
 						/>
 					{/if}
 				{:else}
-					<img style:--top={`calc(50vh - 1px * ${imgHeight} / 2)`}
+					<img class:active={i === stickyImageIndex}
 						 src={assetUrl(item.grid_image?.filename_disk)}
 						 alt={item.grid_image?.title}
+						 loading="lazy"
 					/>
 				{/if}
-			{/if}
-		</figure>
-	{/each}
-	<div class="deselectionTrigger below"
-		 use:deselectItemsOnIntersection
-	/>
+			{/each}
+		</div>
+		{#each feedData as item, i}
+			<svelte:element 
+				this={data.feed_source === "Awards" && item.project_name ? "div" : "a"}
+				href={`/${
+							data.feed_source === "Articles" ? "news" : 
+							(data.feed_source === "Careers" ? "careers" : "work")
+					  }/${
+							data.feed_source === "Awards" && item.project ? 
+								item.project.slug : item.slug
+					  }${itemParams}`}
+				class={`table-item
+						table-style-${data.feed_table_style}
+						${data.feed_source === "Studios" ? "table-item-studio" : ""}
+						image-position-${data.feed_table_image_position}
+					  `}
+				class:active={selectedItem === i}
+				class:condense-on-mobile={data.feed_source === "Projects" || data.feed_source === "Articles"}
+				on:mouseover|preventDefault={() => selectItemOnMouseover(i)}
+				on:mouseout={() => deselectItemOnMouseout()}
+				use:selectItemOnIntersection={i}
+			>
+				{#if data.feed_table_style === "simple"}
+					{#if data.feed_source === "Projects" || data.feed_source === "Articles"}
+						<div class="table-item-heading-container">
+							{#if data.feed_source === "Projects"}
+								{item.location}
+							{:else if data.feed_source === "Articles"}
+								{item.topics?.[0]?.news_topics_id?.name}
+							{/if}
+							<strong>
+								{#if data.feed_source === "Projects"}
+									{item.project_title}
+								{:else if data.feed_source === "Articles"}
+									{item.post_title}
+								{/if}
+							</strong>
+						</div>
+					{:else if data.feed_source === "Studios"}
+						<article>
+							<a href={`/studios/${item.slug}`}>
+								{item.location}
+							</a>
+							<a href={`/team/${item.studio_contact_person.slug}`}>
+								{item.studio_contact_person.name}
+							</a>
+							<p>
+								{@html item.studio_contact_block}
+							</p>
+						</article>
+					{/if}
+				{:else}
+					<!--
+						Projects
+							Col1: Project Title / Project Location
+							Col2: Studio Location
+							Col3: First Market + #
+						Articles
+							Col1: Post Title
+							Col2: Date
+							Col3: First Tag + #
+						Awards
+							Col1: Designation / Category (if applicable)
+							Col2: Project Title / Project Location
+							Col3: Year
+					-->
+					<div class="table-item-cols-container">
+						<div class="table-item-col1">
+							<strong>
+								{#if data.feed_source === "Projects"}
+									{item.project_title}
+								{:else if data.feed_source === "Articles"}
+									{item.post_title}
+								{:else if data.feed_source === "Awards"}
+									{item.award_body_designation}
+								{:else if data.feed_source === "Careers"}
+									{item.name}
+								{/if}
+							</strong>
+							{#if data.feed_source === "Awards" && item.award_category}
+								{item.award_category}
+							{/if}
+						</div>
+						<div class="table-item-col2" class:small={data.feed_source === "Projects"}>
+							{#if data.feed_source === "Projects"}
+								{item.location}
+							{:else if data.feed_source === "Articles"}
+								{formatDate(item.published_date, { fullMonth: false })}
+							{:else if data.feed_source === "Awards"}
+								<strong>
+									{#if item.project}
+										{item.project.project_title}
+									{:else if item.project_name}
+										{item.project_name}
+									{:else}
+										No project linked or entered
+									{/if}
+								</strong>
+								{#if item.project}
+									{item.project.location}
+								{:else if item.project_name}
+									{item.project_location}
+								{:else}
+									No project linked or entered
+								{/if}
+							{:else if data.feed_source === "Careers"}
+								{#each item.studios as studio}
+									<span>{studio.studio_locations_id.location}</span>
+								{/each}
+							{/if}
+						</div>
+					</div>
+					<div class="table-item-col3">
+						{#if data.feed_source === "Projects"}
+						{:else if data.feed_source === "Articles"}
+							{item.topics?.[0]?.news_topics_id?.name}
+							{#if item.topics?.length > 1}
+								<span title={item.topics.map((topic) => topic.news_topics_id.name).join("\n")}>+&nbsp;{item.topics?.length - 1}</span>
+							{/if}
+						{:else if data.feed_source === "Awards"}
+							{item.year}
+						{:else if data.feed_source === "Careers"}
+							{item.years_experience} years
+						{/if}
+					</div>
+				{/if}
+			</svelte:element >
+			<figure class={`table-style-${data.feed_table_style}
+							image-position-${data.feed_table_image_position}
+						  `}
+			>
+				{#if data.feed_table_style === "simple"}
+					<picture>
+						{#if data.feed_source === "Projects"}
+							<source media="(min-width: 31.25em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
+						{/if}
+						<img src={assetUrl(item.grid_image?.filename_disk)}
+							 alt={item.grid_image?.title}
+						/>
+					</picture>
+				{:else}
+					<div bind:offsetWidth={imgHeight} />
+					{#if data.feed_source === "Awards"}
+						{#if item.project}
+							<img style:--top={`calc(50vh - 1px * ${imgHeight} / 2)`}
+								 src={assetUrl(item.project.grid_image?.filename_disk)}
+								 alt={item.project.grid_image?.title}
+							/>
+						{/if}
+					{:else}
+						<img style:--top={`calc(50vh - 1px * ${imgHeight} / 2)`}
+							 src={assetUrl(item.grid_image?.filename_disk)}
+							 alt={item.grid_image?.title}
+						/>
+					{/if}
+				{/if}
+			</figure>
+		{/each}
+		<div class="deselectionTrigger below"
+			 use:deselectItemsOnIntersection
+		/>
+	</div>
 </template>
 
 <style lang="scss">
+	.table-container {
+		display: contents;
+
+		@media (max-width: 31.25em) {
+			grid-column: main;
+			display: flex;
+			flex-direction: column;
+		}
+	}
 	.deselectionTrigger {
 		grid-column: viewport;
 		width: 100%;
@@ -275,9 +310,6 @@
 	.table-heading {
 		//margin-top: var(--SPACE-XXXL);
 		margin-bottom: var(--SPACE-MD);
-		@media (max-width: 31.25em) {
-			max-width: 50%;
-		}
 		&.image-position-left,
 		&.image-position-center {
 			grid-column: eighth-start 6 / eighth-end 8;
@@ -306,6 +338,9 @@
 		grid-template-columns: subgrid;
 
 		@media (max-width: 31.25em) {
+			&.table-style-simple {
+				display: block;
+			}
 			&.table-style-detailed {
 				display: flex;
 				justify-content: space-between;
@@ -320,18 +355,6 @@
 			+ figure > img {
 				opacity: 1;
 				transition-delay: 0.15s;
-
-				@media (max-width: 31.25em) {
-					transition-delay: 0s;
-					pointer-events: auto;
-				}
-			}
-
-			@media (max-width: 31.25em) {
-				+ figure::after {
-					opacity: 1;
-					transition-delay: 0s;
-				}
 			}
 		}
 
@@ -397,7 +420,6 @@
 					}
 					@media (max-width: 31.25em) {
 						grid-column: main;
-						width: calc(50% - var(--SPACE-SM));
 					}
 				}
 			}
@@ -409,7 +431,6 @@
 					}
 					@media (max-width: 31.25em) {
 						grid-column: main;
-						width: calc(50% - var(--SPACE-SM));
 					}
 				}
 			}
@@ -517,6 +538,15 @@
 				}
 			}
 
+			@media (max-width: 31.25em) {
+				&.condense-on-mobile {
+					.table-item-col2,
+					> .table-item-col3 {
+						display: none;
+					}
+				}
+			}
+
 			@media (min-width: 62.5em) {
 				&.image-position-left,
 				&.image-position-center {
@@ -542,8 +572,57 @@
 			}
 		}
 	}
+	.sticky-image {
+		display: none;
+
+		@media (max-width: 31.25em) {
+			position: sticky;
+			top: calc(var(--GRID-CELL) * 1.75);
+			z-index: 2; // under the menu bar
+
+			display: block;
+			width: 100%; // stays full width when max-height caps the height
+			aspect-ratio: 1 / 1;
+			max-height: 50vh;
+			margin-bottom: var(--SPACE-MD);
+
+			background-color: var(--color-background, white);
+			transition: background-color 0.3s ease;
+
+			
+
+			> img {
+				position: absolute;
+				inset: 0;
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+
+				opacity: 0;
+				transition: opacity 0.3s ease 0.3s;
+
+				&.active {
+					opacity: 1;
+					transition-delay: 0s;
+				}
+			}
+
+			&::after {
+				content: "";
+				position: absolute;
+				top: 100%;
+				left: 0;
+				width: 100%;
+				height: var(--SPACE-MD);
+				background-color: var(--color-background, white);
+				-webkit-mask-image: linear-gradient(black, transparent);
+				mask-image: linear-gradient(black, transparent);
+				transition: background-color 0.3s ease;
+			}
+		}
+	}
 	figure {
-		z-index: 4;
+		z-index: 3; // over the menu bar, under the logo
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -589,13 +668,6 @@
 					height: 100%;
 					//height: 100vh;
 					object-fit: cover;
-
-					@media (max-width: 31.25em) {
-						display: block;
-						width: 100%;
-						height: auto;
-						max-height: calc(100vh / 2);
-					}
 				}
 			}
 
@@ -611,14 +683,6 @@
 				grid-column: eighth-start 5 / viewport-end;
 				@media (max-width: 62.5em) {
 					grid-column: half-start 2 / viewport-end;
-				}
-			}
-
-			&.image-position-left > picture,
-			&.image-position-center > picture,
-			&.image-position-right > picture {
-				@media (max-width: 31.25em) {
-					grid-column: main;
 				}
 			}
 		}
@@ -645,46 +709,11 @@
 				@media (max-width: 62.5em) {
 					grid-column: third-start 3 / viewport-end;
 				}
-				@media (max-width: 31.25em) {
-					grid-column: main;
-				}
 			}
 		}
 
-		// Mobile: active image sits under the menu bar with a fade below
 		@media (max-width: 31.25em) {
-			z-index: 2;
-			grid-template-rows: calc(var(--GRID-CELL) * 1.75) auto var(--SPACE-MD);
-			align-content: start;
-
-			> picture,
-			> img,
-			> div {
-				grid-row: 2;
-			}
-
-			&.table-style-simple > picture,
-			&.table-style-detailed > img {
-				position: static;
-				background-color: var(--color-background, white);
-				// outgoing image stays opaque until the incoming one is in
-				transition: opacity 0.3s ease 0.3s, background-color 0.3s ease;
-			}
-
-			&.table-style-detailed > img {
-				max-height: calc(100vh / 2);
-			}
-
-			&::after {
-				content: "";
-				grid-row: 3;
-				grid-column: main;
-				background-color: var(--color-background, white);
-				-webkit-mask-image: linear-gradient(black, transparent);
-				mask-image: linear-gradient(black, transparent);
-				opacity: 0;
-				transition: opacity 0.3s ease 0.3s, background-color 0.3s ease;
-			}
+			display: none;
 		}
 	}
 </style>
