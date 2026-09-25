@@ -472,7 +472,7 @@
 
 			.table-item-col1,
 			.table-item-col2,
-			> .table-item-col3 {
+			.table-item-col3 {
 				display: flex;
 				flex-direction: column;
 				align-items: space-between;
@@ -540,7 +540,6 @@
 
 			@media (max-width: 31.25em) {
 				&.condense-on-mobile {
-					.table-item-col2,
 					> .table-item-col3 {
 						display: none;
 					}
