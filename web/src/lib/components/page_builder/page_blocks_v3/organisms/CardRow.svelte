@@ -78,7 +78,7 @@
 
 <template>
 	<section
-		id={`row-${rowNumber}`}
+		id={data.section_anchor_link}
 		class={`padding-top-${data.section_padding_top}
 				padding-bottom-${data.section_padding_bottom}`}
 		style:--columns-alignment={data.columns_alignment}
