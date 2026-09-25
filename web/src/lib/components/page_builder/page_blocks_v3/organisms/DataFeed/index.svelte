@@ -500,7 +500,7 @@
 </script>
 
 <template>
-	<section id={`row-${rowNumber}`}
+	<section id={data.section_anchor_link}
 			 class={`padding-top-${data.section_padding_top}
 					 padding-bottom-${data.section_padding_bottom}
 					 ${feedView}
