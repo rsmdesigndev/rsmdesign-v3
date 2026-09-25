@@ -654,6 +654,9 @@
 			background: none;
 			border: none;
 			padding: 5px max(0px, calc(24px - var(--menu-button-width))) 5px 0;
+			@media (max-width: 78.125em) {
+				padding: 6px max(0px, calc(24px - var(--menu-button-width))) 6px 0;
+			}
 			margin-right: min(0px, calc(var(--menu-button-width) - 24px));
 			//margin: 0;
 			align-self: center;
