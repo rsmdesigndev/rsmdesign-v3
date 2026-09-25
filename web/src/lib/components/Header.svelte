@@ -33,7 +33,7 @@
 	async function openMenuWithSearch() {
 		menuOpen = true;
 		await tick();
-		searchInput.focus({ preventScroll: true }); // the menu is still opening; scrolling it would make the form jump
+		searchInput.focus({ preventScroll: true });
 	}
 
 	function onMenuButtonKeypress(event: KeyboardEvent) {
@@ -53,7 +53,7 @@
 	// focus leaving the header would otherwise land behind the open menu
 	function closeMenuOnFocusLeave(event: FocusEvent) {
 		const header = event.currentTarget as HTMLElement;
-		const focusTarget = event.relatedTarget as Node | null; // null for clicks on the menu's background
+		const focusTarget = event.relatedTarget as Node | null;
 		if (menuOpen && focusTarget && !header.contains(focusTarget)) {
 			closeMenu();
 		}
@@ -68,25 +68,15 @@
 	let navParentLink: string = "";
 	let navParentText: string = "";
 	let navParentCta: string = "Return to";
-	let navigationCount = 0; // lets a slow name lookup tell that a newer navigation has replaced it
+	let navigationCount = 0;
 
-	//let showBreadcrumbs: boolean = true;
-
-	// Close the menu the moment a navigation is committed, before the loader
-	// snaps on. Doing this in afterNavigate left the open menu visible during
-	// the entire transition window.
 	beforeNavigate(() => {
 		closeMenu();
 	});
 
 	afterNavigate(async () => {
-		// Safety net — beforeNavigate already closes the menu before the loader
-		// covers, but if a navigation skipped beforeNavigate (interrupted
-		// lifecycle, page mount error, etc.) make sure the menu still closes
-		// once we land on the new route.
 		closeMenu();
 
-		// pages without breadcrumbs would otherwise keep the previous page's
 		navParentLink = "";
 		navParentText = "";
 		const navigation = ++navigationCount;
@@ -185,7 +175,7 @@
 
 	function selectItemOnMouseover(i: number) {
 		if (innerWidth > 1000) {
-			selectedItem = i; // only fire on screen width > 62.5em
+			selectedItem = i;
 		}
 	}
 	function selectItemOnClick(i: number, link: string, linkDirectly: boolean) {
@@ -341,11 +331,7 @@
 			   href="/" 
 			   aria-label="Navigate to RSM Design homepage" 
 			   on:click={closeMenu}
-			><!--
-			   data-sveltekit-preload-data="off"
-			   data-sveltekit-reload
-			   rel="external"
-			>-->
+			>
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 22.572">
 					<title>RSM Design logotype</title>
 					<g class="logotype" fill-rule="nonzero">
@@ -441,12 +427,7 @@
 							class:active={selectedItem === i}
 							on:mouseover|preventDefault={() => selectItemOnMouseover(i)}
 							on:focus={() => (selectedItem = i)}
-						><!--
-							on:click|preventDefault={() => selectItemOnClick(i, item.link_path, !item.link_children.length)}
-							data-sveltekit-preload-data="off"
-							data-sveltekit-reload
-							rel="external"
-						>-->
+						>
 							{item.link_text}
 						</a>
 						{#if item.link_children.length}
@@ -455,11 +436,7 @@
 									<a 
 										href={child.link_path}
 										on:focus={() => (selectedItem = i)}
-									><!--
-										data-sveltekit-preload-data="off"
-										data-sveltekit-reload
-										rel="external"
-									>-->
+									>
 										{child.link_text}
 									</a>
 									{#if child.link_media_image}
@@ -491,7 +468,6 @@
 <style lang="scss">
 	header {
 		display: contents;
-		// lockup measurements, scaled from its 25px hamburger width
 		--menu-button-width: max(1.25rem, calc(var(--GRID-CELL) / 2));
 		--search-icon-size: calc(var(--menu-button-width) * 21 / 25);
 
@@ -534,7 +510,6 @@
 			// BREADCRUMBS + MENU BUTTON
 			&.nav-wrapper {
 				z-index: 8;
-				// Force WebKit to create a 3D compositing layer for the menu button
 				-webkit-transform: translate3d(0, 0, 0);
 				will-change: transform, top;
 			}
@@ -586,7 +561,7 @@
 		pointer-events: auto;
 
 		display: flex;
-		// half of SPACE-MD on each side of the breadcrumbs' 1px rule, less the search button's outer padding
+		// half of SPACE-MD on each side of the breadcrumbs' 1px rule, minus the search button's outer padding
 		column-gap: calc((var(--SPACE-MD) - 1px) / 2 - max(0px, 24px - var(--search-icon-size)));
 
 		font-size: var(--FONT-SIZE-SM);
@@ -602,7 +577,7 @@
 				content: "";
 				width: 1px;
 				height: calc(var(--menu-button-width) * 19.5 / 25);
-				margin-bottom: calc(var(--menu-button-width) * 1.5 / 25); // lifts it so its top is level with the search icon's
+				margin-bottom: calc(var(--menu-button-width) * 1.5 / 25);
 				background-color: var(--color-primary, var(--COLOR-BLACK));
 				opacity: 0.64;
 				transition: background-color 0.3s ease;
@@ -636,7 +611,6 @@
 			border: none;
 			border-radius: 0;
 			margin: 0;
-			// pads to the 24px minimum target size, on the outer side to keep the icons' spacing
 			box-sizing: border-box;
 			min-width: 24px;
 			min-height: 24px;
@@ -679,8 +653,8 @@
 		> div.menu-buttons > div.menu-button {
 			background: none;
 			border: none;
-			padding: 5px max(0px, calc(24px - var(--menu-button-width))) 5px 0; // 24px minimum target size, padded on the outer side
-			margin-right: min(0px, calc(var(--menu-button-width) - 24px)); // keeps the bars flush with the grid column
+			padding: 5px max(0px, calc(24px - var(--menu-button-width))) 5px 0;
+			margin-right: min(0px, calc(var(--menu-button-width) - 24px));
 			//margin: 0;
 			align-self: center;
 
@@ -696,7 +670,7 @@
 				background-color: var(--color-primary, var(--COLOR-BLACK));
 
 				width: 100%;
-				height: 2px; // whole pixels, so the bars don't round to uneven heights
+				height: 2px;
 				margin: 4px 0;
 
 				transition: all 0.3s ease;
@@ -715,8 +689,8 @@
 			transition: transform 0.3s ease;
 
 			&.active {
-				--menu-button-transform: calc(6px / 1.4142); // one bar pitch (2px + 4px) along the 45° diagonal
-				//transform: translateX(var(--menu-button-transform));
+				// one bar pitch (2px + 4px) along the 45° diagonal
+				--menu-button-transform: calc(6px / 1.4142);
 
 				> div {
 					background-color: white;
@@ -750,7 +724,7 @@
 		width: 100vw;
 		height: 0;
 		opacity: 0;
-		visibility: hidden; // keeps the closed menu out of the tab order and screen readers
+		visibility: hidden;
 		transition: height 0.3s ease, opacity 0.3s ease, visibility 0s linear 0.3s;
 
 		&.active {
