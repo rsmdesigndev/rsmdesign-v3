@@ -89,6 +89,7 @@
 		 aria-label={carouselLabel}
 		 style:--grid-column-start="1"
 		 style:--grid-column-end={fullBleed ? "-1" : (bleed.right ? "-2" : "-1")}
+		 style:--grid-column-mobile={fullBleed ? "1 / -1" : "main"}
 		 class:sticky-on-mobile={stickyOnMobile}
 		 bind:offsetWidth={carouselWidth}
 		 bind:offsetHeight={height}
@@ -183,6 +184,7 @@
 		position: relative;
 		
 		@media (max-width: 31.25em) {
+			grid-column: var(--grid-column-mobile);
 			max-width: 92vw;
 
 			&.carousel-width-full-bleed {
