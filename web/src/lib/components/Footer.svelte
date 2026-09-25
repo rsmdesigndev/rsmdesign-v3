@@ -118,6 +118,7 @@
 								<circle cx="319.54" cy="97.124" r="24.999" />
 							</g>
 						</svg>
+						<span>Instagram</span>
 					</a>
 					<a href="https://www.linkedin.com/company/rsm-design" target="_blank">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 417 400">
@@ -125,6 +126,7 @@
 								<path d="M416.667 245.03v154.045h-89.305V255.347c0-36.105-12.918-60.746-45.243-60.746-24.676 0-39.361 16.606-45.822 32.67-2.356 5.742-2.962 13.735-2.962 21.774v150.03H144s1.203-243.427 0-268.648h89.326v38.08c-.181.284-.417.592-.587.868h.587v-.868c11.868-18.279 33.063-44.391 80.503-44.391 58.776-.001 102.838 38.396 102.838 120.914ZM50.551.925C19.99.925 0 20.971 0 47.332c0 25.787 19.411 46.441 49.365 46.441h.597c31.154 0 50.528-20.65 50.528-46.441C99.903 20.971 81.116.925 50.551.925ZM5.306 399.075h89.301V130.427H5.306v268.648Z"/>
 							</g>
 						</svg>
+						<span>LinkedIn</span>
 					</a>
 					<a href="https://www.pinterest.com/rsmdesign/" target="_blank">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 325 418">
@@ -132,21 +134,57 @@
 								<path d="M141.649 1.929C72.409 9.658 3.414 65.676.566 145.696c-1.79 48.858 12.083 85.512 58.581 95.804 20.178-35.596-6.509-43.447-10.658-69.198C31.443 66.775 170.207-5.19 242.823 68.483c50.241 51.015 17.167 207.962-63.87 191.649-77.619-15.581 37.996-140.512-23.961-165.043-50.363-19.934-77.132 60.981-53.252 101.174-13.994 69.117-44.139 134.248-31.934 220.939 39.582-28.721 52.926-83.722 63.869-141.082 19.893 12.082 30.511 24.653 55.896 26.605 93.607 7.242 145.883-93.444 133.109-186.319C311.33 34.067 229.154-7.834 141.649 1.929Z"/>
 							</g>
 						</svg>
+						<span>Pinterest</span>
 					</a>
+					<p class="sm">© 1997–{new Date().getFullYear()} RSM&nbsp;Design</p>
 				</div>
-				<Cta
-					data={ {
-						cta_type: "link",
-						cta_size: "sm",
-						cta_icon: "info",
-						cta_icon_position: "left",
-						cta_style: "light",
-						cta_hover_highlight: "none",
-						cta_text_light: `Copyright 1997–${new Date().getFullYear()} RSM&nbsp;Design`,
-						cta_link: "/about/policies"
-					} }
-					sizeOverride="sm"
-				/>
+				<nav class="footer-utility-nav">
+					<Cta
+						data={ {
+							cta_type: "link",
+							cta_size: "sm",
+							cta_style: "light",
+							cta_hover_highlight: "light",
+							cta_text_light: `Responsibility`,
+							cta_link: "/info/corporate-responsibility"
+						} }
+						sizeOverride="sm"
+					/>
+					<Cta
+						data={ {
+							cta_type: "link",
+							cta_size: "sm",
+							cta_style: "light",
+							cta_hover_highlight: "light",
+							cta_text_light: `Privacy Policy`,
+							cta_link: "/info/privacy-policy"
+						} }
+						sizeOverride="sm"
+					/>
+					<Cta
+						data={ {
+							cta_type: "link",
+							cta_size: "sm",
+							cta_style: "light",
+							cta_hover_highlight: "light",
+							cta_text_light: `Terms of Use`,
+							cta_link: "/info/terms-of-use"
+						} }
+						sizeOverride="sm"
+					/>
+					<Cta
+						data={ {
+							cta_type: "link",
+							cta_size: "sm",
+							cta_style: "light",
+							cta_hover_highlight: "light",
+							cta_text_light: `Accessibility`,
+							cta_link: "/info/accessibility"
+						} }
+						sizeOverride="sm"
+					/>
+					<p class="sm">Copyright 1997–{new Date().getFullYear()} RSM&nbsp;Design</p>
+				</nav>
 			</div>
 		</div>
 	</footer>
@@ -453,43 +491,53 @@
 				grid-column: main;
 				display: grid;
 				grid-template-columns: subgrid;
+				//align-items: center;
+				padding-top: 1em;
 
 				@media (max-width: 31.25em) {
 					display: flex;
-					flex-wrap: wrap;
 					column-gap: var(--GRID-CELL);
-
-					> .social-icons {
-						width: calc(50% - var(--GRID-CELL));
-					}
-					> p.footer-copyright {
-						width: 50%;
-					}
 				}
 
 				border-top: 1px solid var(--color-primary);
 
 				> .social-icons {
-					grid-column: eighth-start 1 / eighth-end 6;
+					grid-column: eighth-start 1 / eighth-end 2;
 					@media (max-width: 62.5em) {
-						grid-column: half-start 1 / half-end 1;
+						grid-column: third-start 1 / third-end 1;
 						column-gap: var(--SPACE-MD);
 					}
 
-					margin-top: 1em;
+					//margin-top: 1em;
 					display: flex;
+					flex-wrap: wrap;
 					justify-content: flex-start;
+					align-content: space-between;
 					column-gap: calc(var(--GRID-CELL) * 1.5);
+
+					@media (max-width: 31.25em) {
+						flex-basis: calc(50% - var(--GRID-CELL));
+						flex-direction: column;
+						flex-wrap: nowrap;
+						justify-content: space-between;
+					}
 
 					> a {
 						display: flex;
 						justify-content: flex-end;
+						align-items: center;
 						height: calc(var(--GRID-CELL) * 2 / 3);
 						width: calc(var(--GRID-CELL) * 2 / 3);
 
-						@media (max-width: 46.875em) {
+						@media (max-width: 62.5em) {
 							height: calc(var(--GRID-CELL) / 2);
 							width: calc(var(--GRID-CELL) / 2);
+						}
+						@media (max-width: 31.25em) {
+							height: auto;
+							width: auto;
+							justify-content: flex-start;
+							margin-bottom: 0.5rem;
 						}
 
 						&:hover {
@@ -502,24 +550,92 @@
 							max-height: 100%;
 							max-width: 100%;
 
+							@media (max-width: 31.25em) {
+								width: calc(var(--GRID-CELL) / 2);
+								height: calc(var(--GRID-CELL) / 2);
+							}
+
 							> g.social-icon {
 								transition: fill 0.3s ease;
 								fill: var(--color-primary, var(--COLOR-WHITE));
 							}
 						}
+
+						> span {
+							display: none;
+							margin-left: 0.5rem;
+							font-size: var(--FONT-SIZE-SM);
+							color: var(--color-primary);
+							@media (max-width: 31.25em) {
+								display: block;
+							}
+						}
+					}
+					> p {
+						flex-basis: 100%;
+						min-width: 19ch;
+						display: none;
+						margin-bottom: 0.5rem;
+						color: var(--color-primary);
+						@media (max-width: 62.5em) {
+							display: block;
+						}
+						@media (max-width: 31.25em) {
+							min-width: unset;
+						}
 					}
 				}
-				:global {
-					> a {
-						grid-column: eighth-start 7 / eighth-end 8;
-						@media (max-width: 62.5em) {
-							grid-column: third-start 3 / third-end 3;
+				> nav {
+					grid-column: eighth-start 3 / eighth-end 8;
+					@media (max-width: 62.5em) {
+						grid-column: third-start 2 / third-end 3;
+					}
+					display: grid;
+					grid-template-columns: subgrid;
+					@media (max-width: 31.25em) {
+						display: flex;
+						flex-direction: column;
+					}
+
+					:global {
+						a.cta {
+							margin-bottom: 0.5rem;
+							&:nth-of-type(1) {
+								grid-column: eighth-start 1 / eighth-end 1;
+								@media (max-width: 62.5em) {
+									grid-column: third-start 1 / third-end 1;
+								}
+								@media (max-width: 32.25em) {
+									grid-column: third-start 1 / third-end 1;
+								}
+							}
+							&:nth-of-type(2) {
+								grid-column: eighth-start 2 / eighth-end 2;
+								@media (max-width: 62.5em) {
+									grid-column: third-start 2 / third-end 2;
+								}
+							}
+							&:nth-of-type(3) {
+								grid-column: eighth-start 3 / eighth-end 3;
+								@media (max-width: 62.5em) {
+									grid-column: third-start 1 / third-end 1;
+								}
+							}
+							&:nth-of-type(4) {
+								grid-column: eighth-start 4 / eighth-end 4;
+								@media (max-width: 62.5em) {
+									grid-column: third-start 2 / third-end 2;
+								}
+							}
 						}
+					}
 
-						margin: 1em 0 0;
-
-						@media (max-width: 46.875em) {
-							font-size: var(--FONT-SIZE-XS);
+					> p {
+						grid-column: eighth-start 5 / eighth-end 6;
+						margin-bottom: 0.5rem;
+						color: var(--color-primary);
+						@media (max-width: 62.5em) {
+							display: none;
 						}
 					}
 				}
