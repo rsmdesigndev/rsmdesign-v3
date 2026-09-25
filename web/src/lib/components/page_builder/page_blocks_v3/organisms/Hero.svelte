@@ -437,14 +437,6 @@
 				rgba(255,255,255,1) 100%
 			);
 
-			&:not(.project) {
-				@media (max-width: 62.5em) {
-					position: absolute;
-					bottom: 0;
-					height: 50vh;
-				}
-			}
-
 			&.project {
 				@media (max-width: 31.25em) {
 					position: absolute;
