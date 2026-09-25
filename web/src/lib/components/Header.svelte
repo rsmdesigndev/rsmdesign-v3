@@ -68,6 +68,7 @@
 	let navParentLink: string = "";
 	let navParentText: string = "";
 	let navParentCta: string = "Return to";
+	let navigationCount = 0; // lets a slow name lookup tell that a newer navigation has replaced it
 
 	//let showBreadcrumbs: boolean = true;
 
@@ -84,6 +85,11 @@
 		// lifecycle, page mount error, etc.) make sure the menu still closes
 		// once we land on the new route.
 		closeMenu();
+
+		// pages without breadcrumbs would otherwise keep the previous page's
+		navParentLink = "";
+		navParentText = "";
+		const navigation = ++navigationCount;
 
 		/*if ($page.url.pathname != "" && $page.url.pathname != "/") {
 			root_links: for (let item of navMenu.nav_menu_links) {
@@ -137,6 +143,7 @@
 						  }
 						}
 					`);
+					if (navigation !== navigationCount) return;
 					navParentText = response.services[0].name;
 				} else if (marketSlugs.length > 0) {
 					let marketSlug = marketSlugs[0];
@@ -150,6 +157,7 @@
 						  }
 						}
 					`);
+					if (navigation !== navigationCount) return;
 					navParentText = response.markets[0].name;
 				}
 			} else {
@@ -596,7 +604,7 @@
 				height: calc(var(--menu-button-width) * 19.5 / 25);
 				margin-bottom: calc(var(--menu-button-width) * 1.5 / 25); // lifts it so its top is level with the search icon's
 				background-color: var(--color-primary, var(--COLOR-BLACK));
-				opacity: 0.382;
+				opacity: 0.64;
 				transition: background-color 0.3s ease;
 			}
 
