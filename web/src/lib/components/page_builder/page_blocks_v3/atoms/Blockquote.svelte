@@ -60,8 +60,6 @@
 	>
 		<blockquote class:quotation={(data.blockquote_has_attribution && data.blockquote_attribution) || (data.blockquote_has_citation && data.blockquote_citation)}
 					style:--font-size={`var(--FONT-SIZE-${data.blockquote_size?.toUpperCase()})`}
-					style:--font-weight={data.blockquote_size === "md" ? "300" : 
-										(data.blockquote_size === "lg" ? "300" : "400")}
 					style:--line-height={data.blockquote_size === "md" ? "1.333" : 
 										(data.blockquote_size === "lg" ? "1.167" : 
 										(data.blockquote_size === "xl" ? "1.133" : "1"))}
@@ -103,7 +101,7 @@
 			padding: 0;
 
 			font-size: var(--font-size);
-			font-weight: var(--font-weight);
+			font-weight: 300;
 			line-height: var(--line-height);
 
 			&.quotation {
