@@ -964,9 +964,16 @@
 
 					display: flex;
 					flex-direction: column;
-					row-gap: var(--SPACE-MD);
+					row-gap: var(--SPACE-SM);
 
-					padding-top: 0.333em;
+					// align child baselines with parent links
+					> a::before {
+						content: "";
+						font-size: var(--FONT-SIZE-XXL);
+						@media (max-width: 31.25em) {
+							font-size: var(--FONT-SIZE-XXXL);
+						}
+					}
 
 					font-size: var(--FONT-SIZE-XL);
 				}
