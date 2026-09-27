@@ -172,6 +172,7 @@
 	// Menu item selection
 	let innerWidth: number;
 	let selectedItem: number = 0;
+	$: linksShownInMenu = navMenu.nav_menu_links.map((c) => c?.nav_menu_links_id).filter(item => !!item.link_shows_in_menu);
 
 	function selectItemOnMouseover(i: number) {
 		if (innerWidth > 1000) {
@@ -420,8 +421,8 @@
 					</a>
 				{/each}
 			{:else}
-				<nav style:--num-rows={navMenu.nav_menu_links.length}>
-					{#each navMenu.nav_menu_links.map((c) => c?.nav_menu_links_id).filter(item => !!item.link_shows_in_menu) as item, i}
+				<nav style:--num-rows={linksShownInMenu.length + 1}>
+					{#each linksShownInMenu as item, i}
 						<a
 							href={item.link_path}
 							class:active={selectedItem === i}
@@ -948,12 +949,14 @@
 
 					+ aside {
 						opacity: 1;
+						pointer-events: auto;
 					}
 				}
 
 				+ aside {
 					opacity: 0;
-					grid-row: 1 / var(--num-rows);
+					pointer-events: none;
+					grid-row: 1 / span var(--num-rows);
 					grid-column: eighth-start 3 / eighth-end 5;
 					@media (max-width: 62.5em) {
 						grid-column: third-end 1 / half-end 1;
