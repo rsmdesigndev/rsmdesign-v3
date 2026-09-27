@@ -969,6 +969,8 @@
 					flex-direction: column;
 					row-gap: var(--SPACE-SM);
 
+					font-size: var(--FONT-SIZE-XL);
+
 					// align child baselines with parent links
 					> a::before {
 						content: "";
@@ -977,8 +979,6 @@
 							font-size: var(--FONT-SIZE-XXXL);
 						}
 					}
-
-					font-size: var(--FONT-SIZE-XL);
 				}
 
 				+ figure,
