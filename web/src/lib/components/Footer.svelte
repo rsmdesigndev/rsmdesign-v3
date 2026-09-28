@@ -73,7 +73,7 @@
 					>
 						San Clemente
 					</a>
-					<p>160 Avenida Cabrillo <br/>San Clemente, CA 97672</p>
+					<p>160 Avenida Cabrillo <br/>San Clemente, CA 92672</p>
 					<a href="tel:+19494929479">949.492.9479</a>
 				</article>
 				<article class="dallas">
