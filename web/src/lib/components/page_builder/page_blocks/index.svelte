@@ -152,7 +152,7 @@
 
 		margin-bottom: var(--GRID-CELL);
 		&:first-child {
-			margin-top: calc(var(--HEADER-HEIGHT) + var(--GRID-CELL));
+			margin-top: calc(var(--GRID-CELL) * 2.75);
 		}
 
 		&.project {
