@@ -426,6 +426,11 @@ export const _query = gql`
 				}
 			}
 		}
+		careersList: careers(filter: { visibility: { _eq: "visible" } }) {
+			slug
+			name
+			seo_page_description
+		}
 	}
 `;
 
@@ -440,6 +445,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		career: {
 			...res.careers[0],
 			careers_page_blocks_v3: await prefetchDataFeeds(res.careers[0]?.careers_page_blocks_v3)
-		}
+		},
+		careersList: res.careersList
 	};
 };
