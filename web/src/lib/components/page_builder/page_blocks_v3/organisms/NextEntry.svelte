@@ -72,8 +72,13 @@
 		try {
 			const response: any = await request(env.PUBLIC_DIRECTUS_API_URL, query, { search: searchTerm });
  
+			// entries sharing the cursor come back in feed order, so the one after the current entry is next
+			const ties: any[] = response?.ties ?? [];
+			const nextTie = ties[ties.findIndex((entry: any) => entry?.slug === currentSlug) + 1];
+ 
 			// next is empty when the current entry is the last, so it wraps around to first
-			const nextEntry = response?.next?.find((entry: any) => entry?.slug !== currentSlug)
+			const nextEntry = nextTie
+				?? response?.next?.find((entry: any) => entry?.slug !== currentSlug)
 				?? response?.first?.[0];
  
 			// A set holding only the current entry has no next entry to offer

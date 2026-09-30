@@ -8,38 +8,39 @@
 
 	export let data: PageData;
 
-	const projectData: ProjectData = {
-		project_slug?: data.project.slug,
-		project_title?: data.project.project_title,
-		project_location_city?: data.project.project_location_city?.city_name,
-		project_location_state?: data.project.project_location_city?.state_province?.state_province_name,
-		project_location_country?: data.project.project_location_city?.country?.country_name,
-		project_markets?: data.project.markets,
-		project_services?: data.project.services,
-		project_client?: data.project.project_client,
-		project_client_count?: data.project.project_client_count,
-		project_developer?: data.project.project_developer,
-		project_developer_count?: data.project.project_developer_count,
-		project_architect?: data.project.project_architect,
-		project_architect_count?: data.project.project_architect_count,
-		project_landscape?: data.project.project_landscape,
-		project_landscape_count?: data.project.project_landscape_count,
-		project_lighting?: data.project.project_lighting,
-		project_lighting_count?: data.project.project_lighting_count,
-		project_fabricator?: data.project.project_fabricator,
-		project_fabricator_count?: data.project.project_fabricator_count,
-		project_painter?: data.project.project_painter,
-		project_painter_count?: data.project.project_painter_count,
-		project_sign_painter?: data.project.project_sign_painter,
-		project_sign_painter_count?: data.project.project_sign_painter_count,
-		project_photographer?: data.project.project_photographer,
-		project_photographer_count?: data.project.project_photographer_count,
-		project_other_collaborators?: data.project.project_other_collaborators,
-		project_other_collaborators_count?: data.project.project_other_collaborators_count,
-		project_awards?: data.project.design_awards
+	let projectData: ProjectData;
+	$: projectData = {
+		project_slug: data.project.slug,
+		project_title: data.project.project_title,
+		project_location_city: data.project.project_location_city?.city_name,
+		project_location_state: data.project.project_location_city?.state_province?.state_province_name,
+		project_location_country: data.project.project_location_city?.country?.country_name,
+		project_markets: data.project.markets,
+		project_services: data.project.services,
+		project_client: data.project.project_client,
+		project_client_count: data.project.project_client_count,
+		project_developer: data.project.project_developer,
+		project_developer_count: data.project.project_developer_count,
+		project_architect: data.project.project_architect,
+		project_architect_count: data.project.project_architect_count,
+		project_landscape: data.project.project_landscape,
+		project_landscape_count: data.project.project_landscape_count,
+		project_lighting: data.project.project_lighting,
+		project_lighting_count: data.project.project_lighting_count,
+		project_fabricator: data.project.project_fabricator,
+		project_fabricator_count: data.project.project_fabricator_count,
+		project_painter: data.project.project_painter,
+		project_painter_count: data.project.project_painter_count,
+		project_sign_painter: data.project.project_sign_painter,
+		project_sign_painter_count: data.project.project_sign_painter_count,
+		project_photographer: data.project.project_photographer,
+		project_photographer_count: data.project.project_photographer_count,
+		project_other_collaborators: data.project.project_other_collaborators,
+		project_other_collaborators_count: data.project.project_other_collaborators_count,
+		project_awards: data.project.design_awards
 	};
 
-	const colorStyles: string = `
+	/*const colorStyles: string = `
 		:root {
 			--color-background: ${data.project?.project_background_color};
 			--color-primary: ${data.project?.project_color_theme === "light" ? "var(--COLOR-BLACK)" : "white"};
@@ -47,7 +48,7 @@
 			--color-tertiary: ${data.project?.project_color_theme === "light" ? "var(--COLOR-DIM-GRAY)" : "var(--COLOR-DIM-GRAY)"};
 			--color-accent: ${data.project?.project_color_theme === "light" ? "var(--COLOR-ORANGE)" : "var(--COLOR-ORANGE)"};
 		}
-	`;
+	`;*/
 </script>
 
 <SeoHead
@@ -76,11 +77,13 @@
 <template>
 	{#if data.project.project_use_page_blocks_v3}
 		{#if data.project.project_page_blocks_v3}
-			<PageBlocksV3 
-				blocks={data.project.project_page_blocks_v3} 
-				nextEntry={{ entryType: "project", slug: data.project.slug, cursor: data.project.sort }}
-				{projectData} 
-			/>
+			{#key data.project.slug}
+				<PageBlocksV3 
+					blocks={data.project.project_page_blocks_v3} 
+					nextEntry={{ entryType: "project", slug: data.project.slug, cursor: data.project.sort }}
+					{projectData} 
+				/>
+			{/key}
 		{:else}
 			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
 		{/if}

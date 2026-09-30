@@ -2,7 +2,8 @@
 	import { assetUrl } from "$lib/cms/assets";
 	import type { PageData } from "./$types";
 	import PageBlocks from "$lib/components/page_builder/page_blocks/index.svelte";
-	import NextEntry, { EntryType } from "$lib/components/NextEntry.svelte";
+	import PageBlocksV3 from "$lib/components/page_builder/page_blocks_v3/index.svelte";
+	import NextEntry from "$lib/components/page_builder/page_blocks_v3/organisms/NextEntry.svelte";
 	import SeoHead from "$lib/components/SeoHead.svelte";
 	import { formatDate } from "$lib/format";
 
@@ -18,10 +19,12 @@
 <template>
 	{#if data.news_post.news_post_use_page_blocks_v3}
 		{#if data.news_post.news_post_page_blocks_v3}
-			<PageBlocksV3 
-				blocks={data.news_post.news_post_page_blocks_v3} 
-				nextEntry={{ entryType: "article", slug: data.news_post.slug, cursor: data.news_post.published_date }}
-			/>
+			{#key data.news_post.slug}
+				<PageBlocksV3 
+					blocks={data.news_post.news_post_page_blocks_v3} 
+					nextEntry={{ entryType: "article", slug: data.news_post.slug, cursor: data.news_post.published_date }}
+				/>
+			{/key}
 		{:else}
 			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
 		{/if}
@@ -59,8 +62,8 @@
 			{#if data.news_post.page_content}
 				<PageBlocks content={data.news_post.page_content} news />
 			{/if}
-			<div class="container">
-				<NextEntry currentSlug={data.news_post.slug ?? ""} entryType={EntryType.Article} />
+			<div class="next-entry">
+				<NextEntry currentSlug={data.news_post.slug ?? ""} entryType="article" currentCursor={data.news_post.published_date} />
 			</div>
 		</article>
 	{/if}
@@ -102,6 +105,18 @@
 				object-fit: cover;
 			}
 		}
+	}
+
+	.next-entry {
+		grid-column: main;
+		display: flex;
+		justify-content: stretch;
+
+		--color-primary: var(--COLOR-BLACK);
+		--color-secondary: var(--COLOR-MID-GRAY);
+		--color-tertiary: var(--COLOR-DIM-GRAY);
+		--color-accent: var(--COLOR-ORANGE);
+		--color-background: white;
 	}
 
 	:global(.rich-text h2) {
