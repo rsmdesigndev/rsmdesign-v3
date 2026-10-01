@@ -16,7 +16,9 @@
 <template>
 	{#if data.article.aeo_article_use_page_blocks_v3}
 		{#if data.article.aeo_article_page_blocks_v3}
-			<PageBlocksV3 blocks={data.article.aeo_article_page_blocks_v3} />
+			{#key data.article.slug}
+				<PageBlocksV3 blocks={data.article.aeo_article_page_blocks_v3} />
+			{/key}
 		{:else}
 			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
 		{/if}

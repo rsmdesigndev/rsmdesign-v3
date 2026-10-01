@@ -41,7 +41,9 @@
 <template>
 	{#if data.studioLocation.studios_use_page_blocks_v3}
 		{#if data.studioLocation.studios_page_blocks_v3}
-			<PageBlocksV3 blocks={data.studioLocation.studios_page_blocks_v3} {expertiseData} />
+			{#key data.studioLocation.slug}
+				<PageBlocksV3 blocks={data.studioLocation.studios_page_blocks_v3} {expertiseData} />
+			{/key}
 		{:else}
 			<div class="container">Page Blocks v3 selected, but no blocks added.</div>
 		{/if}

@@ -13,7 +13,9 @@
 
 <template>
 	{#if data.page.info_page_blocks_v3}
-		<PageBlocksV3 blocks={data.page.info_page_blocks_v3} />
+		{#key data.page.slug}
+			<PageBlocksV3 blocks={data.page.info_page_blocks_v3} />
+		{/key}
 	{:else}
 		<div class="container">Page Blocks v3 selected, but no blocks added.</div>
 	{/if}

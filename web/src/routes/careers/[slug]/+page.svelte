@@ -17,7 +17,9 @@
 
 <template>
 	{#if data.career.careers_page_blocks_v3.length}
-		<PageBlocksV3 blocks={data.career.careers_page_blocks_v3} />
+		{#key data.career.slug}
+			<PageBlocksV3 blocks={data.career.careers_page_blocks_v3} />
+		{/key}
 	{:else if data.career.job_description}
 		<div class="container">
 			<figure class="">
