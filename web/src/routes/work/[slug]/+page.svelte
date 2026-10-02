@@ -383,10 +383,9 @@
 	}
 
 	.next-entry {
-		grid-column: main;
-		width: 100%;
-		display: flex;
-		justify-content: stretch;
+		grid-column: viewport;
+		display: grid;
+		grid-template-columns: subgrid;
 
 		> h3 {
 			margin-right: 0.5em;
