@@ -108,9 +108,9 @@
 	}
 
 	.next-entry {
-		grid-column: main;
-		display: flex;
-		justify-content: stretch;
+		grid-column: viewport;
+		display: grid;
+		grid-template-columns: subgrid;
 
 		--color-primary: var(--COLOR-BLACK);
 		--color-secondary: var(--COLOR-MID-GRAY);
