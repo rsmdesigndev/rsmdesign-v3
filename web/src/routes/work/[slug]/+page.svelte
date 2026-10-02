@@ -219,13 +219,13 @@
 					<p>{data.project.collaborators}</p>
 				</section>
 			{/if}
-			<div class="next-entry">
-				<NextEntry 
-					entryType="project"
-					currentSlug={data.project.slug ?? ""} 
-					currentCursor={data.project.sort}
-				/>
-			</div>
+		</div>
+		<div class="next-entry">
+			<NextEntry 
+				entryType="project"
+				currentSlug={data.project.slug ?? ""} 
+				currentCursor={data.project.sort}
+			/>
 		</div>
 	{/if}
 </template>
@@ -383,7 +383,8 @@
 	}
 
 	.next-entry {
-		grid-column: whole;
+		grid-column: main;
+		width: 100%;
 		display: flex;
 		justify-content: stretch;
 
