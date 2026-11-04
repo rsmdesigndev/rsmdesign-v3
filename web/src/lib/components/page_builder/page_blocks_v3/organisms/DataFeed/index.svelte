@@ -13,6 +13,7 @@
 	import { browser } from "$app/environment";
 
 	import DataFeedFilterMenu from "./DataFeedFilterMenu.svelte";
+	import DataFeedGlobe from "./DataFeedGlobe.svelte";
 	import DataFeedGrid from "./DataFeedGrid.svelte";
 	import DataFeedTable from "./DataFeedTable.svelte";
 	import DataFeedTickerTape from "./DataFeedTickerTape.svelte";
@@ -135,18 +136,24 @@
 	let loadTotalCount: number = data.feed_total_count ?? 0;
 	let loadingPage: Promise<void> | null = null;
 	let feedGeneration: number = 0;
-	let feedView: "Grid" | "Table" | "Ticker Tape" = data.feed_view;
+	let feedView: "Grid" | "Table" | "Ticker Tape" | "Globe" = data.feed_view;
+
+	// the globe loads the feed's whole population once and filters it in the browser, so its sidebar stands in for the menu
+	const isGlobe: boolean = data.feed_view === "Globe";
 
 	numItems = feedItemsPerLoad(data);
 
+	// -1 is Directus for no limit, so one page holds everything
+	const loadsAllItems: boolean = numItems === -1;
+
 	// A prefetched first page means the browser resumes at the second
 	if (pages.length > 0) {
-		loadOffset = numItems ?? 0;
+		loadOffset = loadsAllItems ? loadTotalCount : (numItems ?? 0);
 	}
 
 	// URL params apply if and only if the menu is shown and a recognized param is present
 	const urlFilters: boolean = browser
-		&& shouldApplyUrlFilters(data.feed_show_filter_menu, $page.url.searchParams);
+		&& shouldApplyUrlFilters(data.feed_show_filter_menu || isGlobe, $page.url.searchParams);
 	let feedFilters: FeedFilters = urlFilters
 		? feedFiltersFromUrlParams(feedFilterGroups(data), $page.url.searchParams)
 		: feedFilterGroups(data);
@@ -226,11 +233,12 @@
 		const pageItemCount: number | undefined = feedItemsPerLoad(data, pageOffset);
 		switch (data.feed_source) {
 			case "Projects": {
-				let filters: string[] = filtersArrayToGraphql(feedFilters);
-				let searchTerm: string = sanitizeSearchText(searchText);
+				// the globe's query carries the feed's own filters only; the sidebar's selection and search apply in the browser
+				let filters: string[] = filtersArrayToGraphql(isGlobe ? feedFilterGroups(data) : feedFilters);
+				let searchTerm: string = isGlobe ? "" : sanitizeSearchText(searchText);
 				let searchFilter: string = searchToGraphql(data.feed_source, searchTerm);
 
-				let query = generateQuery("projects", filters, data.feed_filter_logic, searchFilter);
+				let query = generateQuery(isGlobe ? "projectsGlobe" : "projects", filters, data.feed_filter_logic, searchFilter);
 
 				let response = await request(env.PUBLIC_DIRECTUS_API_URL, query, {
 					limit: pageItemCount,
@@ -371,7 +379,7 @@
 		}
 
 		if (generation === feedGeneration && pageOffset === loadOffset) {
-			loadOffset += pageItemCount;
+			loadOffset = loadsAllItems ? loadTotalCount : loadOffset + pageItemCount;
 		}
 	}
 
@@ -434,7 +442,7 @@
 		prefetchNextPage();
 	}
 
-	$: pagesTotal = Math.ceil(loadTotalCount / numItems);
+	$: pagesTotal = loadsAllItems ? 1 : Math.ceil(loadTotalCount / numItems);
 
 	$: carousel.setCount(pagesTotal);
 
@@ -451,7 +459,7 @@
 		if (pagesTotal === 1) {
 			return false;
 		}
-		
+
 		return i === current + 1;
 	}
 
@@ -487,7 +495,7 @@
 	onMount(async () => {
 		if (pages.length === 0) {
 			loadMore();
-		} else if (urlFilters && !data.feed_url_filtered) {
+		} else if (urlFilters && !data.feed_url_filtered && !isGlobe) {
 			reload();
 		} else {
 			// prerendered at build time, so the first page may be stale
@@ -500,32 +508,32 @@
 </script>
 
 <template>
-	<section id={data.section_anchor_link}
+	<section id={`row-${rowNumber}`}
 			 class={`padding-top-${data.section_padding_top}
 					 padding-bottom-${data.section_padding_bottom}
 					 ${feedView}
 				   `}
 			 class:tall={feedView === "Grid" && data.feed_grid_style === "dynamic" && data.feed_grid_columns === 3}
-			 style:--z-index={feedView === "Table" && data.feed_table_style === "simple" ? "auto" : "2"}
+			 style:--z-index={(feedView === "Table" && data.feed_table_style === "simple") || feedView === "Globe" ? "3" : "2"}
 			 use:selectFeedOnIntersection
 	>
-		{#if data.feed_show_filter_menu && (data.feed_source === "Projects" || data.feed_source === "Articles")}
+		{#if data.feed_show_filter_menu && !isGlobe && (data.feed_source === "Projects" || data.feed_source === "Articles")}
 			<div class="project-filter-menu-wrapper">
 				<div class="project-filter-menu-heading">
-					<Heading 
+					<Heading
 						data={ { heading_type: "page",
 								 heading_primary: "large",
 								 heading_size: "xxxl",
 								 heading_weight: "regular",
 								 heading_has_small_text: false,
 								 heading_has_large_text: true,
-								 heading_has_superscript: true, 
+								 heading_has_superscript: true,
 								 heading_large: data.feed_source,
 								 heading_superscript: `${loadTotalCount > 20 ? loadTotalCount : ""}`
 							 } }
 					/>
 				</div>
-				<DataFeedFilterMenu 
+				<DataFeedFilterMenu
 					on:updateFilters={reload}
 					bind:feedFilters
 					bind:searchText
@@ -566,7 +574,15 @@
 			{:else if feedData.length === 0 && data.feed_source != "Manual"}
 				<p>No results match your query. Try another search or set of filters.</p>
 			{:else}
-				{#if feedView === "Ticker Tape"}
+				{#if feedView === "Globe"}
+					<DataFeedGlobe
+						itemParams={feedItemParams}
+						{feedData}
+						bind:feedFilters
+						bind:searchText
+						data={ { feed_source: data.feed_source } }
+					/>
+				{:else if feedView === "Ticker Tape"}
 					<DataFeedTickerTape
 						itemParams={feedItemParams}
 						{feedData}
@@ -581,17 +597,17 @@
 							 class:parallax-container={data.feed_grid_style === "parallax" && data.feed_grid_parallax_direction === "unidirectional"}
 							 class:fullbleed={isFullBleed}
 						>
-							<DataFeedGrid 
+							<DataFeedGrid
 								itemParams={feedItemParams}
 								rowNumber={rowNumber}
 								data={ { ...gridData,
 										 feed_cards: data.feed_cards,
 										 feed_grid_image_drop_shadow: data.feed_grid_image_drop_shadow,
-										 feed_grid_dynamic_start_position: 
+										 feed_grid_dynamic_start_position:
 										 	((data.feed_grid_columns === 4) && Boolean(data.feed_grid_rows_per_load % 4))
-										 	? 
-										 		!startRight 
-										 	: 
+										 	?
+										 		!startRight
+										 	:
 										 		startRight
 									 } }
 							/>
@@ -621,7 +637,7 @@
 									 on:focusin={suspend}
 									 on:focusout={resume}
 								>
-									<DataFeedGrid 
+									<DataFeedGrid
 										itemParams={feedItemParams}
 										rowNumber={rowNumber}
 										gridNumber={i}
@@ -638,7 +654,7 @@
 						<div class="grid-container"
 							 class:fullbleed={isFullBleed}
 						>
-							<DataFeedGrid 
+							<DataFeedGrid
 								itemParams={feedItemParams}
 								rowNumber={rowNumber}
 								feedData={feedData}
@@ -674,21 +690,19 @@
 		{#if loadOffset < loadTotalCount}
 			{#if data.feed_load_functionality === "scroll"}
 				<button class="infinite-scroll" on:click={loadMore} use:loadMoreOnIntersection={loadOffset}
-						aria-label="Load more feed items" 
+						aria-label="Load more feed items"
 				>
 					View More
 				</button>
 			{:else if data.feed_load_functionality === "button"}
-				<div class="view-more-container">
-					<Cta button
-						 data={ { cta_type: "button",
-						 		  cta_text_bold: "View More",
-								  cta_icon: "plus",
-								  cta_hover_highlight: "bold"
-						 } }
-						 on:click={loadMore}
-					/>
-				</div>
+				<Cta button
+					 data={ { cta_type: "button",
+					 		  cta_text_bold: "View More",
+							  cta_icon: "plus",
+							  cta_hover_highlight: "bold"
+					 } }
+					 on:click={loadMore}
+				/>
 			{/if}
 		{/if}
 	</section>
@@ -696,7 +710,7 @@
 
 <style lang="scss">
 	section {
-		/* 
+		/*
 			Z-Indexes
 			1: Background color
 			2: Content
@@ -731,7 +745,7 @@
 		}
 		.project-filter-menu-wrapper {
 			grid-column: viewport;
-			
+
 
 			display: grid;
 			grid-template-columns: subgrid;
@@ -835,13 +849,13 @@
 				&:not(.carousel-slide) {
 					display: grid;
 					grid-column: main;
-					grid-template-columns: 
-						[column-start] 
-						 1fr 
-						[column-end] 
+					grid-template-columns:
+						[column-start]
+						 1fr
+						[column-end]
 						 4vw
-						[column-start] 
-						 1fr 
+						[column-start]
+						 1fr
 						[column-end]
 					;
 					row-gap: var(--SPACE-LG);
@@ -917,10 +931,6 @@
 
 			margin-top: calc(-1.5 * var(--GRID-CELL));
 		}
-	}
-
-	.view-more-container {
-		grid-column: main;
 	}
 
 	button {
