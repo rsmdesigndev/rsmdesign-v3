@@ -232,7 +232,7 @@
 
 	/* scroll-driven zoom */
 	const ZOOM_STOPS: { scroll: number; zoom: number; cloudOpacity: number }[] = [
-		{ scroll: 0, zoom: 3, cloudOpacity: 0.38 },
+		{ scroll: 0, zoom: 6, cloudOpacity: 0.38 },
 		{ scroll: 20, zoom: 2, cloudOpacity: 0.62 }, /* where the wrapper's top reaches the viewport's top, with its height at 400vh */
 		{ scroll: 60, zoom: 7, cloudOpacity: 0 },
 		{ scroll: 100, zoom: 12, cloudOpacity: 0 }
