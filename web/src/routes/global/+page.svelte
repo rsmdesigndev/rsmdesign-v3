@@ -9,6 +9,7 @@
 <SeoHead
 	title={`${data.global.seo_title}`}
 	description={data.global.seo_page_description ?? ""}
+	noindex="true"
 />
 
 <template>
