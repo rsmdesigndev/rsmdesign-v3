@@ -121,15 +121,16 @@ export function createGlobeGlow(map: MapLibreMap, options: GlobeGlowOptions): Gl
 
 		const limb = reach(1);
 		// while the canvas cuts off the top of the globe, the strip would ring a cap that isn't drawn,
-		// so it comes in as the globe clears the edge, over the distance in which the glow falls to 1/e
-		const strength = opacity * Math.min(1, Math.max(0, (y - limb) / (reach(1 + options.width) - limb)));
+		// so it comes in as the globe clears the edge, over a twentieth of its radius
+		const strength = opacity * Math.min(1, Math.max(0, (y - limb) / (0.05 * limb)));
 
 		if (!(strength > 1 / 512)) {
 			element.style.backgroundImage = "";
 			return;
 		}
 
-		const end = reach(1 + options.width * Math.log(512 * strength)); // where the glow is below half a level of 255
+		// where the glow is below half a level of 255, or the strip's top: seen from close, a large globe's glow fills the sky
+		const end = Math.min(reach(1 + options.width * Math.log(512 * strength)), y + element.clientHeight);
 		const [r, g, b] = color.map((channel) => Math.round(channel * 255));
 		const stops = [`rgba(${r}, ${g}, ${b}, 0) ${limb}px`];
 
