@@ -146,8 +146,8 @@
 		{
 			name: "Gray Land / Dark Water",
 			style: "/files/GrayLand-DarkWater.json",
-			background: "white",
-			glowColor: "#ffffff",
+			background: "var(--COLOR-BLACK)",
+			glowColor: "#cccccc",
 			sidebarTheme: "light",
 			markerColor: "var(--COLOR-ORANGE)",
 			markerColorSecondary: "var(--COLOR-BLACK)",
@@ -239,7 +239,7 @@
 	];
 
 	const SIDEBAR_COLLAPSED_BELOW_ZOOM = 3;
-	const SIDEBAR_COLLAPSED_ABOVE_ZOOM = 9;
+	const SIDEBAR_COLLAPSED_ABOVE_ZOOM = 12.33;
 
 	/* linear interpolation between zoom stops */
 	function getScrollValue(percentage: number, key: "zoom" | "cloudOpacity"): number {
@@ -264,7 +264,8 @@
 		const zoom = getScrollValue(Number(scrollPercentage), "zoom");
 		const top = scrollWrapper.getBoundingClientRect().top;
 		globeOffset = getGlobeOffset(zoom, top);
-		globe.jumpTo({ zoom, padding: { top: 2 * globeOffset } }); /* one camera update for both, so the markers reproject once */
+		fitGlobeCanvas();
+		globe.jumpTo({ zoom, padding: globePadding() }); /* one camera update for both, so the markers reproject once */
 		sidebarShown = top <= 0;
 		applySidebarDefault(zoom < SIDEBAR_COLLAPSED_BELOW_ZOOM || zoom > SIDEBAR_COLLAPSED_ABOVE_ZOOM);
 	}
@@ -273,42 +274,88 @@
 	   so neither the globe nor the glow above it is cut off there; it is back in the middle by the time the wrapper pins, or just after in a short view */
 	const GLOBE_TOP_CLEARANCE = 0.1; /* of the globe's radius on screen: past the glow's 1/e distance, so the glow above the map shows in full */
 	const GLOBE_OFFSET_EASE_OUT = 0.15; /* of the view's height: how far a view too short for the globe scrolls past the pin before it is back in the middle */
+	const GLOBE_CANVAS_MAX = 4; /* views of height the canvas may grow to, well under WebGL's size limits */
 
-	let globeOffset = 0; /* half the map's top padding, which moves the globe down by that much */
+	let globeOffset = 0; /* how far below the middle of the view the globe's center sits */
+	let globeCanvasHeight = 0; /* the map container's height while it runs past the view's bottom, 0 at the view's own height */
+	let baseFov = 36.87; /* maplibre's default, read at mount; the view's camera keeps this focal length whatever the canvas's height */
+	let fittedView = 0; /* the view's height the canvas was last fitted to */
+	let fittingCanvas = false;
 
-	function getGlobeOffset(zoom: number, top: number = scrollWrapper.getBoundingClientRect().top): number {
-		if (globe.getProjection()?.type !== "globe") return globeOffset;
-
-		const height = globe.getContainer().clientHeight;
-		/* quadratic, so the globe slows to a stop after the map pins rather than stopping with it */
-		const ease = (1 - Math.min(1, Math.max(0, -top / (GLOBE_OFFSET_EASE_OUT * height)))) ** 2;
-		if (ease === 0) return 0;
-
-		/* the globe's radius on screen at that zoom: its radius in pixels is the scale at its center, doubling with each zoom level,
-		   and maplibre's camera sits a focal length f from the globe's near surface, so it sees r = fR / √(f² + 2fR) of it */
+	/* the globe's on-screen radius at a zoom: R is the scale at its center, doubling per zoom level, seen from a focal length f as r = fR / √(f² + 2fR) */
+	function globeRadiusAt(zoom: number, view: number): number {
 		const center = globe.getCenter();
 		const step = center.lat > 0 ? -0.1 : 0.1; /* degrees of latitude, toward the equator */
 		const a = globe.project(center);
 		const b = globe.project([center.lng, center.lat + step]);
 		const R = (Math.hypot(b.x - a.x, b.y - a.y) / Math.abs((step * Math.PI) / 180)) * 2 ** (zoom - globe.getZoom());
-		const f = height / 2 / Math.tan((globe.getVerticalFieldOfView() * Math.PI) / 360);
-		const radius = (f * R) / Math.sqrt(f * f + 2 * f * R);
+		const f = view / 2 / Math.tan((baseFov * Math.PI) / 360);
+
+		return (f * R) / Math.sqrt(f * f + 2 * f * R);
+	}
+
+	function getGlobeOffset(zoom: number, top: number = scrollWrapper.getBoundingClientRect().top): number {
+		if (globe.getProjection()?.type !== "globe") return globeOffset;
+
+		const view = globeWrapper.clientHeight;
+		/* quadratic, so the globe slows to a stop after the map pins rather than stopping with it */
+		const ease = (1 - Math.min(1, Math.max(0, -top / (GLOBE_OFFSET_EASE_OUT * view)))) ** 2;
+		if (ease === 0) return 0;
+
+		const radius = globeRadiusAt(zoom, view);
 
 		/* rounded off where it reaches 0, so the globe doesn't change pace there */
-		const needed = (1 + GLOBE_TOP_CLEARANCE) * radius - height / 2;
+		const needed = (1 + GLOBE_TOP_CLEARANCE) * radius - view / 2;
 		const blend = GLOBE_TOP_CLEARANCE * radius;
 		const full = needed <= -blend ? 0 : needed >= blend ? needed : (needed + blend) ** 2 / (4 * blend);
 
-		return Math.round(Math.min(full * ease, height / 2) * 4) / 4;
+		return Math.round(Math.min(full * ease, (GLOBE_CANVAS_MAX - 0.5) * view) * 4) / 4;
+	}
+
+	/* maplibre keeps the globe's center on its canvas, so a center below the view needs a canvas that runs past it, grown once for the slide-in's highest zoom */
+	function fitGlobeCanvas(): void {
+		const view = globeWrapper.clientHeight;
+		const fits = globeOffset <= view / 2;
+		if (view === fittedView && (fits ? globeCanvasHeight === 0 : globeCanvasHeight >= view / 2 + globeOffset)) return;
+
+		if (fits) {
+			globeCanvasHeight = 0;
+		} else {
+			const pin = (100 * window.innerHeight) / (window.innerHeight + scrollWrapper.offsetHeight);
+			const slideInZoom = Math.max(...ZOOM_STOPS.filter((stop) => stop.scroll < pin).map((stop) => stop.zoom), getScrollValue(pin, "zoom"));
+			const room = Math.max(globeOffset, (1 + GLOBE_TOP_CLEARANCE) * globeRadiusAt(slideInZoom, view) - view / 2);
+
+			globeCanvasHeight = Math.ceil(Math.min(view / 2 + room, GLOBE_CANVAS_MAX * view));
+		}
+
+		globeContainer.style.height = globeCanvasHeight ? `${globeCanvasHeight}px` : "";
+		globeContainer.style.marginBottom = globeCanvasHeight ? `${view - globeCanvasHeight}px` : ""; /* so the grid row, and the sidebar in it, stay the view's height */
+
+		fittedView = view;
+		fittingCanvas = true;
+		globe.resize();
+		fittingCanvas = false;
+
+		/* the same focal length as the view's own camera, so the canvas only runs further down the same picture */
+		const height = globeCanvasHeight || view;
+		globe.setVerticalFieldOfView((2 * Math.atan(height / 2 / (view / 2 / Math.tan((baseFov * Math.PI) / 360))) * 180) / Math.PI);
+	}
+
+	/* the globe's center goes to the middle of the view plus the offset, from the canvas's top */
+	function globePadding(): { top: number; bottom: number } {
+		const view = globeWrapper.clientHeight;
+		const shift = view + 2 * globeOffset - (globeCanvasHeight || view);
+
+		return shift >= 0 ? { top: shift, bottom: 0 } : { top: 0, bottom: -shift };
 	}
 
 	/* after the projection or the map's size changes */
 	function applyGlobeOffset(): void {
-		const offset = getGlobeOffset(globe.getZoom());
-		if (offset === globeOffset) return;
+		if (fittingCanvas) return;
 
-		globeOffset = offset;
-		globe.setPadding({ top: 2 * offset });
+		globeOffset = getGlobeOffset(globe.getZoom());
+		fitGlobeCanvas();
+		globe.setPadding(globePadding());
 	}
 
 	function getCloudOpacity(): number {
@@ -715,6 +762,7 @@
 			attributionControl: false
 		});
 
+		baseFov = globe.getVerticalFieldOfView();
 		globe.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-left");
 
 		/* maplibre opens the compact attribution once attributions load unless the compact class is already present */
@@ -1093,14 +1141,14 @@
 		display: grid;
 		grid-template-columns: subgrid;
 		align-content: start;
-		height: 700vh; /* so it reaches the viewport's top at 20% of animate.ts's scroll percentage (one view's height of the five it scrolls through) */
+		height: 700vh; /* so it reaches the viewport's top at 12.5% of animate.ts's scroll percentage (one view's height of the eight it scrolls through) */
 	}
 	.globe-glow-overflow {
 		position: absolute;
 		left: 0;
 		right: 0;
 		bottom: 100%;
-		height: 50vh; /* room for the glow above the map: up to about 26vh of a 900px-tall view, 44vh of a 600px one */
+		height: 100vh; /* room for the glow above the map, which reaches most of a view's height above a globe much larger than the view */
 		pointer-events: none;
 	}
 	.globe-wrapper {
