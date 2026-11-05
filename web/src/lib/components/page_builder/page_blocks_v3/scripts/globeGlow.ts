@@ -7,6 +7,7 @@ export type GlobeGlowOptions = {
 	color?: string; // #rrggbb; without one, nothing is drawn
 	opacity: number; // at the limb
 	width: number; // how far past the limb the glow falls to 1/e, in globe radii
+	spread?: () => number; // the farthest past the limb, in pixels on screen, it may fall to 1/e: seen from close, a large globe's glow would spread over the view
 	inner: number; // how quickly it fades inward from the limb; higher is a thinner inner rim
 	overflow?: HTMLElement; // as wide as the map, with its bottom edge on the map's top edge: there the glow carries on past the canvas, which WebGL can't draw beyond
 };
@@ -75,6 +76,8 @@ export function createGlobeGlow(map: MapLibreMap, options: GlobeGlowOptions): Gl
 	const toRgb = (hex?: string) => hex ? [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255) : null;
 	let color = toRgb(options.color);
 	let overflowState = "";
+	let glowWidth = options.width; // this frame's, in radii: options.width, or narrower where options.spread caps it
+	let widthState = "";
 
 	// the shader's closest approach, in double precision: how near the view ray through a clip-space point passes to the planet's center, in planet radii
 	function closest(inverse: DOMMatrix, x: number, y: number): number {
@@ -86,22 +89,9 @@ export function createGlobeGlow(map: MapLibreMap, options: GlobeGlowOptions): Gl
 		return Math.hypot(origin[0] + ray[0] * along, origin[1] + ray[1] * along, origin[2] + ray[2] * along);
 	}
 
-	// above the canvas the glow goes on as a radial gradient: it is round about the globe's center on screen, so its profile
-	// along one line up from the center gives every stop
-	function paintOverflow(matrix: ArrayLike<number>, main: DOMMatrix, inverse: DOMMatrix, opacity: number): void {
-		const element = options.overflow;
-		if (!element) return;
-
+	// the line up from the globe's center on the canvas: the closest approach at a distance up it, in pixels
+	function screenLine(main: DOMMatrix, inverse: DOMMatrix) {
 		const { clientWidth: width, clientHeight: height } = map.getContainer();
-		const state = `${Array.from(matrix)} ${width} ${height} ${element.clientHeight} ${color} ${opacity}`;
-		if (state === overflowState) return;
-		overflowState = state;
-
-		if (!color || opacity <= 0) {
-			element.style.backgroundImage = "";
-			return;
-		}
-
 		const center = main.transformPoint(new DOMPoint(0, 0, 0, 1));
 		const x = ((center.x / center.w + 1) / 2) * width;
 		const y = ((1 - center.y / center.w) / 2) * height;
@@ -119,6 +109,44 @@ export function createGlobeGlow(map: MapLibreMap, options: GlobeGlowOptions): Gl
 			return high;
 		};
 
+		return { x, y, at, reach };
+	}
+
+	// seen from close, the rays just past the limb run nearly along the globe's surface, so a width in radii spreads far across the screen;
+	// the width that puts 1/e at options.spread pixels past the limb, where that is narrower
+	function updateGlowWidth(matrix: ArrayLike<number>, main: DOMMatrix, inverse: DOMMatrix): void {
+		const spread = options.spread?.();
+		const state = `${Array.from(matrix)} ${map.getContainer().clientWidth} ${map.getContainer().clientHeight} ${spread}`;
+		if (state === widthState) return;
+		widthState = state;
+
+		if (!spread) {
+			glowWidth = options.width;
+			return;
+		}
+
+		const { at, reach } = screenLine(main, inverse);
+		const capped = at(reach(1) + spread) - 1;
+		glowWidth = capped > 0 && capped < options.width ? capped : options.width;
+	}
+
+	// above the canvas the glow goes on as a radial gradient: it is round about the globe's center on screen, so its profile
+	// along one line up from the center gives every stop
+	function paintOverflow(matrix: ArrayLike<number>, main: DOMMatrix, inverse: DOMMatrix, opacity: number): void {
+		const element = options.overflow;
+		if (!element) return;
+
+		const { clientWidth: width, clientHeight: height } = map.getContainer();
+		const state = `${Array.from(matrix)} ${width} ${height} ${element.clientHeight} ${color} ${opacity} ${glowWidth}`;
+		if (state === overflowState) return;
+		overflowState = state;
+
+		if (!color || opacity <= 0) {
+			element.style.backgroundImage = "";
+			return;
+		}
+
+		const { x, y, at, reach } = screenLine(main, inverse);
 		const limb = reach(1);
 		// while the canvas cuts off the top of the globe, the strip would ring a cap that isn't drawn,
 		// so it comes in as the globe clears the edge, over a twentieth of its radius
@@ -130,13 +158,13 @@ export function createGlobeGlow(map: MapLibreMap, options: GlobeGlowOptions): Gl
 		}
 
 		// where the glow is below half a level of 255, or the strip's top: seen from close, a large globe's glow fills the sky
-		const end = Math.min(reach(1 + options.width * Math.log(512 * strength)), y + element.clientHeight);
+		const end = Math.min(reach(1 + glowWidth * Math.log(512 * strength)), y + element.clientHeight);
 		const [r, g, b] = color.map((channel) => Math.round(channel * 255));
 		const stops = [`rgba(${r}, ${g}, ${b}, 0) ${limb}px`];
 
 		for (let i = 0; i <= 32; i++) {
 			const distance = limb + ((end - limb) * i) / 32;
-			stops.push(`rgba(${r}, ${g}, ${b}, ${(strength * Math.exp((1 - at(distance)) / options.width)).toFixed(4)}) ${distance}px`);
+			stops.push(`rgba(${r}, ${g}, ${b}, ${(strength * Math.exp((1 - at(distance)) / glowWidth)).toFixed(4)}) ${distance}px`);
 		}
 
 		element.style.backgroundImage = `radial-gradient(circle at ${x}px ${y + element.clientHeight}px, ${stops.join(", ")})`;
@@ -180,6 +208,7 @@ export function createGlobeGlow(map: MapLibreMap, options: GlobeGlowOptions): Gl
 			const main = new DOMMatrix(Array.from(projection.mainMatrix));
 			const inverse = main.inverse();
 
+			updateGlowWidth(projection.mainMatrix, main, inverse);
 			paintOverflow(projection.mainMatrix, main, inverse, opacity);
 			if (!this.program || !color || opacity <= 0) return;
 
@@ -191,7 +220,7 @@ export function createGlobeGlow(map: MapLibreMap, options: GlobeGlowOptions): Gl
 			gl.uniformMatrix4fv(at("u_inverse"), false, inverse.toFloat32Array());
 			gl.uniform3f(at("u_color"), color[0], color[1], color[2]);
 			gl.uniform1f(at("u_opacity"), opacity);
-			gl.uniform1f(at("u_width"), options.width);
+			gl.uniform1f(at("u_width"), glowWidth);
 			gl.uniform1f(at("u_inner"), options.inner);
 
 			const position = gl.getAttribLocation(program, "a_pos");

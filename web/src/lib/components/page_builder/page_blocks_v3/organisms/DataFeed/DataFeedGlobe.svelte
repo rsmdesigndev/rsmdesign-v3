@@ -159,6 +159,21 @@
 			]
 		},
 		{
+			name: "Gray Land / Blue Water",
+			style: "/files/GrayLand-BlueWater.json",
+			background: "var(--COLOR-BLACK)",
+			glowColor: "#cccccc",
+			sidebarTheme: "light",
+			markerColor: "var(--COLOR-ORANGE)",
+			markerColorSecondary: "var(--COLOR-BLACK)",
+			markerBlend: "screen",
+			markerBlur: true,
+			markerSizeStops: [
+				{ zoom: 2, size: 4 },
+				{ zoom: 10, size: 16 }
+			]
+		},
+		{
 			name: "Dark Land / Light Water",
 			style: "/files/DarkLand-LightWater.json",
 			background: "var(--COLOR-BG-LIGHT)",
@@ -232,7 +247,7 @@
 
 	/* scroll-driven zoom */
 	const ZOOM_STOPS: { scroll: number; zoom: number; cloudOpacity: number }[] = [
-		{ scroll: 0, zoom: 6, cloudOpacity: 0.38 },
+		{ scroll: 0, zoom: 7, cloudOpacity: 0.38 },
 		{ scroll: 12.5, zoom: 2, cloudOpacity: 0.62 },
 		{ scroll: 56.25, zoom: 8, cloudOpacity: 0 },
 		{ scroll: 100, zoom: 14, cloudOpacity: 0 }
@@ -258,11 +273,12 @@
 
 	/* hook into `data-scroll-percentage` from animate.ts */
 	function applyScrollZoom(): void {
-		const scrollPercentage = scrollWrapper.getAttribute("data-scroll-percentage");
-		if (scrollPercentage === null) return;
+		if (!scrollWrapper.hasAttribute("data-scroll-percentage")) return;
 
-		const zoom = getScrollValue(Number(scrollPercentage), "zoom");
-		const top = scrollWrapper.getBoundingClientRect().top;
+		/* animate.ts's measure, unrounded: its tenths of a percent are 0.8% of the view's height apart at 700vh, and the globe would jump from one to the next */
+		const { top, height } = scrollWrapper.getBoundingClientRect();
+		const scrollPercentage = 100 * Math.min(1, Math.max(0, (window.innerHeight - top) / (window.innerHeight + height)));
+		const zoom = fitGlobeZoom(getScrollValue(scrollPercentage, "zoom"), top);
 		globeOffset = getGlobeOffset(zoom, top);
 		fitGlobeCanvas();
 		globe.jumpTo({ zoom, padding: globePadding() }); /* one camera update for both, so the markers reproject once */
@@ -294,12 +310,16 @@
 		return (f * R) / Math.sqrt(f * f + 2 * f * R);
 	}
 
+	/* quadratic, so the globe slows to a stop after the map pins rather than stopping with it */
+	function getOffsetEase(top: number, view: number): number {
+		return (1 - Math.min(1, Math.max(0, -top / (GLOBE_OFFSET_EASE_OUT * view)))) ** 2;
+	}
+
 	function getGlobeOffset(zoom: number, top: number = scrollWrapper.getBoundingClientRect().top): number {
 		if (globe.getProjection()?.type !== "globe") return globeOffset;
 
 		const view = globeWrapper.clientHeight;
-		/* quadratic, so the globe slows to a stop after the map pins rather than stopping with it */
-		const ease = (1 - Math.min(1, Math.max(0, -top / (GLOBE_OFFSET_EASE_OUT * view)))) ** 2;
+		const ease = getOffsetEase(top, view);
 		if (ease === 0) return 0;
 
 		const radius = globeRadiusAt(zoom, view);
@@ -310,6 +330,22 @@
 		const full = needed <= -blend ? 0 : needed >= blend ? needed : (needed + blend) ** 2 / (4 * blend);
 
 		return Math.round(Math.min(full * ease, (GLOBE_CANVAS_MAX - 0.5) * view) * 4) / 4;
+	}
+
+	/* the highest zoom whose offset is within that cap: past it the globe's top would run up past the map's edge, so a first zoom stop too high for the view holds there */
+	function fitGlobeZoom(zoom: number, top: number = scrollWrapper.getBoundingClientRect().top): number {
+		if (globe.getProjection()?.type !== "globe") return zoom;
+
+		const view = globeWrapper.clientHeight;
+		const largest = ((GLOBE_CANVAS_MAX - 0.5) * view / getOffsetEase(top, view) + view / 2) / (1 + GLOBE_TOP_CLEARANCE); /* the radius whose offset is the cap */
+		const radius = globeRadiusAt(zoom, view);
+		if (!(radius > largest)) return zoom;
+
+		/* globeRadiusAt's r = fR / √(f² + 2fR), solved for R, which doubles per zoom level */
+		const f = view / 2 / Math.tan((baseFov * Math.PI) / 360);
+		const scale = (r: number) => (r * r + r * Math.sqrt(r * r + f * f)) / f;
+
+		return zoom + Math.log2(scale(largest) / scale(radius));
 	}
 
 	/* maplibre keeps the globe's center on its canvas, so a center below the view needs a canvas that runs past it, grown once for the slide-in's highest zoom */
@@ -353,9 +389,10 @@
 	function applyGlobeOffset(): void {
 		if (fittingCanvas) return;
 
-		globeOffset = getGlobeOffset(globe.getZoom());
+		const zoom = fitGlobeZoom(globe.getZoom()); /* a shorter view has room for less */
+		globeOffset = getGlobeOffset(zoom);
 		fitGlobeCanvas();
-		globe.setPadding(globePadding());
+		globe.jumpTo({ zoom, padding: globePadding() });
 	}
 
 	function getCloudOpacity(): number {
@@ -681,19 +718,34 @@
 	let pendingRotateIndex: number | null = null;
 	let pendingRotatePoint = { x: 0, y: 0 };
 	let rotatedToIndex: number | null = null; /* the item the globe last turned to, so settling on it again doesn't restart the turn */
+	let sidebarPointer = { x: 0, y: 0 }; /* where the pointer last was over an item, for when the list scrolls under it */
 
-	function onSidebarHover(index: number): void {
+	/* an item the list scrolls under a still pointer gets mouseenter but no mousemove, so entering starts the wait too */
+	function onSidebarHover(index: number, e: MouseEvent): void {
 		hoveredMarkerIndex = index;
+		onSidebarMove(index, e);
 	}
 
-	/* movement, not mouseenter, starts the wait, so an item scrolled under a still pointer doesn't turn the globe */
 	function onSidebarMove(index: number, e: MouseEvent): void {
+		sidebarPointer = { x: e.clientX, y: e.clientY };
+		waitToRotate(index);
+	}
+
+	/* the list scrolling under the pointer moves it over the item as moving the pointer would, so it starts the wait over */
+	function onSidebarScroll(): void {
+		if (pendingRotateIndex !== null) waitToRotate(pendingRotateIndex);
+	}
+
+	/* the pointer's drift is measured over the list's content, so the pointer moving and the list scrolling count alike */
+	function waitToRotate(index: number): void {
+		const point = { x: sidebarPointer.x, y: sidebarPointer.y + sidebarBody.scrollTop };
+
 		if (index === rotatedToIndex) return;
-		if (index === pendingRotateIndex && Math.hypot(e.clientX - pendingRotatePoint.x, e.clientY - pendingRotatePoint.y) <= SIDEBAR_ROTATE_TOLERANCE) return;
+		if (index === pendingRotateIndex && Math.hypot(point.x - pendingRotatePoint.x, point.y - pendingRotatePoint.y) <= SIDEBAR_ROTATE_TOLERANCE) return;
 
 		clearTimeout(hoverRotateTimer);
 		pendingRotateIndex = index;
-		pendingRotatePoint = { x: e.clientX, y: e.clientY };
+		pendingRotatePoint = point;
 		hoverRotateTimer = window.setTimeout(() => {
 			pendingRotateIndex = null;
 			rotatedToIndex = index;
@@ -733,6 +785,9 @@
 	let clouds: GlobeClouds;
 	let glow: GlobeGlow;
 	let glowOverflow: HTMLDivElement;
+
+	/* of the view's height: the farthest past the limb the glow falls to 1/e; about 3% when pinned, so it only narrows the large globe of the slide-in, whose glow reached 1/e over half a view out */
+	const GLOW_SPREAD = 0.06;
 
 	let inView = false;
 	let viewObserver: IntersectionObserver;
@@ -779,7 +834,7 @@
 			getOpacity: getCloudOpacity
 		});
 
-		glow = createGlobeGlow(globe, { color: selectedTheme.glowColor, opacity: 0.8, width: 0.07, inner: 28, overflow: glowOverflow });
+		glow = createGlobeGlow(globe, { color: selectedTheme.glowColor, opacity: 0.8, width: 0.07, spread: () => GLOW_SPREAD * window.innerHeight, inner: 28, overflow: glowOverflow });
 
 		globe.on("style.load", () => {
 			globe.setProjection({ type: "globe" });
@@ -903,24 +958,25 @@
 							on:click={() => showSidebarView("settings")}
 						>Settings</button>
 					{/if}
-					{#if sidebarCollapsed}
-						<div class="globe-sidebar-expand"
-						 in:fade={{ duration: 200, delay: 200 }}
-						 out:fade={{ duration: 200 }}
-						>
-							<Cta button sizeOverride="sm" hoverOverride="none"
-								 data={ {...filterCta,
-										 cta_text_light: "Expand sidebar",
-										 cta_icon: "arrow_down"
-									  } }
-								 on:click={expandSidebar}
-							/>
-						</div>
-					{/if}
 				</div>
+				<!-- outside the menu, in the sidebar's grid, so it can end on the page grid's lines -->
+				{#if sidebarCollapsed}
+					<div class="globe-sidebar-expand"
+					 in:fade={{ duration: 200, delay: 200 }}
+					 out:fade={{ duration: 200 }}
+					>
+						<Cta button sizeOverride="sm" hoverOverride="none"
+							 data={ {...filterCta,
+									 cta_text_light: "<span class='label-long'>Show projects</span><span class='label-short'>Projects</span>",
+									 cta_icon: "arrow_down"
+								  } }
+							 on:click={expandSidebar}
+						/>
+					</div>
+				{/if}
 				{#if !sidebarCollapsed}
 					<div class="globe-sidebar-collapsible" transition:slideUnderMenu>
-						<div class="globe-sidebar-body" bind:this={sidebarBody}>
+						<div class="globe-sidebar-body" bind:this={sidebarBody} on:scroll={onSidebarScroll}>
 							{#if sidebarView !== "results"}
 								<div class="globe-sidebar-panels" transition:slide={{ duration: 400 }}>
 									{#if sidebarView === "filter"}
@@ -1070,7 +1126,7 @@
 											bind:this={sidebarItems[index]}
 											class:hovered={index === hoveredMarkerIndex}
 											class:active={index === activeMarkerIndex}
-											on:mouseenter={() => onSidebarHover(index)}
+											on:mouseenter={(e) => onSidebarHover(index, e)}
 											on:mousemove={(e) => onSidebarMove(index, e)}
 											on:mouseleave={onSidebarLeave}
 										>
@@ -1079,6 +1135,12 @@
 												aria-expanded={index === activeMarkerIndex ? "true" : "false"}
 												on:click={() => onSidebarClick(index)}
 											>
+												<!-- the open item's image replaces it; lazy, as most of the list is out of view, and decorative beside the title -->
+												<span class="sidebar-item-thumb">
+													{#if project.image?.filename_disk}
+														<img src={assetUrl(project.image.filename_disk)} alt="" loading="lazy" decoding="async" />
+													{/if}
+												</span>
 												<span class="sidebar-item-location">{project.location}</span>
 												<span class="sidebar-item-title">{project.title}</span>
 											</button>
@@ -1121,7 +1183,7 @@
 						<div class="globe-sidebar-collapse">
 							<Cta button sizeOverride="sm" hoverOverride="none"
 								 data={ {...filterCta,
-										 cta_text_light: "Collapse sidebar",
+										 cta_text_light: "Hide projects",
 										 cta_icon: "arrow_up"
 									  } }
 								 on:click={collapseSidebar}
@@ -1214,10 +1276,23 @@
 			margin: calc(var(--GRID-CELL) * 1.75) calc(var(--GRID-CELL) / 2) 0 0;
 			height: calc(100% - var(--GRID-CELL) * 1.75);
 			min-height: 0; /* otherwise the results size the grid row instead of scrolling */
-			display: flex;
-			flex-direction: column;
+			// the page's columns, so the expand button can end on one of their lines
+			display: grid;
+			grid-template-columns: subgrid;
+			grid-template-rows: auto minmax(0, 1fr); /* the menu, then the results, which scroll rather than size the row */
 			row-gap: calc(var(--GRID-CELL) / 2);
 			z-index: 4;
+
+			// the page grid has halves and thirds here, not eighths, and margins too narrow to run into
+			@media (max-width: 62.5em) {
+				grid-column: half-start 2 / container-end;
+				margin-right: 0;
+			}
+
+			// and one column
+			@media (max-width: 31.25em) {
+				grid-column: container;
+			}
 
 			// transparent until the wrapper's top reaches the viewport's top; visibility waits out the fade, then takes the sidebar out of reach
 			opacity: 0;
@@ -1231,6 +1306,14 @@
 			}
 
 			--sidebar-radius: calc(var(--GRID-CELL) / 8);
+
+			// the collapsed stack's buttons: a third of the 9.5 grid cells the sidebar spans on desktop, less the two gaps, kept past 2000px, where the page's margins grow
+			// and the sidebar with them, so the expand button keeps its room up to the right margin; below 62.5em, a third of the sidebar itself
+			--sidebar-stack-width: calc((var(--GRID-CELL) * 9.5 - var(--GRID-CELL)) / 3);
+
+			@media (max-width: 62.5em) {
+				--sidebar-stack-width: calc((100% - var(--GRID-CELL)) / 3);
+			}
 
 			// a squircle cuts about 0.57 times as deep into its corner as a round corner of the same radius
 			@supports (corner-shape: squircle) {
@@ -1264,6 +1347,8 @@
 			}
 
 			.globe-sidebar-menu {
+				grid-column: 1 / -1;
+				grid-row: 1;
 				position: relative;
 				isolation: isolate; /* otherwise the negative z-indexes below drop beneath the menu and stop taking clicks */
 				display: flex;
@@ -1272,6 +1357,7 @@
 
 				> button {
 					flex: 1 1 0;
+					max-width: calc((100% - var(--GRID-CELL)) / 3); /* its width in the row, a third less the gaps, so the cap below transitions from it */
 					padding: calc(var(--GRID-CELL) / 4) 0;
 					border: none;
 					border-radius: var(--sidebar-radius);
@@ -1281,7 +1367,7 @@
 					font-family: inherit;
 					font-size: var(--FONT-SIZE-SM);
 					cursor: pointer;
-					transition: transform 0.4s ease, filter 0.4s ease;
+					transition: transform 0.4s ease, filter 0.4s ease, max-width 0.4s ease;
 
 					&:hover {
 						background: var(--sidebar-surface-alt);
@@ -1296,18 +1382,29 @@
 						z-index: -2;
 					}
 				}
+			}
 
-				> .globe-sidebar-expand {
-					position: absolute;
-					inset: 0 0 0 calc((100% - var(--GRID-CELL)) / 3 + var(--GRID-CELL) / 2);
-				}
+			// over the menu's row from a gap after the collapsed stack to the page's container-end, the right margin; not a padded subgrid,
+			// whose padding not every engine applies to the items in it (in one, this button covered Filter)
+			> .globe-sidebar-expand {
+				grid-column: 1 / container-end;
+				grid-row: 1;
+				margin-left: calc(var(--sidebar-stack-width) + var(--GRID-CELL) / 2); /* below 62.5em a share of this area, the sidebar's width there */
 			}
 
 			&.collapsed {
 				pointer-events: none; /* the globe stays draggable where the results were */
 
 				.globe-sidebar-menu {
-					pointer-events: auto;
+					// all three, so the two behind stay the front one's width
+					> button {
+						max-width: var(--sidebar-stack-width);
+					}
+
+					// only the front button, so the globe also takes the pointer beside it, where the expand button no longer reaches
+					> button:nth-child(1) {
+						pointer-events: auto;
+					}
 
 					> button:nth-child(2) {
 						pointer-events: none;
@@ -1324,7 +1421,8 @@
 			}
 
 			.globe-sidebar-collapsible {
-				flex: 1;
+				grid-column: 1 / -1;
+				grid-row: 2;
 				min-height: 0; /* otherwise the results size it instead of scrolling */
 				display: flex;
 				flex-direction: column;
@@ -1347,6 +1445,25 @@
 			}
 
 			:global {
+				.globe-sidebar-expand > button {
+					pointer-events: auto;
+				}
+
+				// "Projects" alone up to 1280px wide, where "Show projects" leaves the button little room
+				.globe-sidebar-expand .label-short {
+					display: none;
+				}
+
+				@media (max-width: 80em) {
+					.globe-sidebar-expand .label-long {
+						display: none;
+					}
+
+					.globe-sidebar-expand .label-short {
+						display: inline;
+					}
+				}
+
 				.globe-sidebar-expand > button,
 				.globe-sidebar-collapse > button {
 					width: 100%;
@@ -1480,9 +1597,13 @@
 					box-shadow: 0 0 0 calc(var(--GRID-CELL) / 10) var(--sidebar-surface);
 				}
 
+				// as tall as the location and a one-line title, at the body's line-height
+				--sidebar-thumb-size: calc((var(--FONT-SIZE-SM) + var(--FONT-SIZE-MD)) * 1.333);
+
 				> button {
-					display: flex;
-					flex-direction: column;
+					display: grid;
+					grid-template-columns: var(--sidebar-thumb-size) 1fr;
+					column-gap: calc(var(--GRID-CELL) / 2);
 					width: 100%;
 					margin: 0;
 					padding: calc(var(--GRID-CELL) / 2);
@@ -1494,18 +1615,42 @@
 					font: inherit;
 					text-align: left;
 					cursor: pointer;
-					transition: padding-bottom 0.4s ease;
+					transition: padding-bottom 0.4s ease, grid-template-columns 0.4s ease, column-gap 0.4s ease;
+
+					// at the top beside a title that wraps; its column closes as the item opens, so the image crops rather than squashes
+					> .sidebar-item-thumb {
+						grid-row: 1 / span 2;
+						height: var(--sidebar-thumb-size);
+						overflow: hidden;
+						background: var(--sidebar-surface-alt); /* until the image loads, and for a project without one */
+						transition: opacity 0.4s ease;
+
+						> img {
+							display: block;
+							width: 100%;
+							height: 100%;
+							object-fit: cover;
+						}
+					}
 
 					> .sidebar-item-location {
+						grid-column: 2;
 						font-size: var(--FONT-SIZE-SM);
 					}
 					> .sidebar-item-title {
-						font-size: var(--FONT-SIZE-LG);
+						grid-column: 2;
+						font-size: var(--FONT-SIZE-MD);
 					}
 				}
 
 				&.active > button {
+					grid-template-columns: 0px 1fr;
+					column-gap: 0;
 					padding-bottom: calc(var(--GRID-CELL) / 4);
+
+					> .sidebar-item-thumb {
+						opacity: 0;
+					}
 				}
 
 				// visibility waits out the collapse, then takes the closed contents out of reach
