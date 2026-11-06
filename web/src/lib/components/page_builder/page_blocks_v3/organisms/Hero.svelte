@@ -17,11 +17,13 @@
 	import type { ImageAssetRelation } from "$lib/cms";
 	import { assetUrl, rawAssetUrl } from "$lib/cms/assets";
 	import { animate, AnimateTrigger } from "$lib/animate";
-	import type { ProjectData } from "../index.svelte";
+	import { formatDate } from "$lib/format";
+	import type { ProjectData, NewsData } from "../index.svelte";
 	import Cta from "../atoms/Cta.svelte";
 
 	export let data: HeroData;
 	export let projectData: ProjectData | null;
+	export let newsData: NewsData | null;
 
 	// Color theme
 	const dispatch = createEventDispatcher();
@@ -85,6 +87,7 @@
 </script>
 
 <section class="hero"
+		 class:article={data.hero_style === "article"}
 		 class:mask={data.hero_style === "mask"}
 		 style:--expertise-height={expertiseHeight}
 		 style:--headings-height={headingsHeight}
@@ -96,6 +99,23 @@
 
 		 use:selectHeroOnIntersection
 >
+	{#if data.hero_style === "article"}	
+		<div class="article-details">
+			<h1>{newsData.post_title ?? "News Post"}</h1>
+			<h2>{@html headlineHtml}</h2>
+			<p class="kicker">
+				Posted {formatDate(newsData.post_date, { fullMonth: true })}
+				&emsp;·&emsp;
+				{#each newsData.post_topics as topic, i}
+					{#if newsData.post_topics.length === i + 1}
+						{topic.news_topics_id.name}
+					{:else}
+						{topic.news_topics_id.name},
+					{/if}
+				{/each}
+			</p>
+		</div>
+	{/if}
 	{#if data.hero_media_type === "Video"}
 		<div id="hero-video-wrapper" class="video-wrapper">
 			<div class="video-container">
@@ -157,7 +177,7 @@
 			alt={data.hero_image?.description ?? ""}
 		/>
 	{/if}
-	{#if data.hero_style !== "mask" && data.hero_style !== "below"}
+	{#if data.hero_style != "article" && data.hero_style !== "mask" && data.hero_style !== "below"}
 		<div class="hero-scrim-top" />
 		<div class="hero-scrim-bottom" 
 			 class:project={data.hero_style === "project"}
@@ -295,6 +315,40 @@
 
 		@media (max-width: 31.25em) {
 			--media-shrink: 20vh;
+		}
+
+		&.article {
+			display: grid;
+			grid-template-columns: var(--GRID-WRAPPER);
+
+			.article-details {
+				grid-column: main;
+				margin-top: var(--SPACE-XXL);
+				margin-bottom: var(--SPACE-MD);
+
+				h1 {
+					font-size: calc((var(--FONT-SIZE-XXXL) + var(--FONT-SIZE-XXL)) / 2);
+					font-weight: 300;
+					line-height: 1;
+					margin-bottom: var(--SPACE-SM);
+				}
+
+				h2 {
+					font-size: var(--FONT-SIZE-XL);
+					font-weight: 300;
+					line-height: 1;
+					margin-bottom: var(--SPACE-SM);
+				}
+
+				p.kicker {
+					font-weight: 500;
+					color: var(--color-secondary, var(--COLOR-MID-GRAY));
+				}
+			}
+
+			img, .hero-video-wrapper {
+				grid-column: viewport;
+			}
 		}
 
 		&.mask {

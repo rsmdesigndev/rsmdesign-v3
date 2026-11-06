@@ -75,10 +75,18 @@
 		project_awards?: any | null;
 	} | null;
 
-	export type NewsPostData = {
+	type Topic = {
+		news_topics_id?: {
+			slug?: string | null;
+			name?: string | null;
+		} | null;
+	} | null;
+
+	export type NewsData = {
 		post_slug?: string | null;
 		post_title?: string | null;
-		post_authors?: Person[] | null;
+		post_date?: string | null;
+		post_topics?: Topic[] | null;
 	}
 
 	export type ExpertiseData = {
@@ -102,6 +110,7 @@
 
 	export let blocks: ({ item?: PageBlockV3 | null } | null | undefined)[] | null | undefined;
 	export let projectData: ProjectData | null | undefined = undefined;
+	export let newsData: NewsData | null | undefined = undefined;
 	export let nextEntry: NextEntryData | null | undefined = undefined;
 	export let expertiseData: ExpertiseData | null | undefined = undefined;
 
@@ -200,6 +209,7 @@
 			<Hero 
 				{data} 
 				{projectData} 
+				{newsData}
 				on:selectHero={() => changeTheme(i)}
 			/>
 		{:else if data?.__typename === "about_v3_logos_animation"}

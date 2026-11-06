@@ -2,12 +2,20 @@
 	import { assetUrl } from "$lib/cms/assets";
 	import type { PageData } from "./$types";
 	import PageBlocks from "$lib/components/page_builder/page_blocks/index.svelte";
-	import PageBlocksV3 from "$lib/components/page_builder/page_blocks_v3/index.svelte";
+	import PageBlocksV3, { type NewsData } from "$lib/components/page_builder/page_blocks_v3/index.svelte";
 	import NextEntry from "$lib/components/page_builder/page_blocks_v3/organisms/NextEntry.svelte";
 	import SeoHead from "$lib/components/SeoHead.svelte";
 	import { formatDate } from "$lib/format";
 
 	export let data: PageData;
+
+	let newsData: NewsData;
+	$: newsData = {
+		post_slug?: data.news_post.slug,
+		post_title?: data.news_post.post_title,
+		post_date?: data.news_post.published_date,
+		post_topics?: data.news_post.topics
+	};
 </script>
 
 <SeoHead
@@ -23,6 +31,7 @@
 				<PageBlocksV3 
 					blocks={data.news_post.news_post_page_blocks_v3} 
 					nextEntry={{ entryType: "article", slug: data.news_post.slug, cursor: data.news_post.published_date }}
+					{newsData} 
 				/>
 			{/key}
 		{:else}

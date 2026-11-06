@@ -776,7 +776,6 @@ export const _query = gql`
 						hero_video_vimeo
 						hero_video_youtube
 						hero_headline
-						hero_subheading
 					}
 				}
 			}
