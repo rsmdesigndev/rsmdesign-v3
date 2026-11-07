@@ -102,7 +102,9 @@
 	{#if data.hero_style === "article"}	
 		<div class="article-details">
 			<h1>{newsData.post_title ?? "News Post"}</h1>
-			<h2>{@html headlineHtml}</h2>
+			{#if headlineHtml}
+				<h2>{@html headlineHtml}</h2>
+			{/if}
 			<p class="kicker">
 				Posted {formatDate(newsData.post_date, { fullMonth: true })}
 				&emsp;·&emsp;
