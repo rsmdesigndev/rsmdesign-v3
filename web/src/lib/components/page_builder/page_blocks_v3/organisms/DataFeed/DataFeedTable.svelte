@@ -161,7 +161,7 @@
 						</div>
 					{:else if data.feed_source === "Studios"}
 						<article>
-							<a href={`/studios/${item.slug}`}>
+							<a href={`/offices/${item.slug}`}>
 								{item.location}
 							</a>
 							<a href={`/team/${item.studio_contact_person.slug}`}>
