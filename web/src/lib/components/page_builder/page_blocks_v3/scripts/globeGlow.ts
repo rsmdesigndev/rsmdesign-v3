@@ -10,6 +10,7 @@ export type GlobeGlowOptions = {
 	spread?: () => number; // the farthest past the limb, in pixels on screen, it may fall to 1/e: seen from close, a large globe's glow would spread over the view
 	inner: number; // how quickly it fades inward from the limb; higher is a thinner inner rim
 	overflow?: HTMLElement; // as wide as the map, with its bottom edge on the map's top edge: there the glow carries on past the canvas, which WebGL can't draw beyond
+	overflowBelow?: HTMLElement; // the same below the map, with its top edge on the map's bottom edge
 };
 
 export type GlobeGlow = {
@@ -75,7 +76,7 @@ function createGlowProgram(gl: WebGL2RenderingContext): WebGLProgram {
 export function createGlobeGlow(map: MapLibreMap, options: GlobeGlowOptions): GlobeGlow {
 	const toRgb = (hex?: string) => hex ? [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255) : null;
 	let color = toRgb(options.color);
-	let overflowState = "";
+	const overflowStates = ["", ""]; // the strip above's, then the one below's
 	let glowWidth = options.width; // this frame's, in radii: options.width, or narrower where options.spread caps it
 	let widthState = "";
 
@@ -89,15 +90,15 @@ export function createGlobeGlow(map: MapLibreMap, options: GlobeGlowOptions): Gl
 		return Math.hypot(origin[0] + ray[0] * along, origin[1] + ray[1] * along, origin[2] + ray[2] * along);
 	}
 
-	// the line up from the globe's center on the canvas: the closest approach at a distance up it, in pixels
-	function screenLine(main: DOMMatrix, inverse: DOMMatrix) {
+	// the line up (or with direction 1, down) from the globe's center on the canvas: the closest approach at a distance along it, in pixels
+	function screenLine(main: DOMMatrix, inverse: DOMMatrix, direction: number = -1) {
 		const { clientWidth: width, clientHeight: height } = map.getContainer();
 		const center = main.transformPoint(new DOMPoint(0, 0, 0, 1));
 		const x = ((center.x / center.w + 1) / 2) * width;
 		const y = ((1 - center.y / center.w) / 2) * height;
-		const at = (distance: number) => closest(inverse, (2 * x) / width - 1, 1 - (2 * (y - distance)) / height);
+		const at = (distance: number) => closest(inverse, (2 * x) / width - 1, 1 - (2 * (y + direction * distance)) / height);
 
-		// the distance up from the center at which the ray passes a given number of radii from the planet
+		// the distance along the line at which the ray passes a given number of radii from the planet
 		const reach = (radii: number) => {
 			let low = 0;
 			let high = 4 * height;
@@ -130,44 +131,52 @@ export function createGlobeGlow(map: MapLibreMap, options: GlobeGlowOptions): Gl
 		glowWidth = capped > 0 && capped < options.width ? capped : options.width;
 	}
 
-	// above the canvas the glow goes on as a radial gradient: it is round about the globe's center on screen, so its profile
-	// along one line up from the center gives every stop
+	// past the map's edges the glow goes on as a radial gradient: it is round about the globe's center on screen, so its profile
+	// along one line from the center, up for the strip above the map and down for the one below, gives every stop
 	function paintOverflow(matrix: ArrayLike<number>, main: DOMMatrix, inverse: DOMMatrix, opacity: number): void {
-		const element = options.overflow;
-		if (!element) return;
+		const canvas = map.getContainer().getBoundingClientRect();
 
-		const { clientWidth: width, clientHeight: height } = map.getContainer();
-		const state = `${Array.from(matrix)} ${width} ${height} ${element.clientHeight} ${color} ${opacity} ${glowWidth}`;
-		if (state === overflowState) return;
-		overflowState = state;
+		[options.overflow, options.overflowBelow].forEach((element, index) => {
+			if (!element) return;
 
-		if (!color || opacity <= 0) {
-			element.style.backgroundImage = "";
-			return;
-		}
+			const strip = element.getBoundingClientRect();
+			if (strip.bottom < 0 || strip.top > window.innerHeight) return; // off screen, painted when it comes back
 
-		const { x, y, at, reach } = screenLine(main, inverse);
-		const limb = reach(1);
-		// while the canvas cuts off the top of the globe, the strip would ring a cap that isn't drawn,
-		// so it comes in as the globe clears the edge, over a twentieth of its radius
-		const strength = opacity * Math.min(1, Math.max(0, (y - limb) / (0.05 * limb)));
+			const state = `${Array.from(matrix)} ${canvas.width} ${canvas.height} ${canvas.left - strip.left} ${canvas.top - strip.top} ${strip.height} ${color} ${opacity} ${glowWidth}`;
+			if (state === overflowStates[index]) return;
+			overflowStates[index] = state;
 
-		if (!(strength > 1 / 512)) {
-			element.style.backgroundImage = "";
-			return;
-		}
+			if (!color || opacity <= 0) {
+				element.style.backgroundImage = "";
+				return;
+			}
 
-		// where the glow is below half a level of 255, or the strip's top: seen from close, a large globe's glow fills the sky
-		const end = Math.min(reach(1 + glowWidth * Math.log(512 * strength)), y + element.clientHeight);
-		const [r, g, b] = color.map((channel) => Math.round(channel * 255));
-		const stops = [`rgba(${r}, ${g}, ${b}, 0) ${limb}px`];
+			const below = index === 1;
+			const { x, y, at, reach } = screenLine(main, inverse, below ? 1 : -1);
+			const limb = reach(1);
+			const centerY = canvas.top + y;
+			const edge = below ? strip.top - centerY : centerY - strip.bottom; // the globe's center to the map's edge on this side, which the strip sits on
+			// while the map's edge cuts off the globe, the strip would ring a part of it that isn't drawn,
+			// so it comes in as the globe clears the edge, over a twentieth of its radius
+			const strength = opacity * Math.min(1, Math.max(0, (edge - limb) / (0.05 * limb)));
 
-		for (let i = 0; i <= 32; i++) {
-			const distance = limb + ((end - limb) * i) / 32;
-			stops.push(`rgba(${r}, ${g}, ${b}, ${(strength * Math.exp((1 - at(distance)) / glowWidth)).toFixed(4)}) ${distance}px`);
-		}
+			if (!(strength > 1 / 512)) {
+				element.style.backgroundImage = "";
+				return;
+			}
 
-		element.style.backgroundImage = `radial-gradient(circle at ${x}px ${y + element.clientHeight}px, ${stops.join(", ")})`;
+			// where the glow is below half a level of 255, or the strip's far edge: seen from close, a large globe's glow fills the sky
+			const end = Math.min(reach(1 + glowWidth * Math.log(512 * strength)), edge + strip.height);
+			const [r, g, b] = color.map((channel) => Math.round(channel * 255));
+			const stops = [`rgba(${r}, ${g}, ${b}, 0) ${limb}px`];
+
+			for (let i = 0; i <= 32; i++) {
+				const distance = limb + ((end - limb) * i) / 32;
+				stops.push(`rgba(${r}, ${g}, ${b}, ${(strength * Math.exp((1 - at(distance)) / glowWidth)).toFixed(4)}) ${distance}px`);
+			}
+
+			element.style.backgroundImage = `radial-gradient(circle at ${canvas.left + x - strip.left}px ${centerY - strip.top}px, ${stops.join(", ")})`;
+		});
 	}
 
 	const layer: GlowLayer = {

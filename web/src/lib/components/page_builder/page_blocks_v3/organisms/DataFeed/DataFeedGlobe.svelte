@@ -94,8 +94,8 @@
 	import Cta from "../../atoms/Cta.svelte";
 	import DataFeedFilterMenuItem from "./DataFeedFilterMenuItem.svelte";
 	import DataFeedFilterMenuSearch from "./DataFeedFilterMenuSearch.svelte";
-	import { slide, fade, type TransitionConfig } from "svelte/transition";
-	import { cubicOut } from "svelte/easing";
+	import { slide, fade } from "svelte/transition";
+	import { cubicInOut } from "svelte/easing";
 
 	export let data: dataFeedGlobeData;
 	export let feedData: any[] | null;
@@ -245,55 +245,61 @@
 		}
 	}
 
-	/* scroll-driven zoom */
-	const ZOOM_STOPS: { scroll: number; zoom: number; cloudOpacity: number }[] = [
+	/* scroll-driven zoom; padding is maplibre's camera padding, in px of the view: the globe centers in what it leaves, and a side a stop leaves out is 0 */
+	type PaddingSide = "top" | "right" | "bottom" | "left";
+	type ZoomStop = { scroll: number; zoom: number; cloudOpacity: number; padding?: Partial<Record<PaddingSide, number>> };
+
+	/* the map fills the view at 50%, so the way out mirrors the way in */
+	const ZOOM_STOPS: ZoomStop[] = [
 		{ scroll: 0, zoom: 7, cloudOpacity: 0.38 },
-		{ scroll: 12.5, zoom: 2, cloudOpacity: 0.62 },
-		{ scroll: 56.25, zoom: 8, cloudOpacity: 0 },
-		{ scroll: 100, zoom: 14, cloudOpacity: 0 }
+		{ scroll: 50, zoom: 2, cloudOpacity: 0.62 },
+		{ scroll: 100, zoom: 7, cloudOpacity: 0.38 }
 	];
 
-	const SIDEBAR_COLLAPSED_BELOW_ZOOM = 3;
-	const SIDEBAR_COLLAPSED_ABOVE_ZOOM = 12.33;
-
 	/* linear interpolation between zoom stops */
-	function getScrollValue(percentage: number, key: "zoom" | "cloudOpacity"): number {
+	function getScrollValue(percentage: number, key: "zoom" | "cloudOpacity" | PaddingSide): number {
+		const value = (stop: ZoomStop): number => (key === "zoom" || key === "cloudOpacity" ? stop[key] : stop.padding?.[key] ?? 0);
+
 		for (let i = 1; i < ZOOM_STOPS.length; i++) {
 			const to = ZOOM_STOPS[i];
 			if (percentage > to.scroll) continue;
 
 			const from = ZOOM_STOPS[i - 1];
-			return from[key] + ((percentage - from.scroll) / (to.scroll - from.scroll)) * (to[key] - from[key]);
+			return value(from) + ((percentage - from.scroll) / (to.scroll - from.scroll)) * (value(to) - value(from));
 		}
 
-		return ZOOM_STOPS[ZOOM_STOPS.length - 1][key];
+		return value(ZOOM_STOPS[ZOOM_STOPS.length - 1]);
 	}
 
 	let scrollObserver: MutationObserver;
 
 	/* hook into `data-scroll-percentage` from animate.ts */
 	function applyScrollZoom(): void {
-		if (!scrollWrapper.hasAttribute("data-scroll-percentage")) return;
+		if (nativeZoom || !scrollWrapper.hasAttribute("data-scroll-percentage")) return;
 
-		/* animate.ts's measure, unrounded: its tenths of a percent are 0.8% of the view's height apart at 700vh, and the globe would jump from one to the next */
+		/* animate.ts's measure, unrounded, so the zoom doesn't step between its tenths of a percent */
 		const { top, height } = scrollWrapper.getBoundingClientRect();
 		const scrollPercentage = 100 * Math.min(1, Math.max(0, (window.innerHeight - top) / (window.innerHeight + height)));
-		const zoom = fitGlobeZoom(getScrollValue(scrollPercentage, "zoom"), top);
-		globeOffset = getGlobeOffset(zoom, top);
+		scrollPadding = { top: getScrollValue(scrollPercentage, "top"), right: getScrollValue(scrollPercentage, "right"), bottom: getScrollValue(scrollPercentage, "bottom"), left: getScrollValue(scrollPercentage, "left") };
+		const scrollZoom = fitGlobeZoom(getScrollValue(scrollPercentage, "zoom"), top);
+		/* leaving mode 2, the zoom eases from where it was */
+		const zoomFrom = modeSwitch?.zoomFrom ?? null;
+		const zoom = zoomFrom === null ? scrollZoom : fitGlobeZoom(zoomFrom + (scrollZoom - zoomFrom) * (modeSwitch?.t ?? 1), top, false);
+		globeOffset = getGlobeOffset(zoom, top) * (1 - exploreShare);
 		fitGlobeCanvas();
 		globe.jumpTo({ zoom, padding: globePadding() }); /* one camera update for both, so the markers reproject once */
-		sidebarShown = top <= 0;
-		applySidebarDefault(zoom < SIDEBAR_COLLAPSED_BELOW_ZOOM || zoom > SIDEBAR_COLLAPSED_ABOVE_ZOOM);
+		exploreShown = !globeActive && (modeSwitch !== null || zoom < EXPLORE_SHOWN_BELOW_ZOOM);
 	}
 
-	/* while the map's top edge is on screen, the globe sits as far below the middle as it takes for its top to clear the edge,
-	   so neither the globe nor the glow above it is cut off there; it is back in the middle by the time the wrapper pins, or just after in a short view */
-	const GLOBE_TOP_CLEARANCE = 0.1; /* of the globe's radius on screen: past the glow's 1/e distance, so the glow above the map shows in full */
-	const GLOBE_OFFSET_EASE_OUT = 0.15; /* of the view's height: how far a view too short for the globe scrolls past the pin before it is back in the middle */
+	/* while a map edge is on screen, the globe keeps far enough from it that neither globe nor glow is cut off */
+	const GLOBE_EDGE_CLEARANCE = 0.1; /* of the globe's radius on screen: past the glow's 1/e distance, so the glow shows in full */
+	const GLOBE_MIDDLE_EASE = 0.15; /* of the view's height: how far either side of filling the view the hold there eases off */
 	const GLOBE_CANVAS_MAX = 4; /* views of height the canvas may grow to, well under WebGL's size limits */
 
 	let globeOffset = 0; /* how far below the middle of the view the globe's center sits */
-	let globeCanvasHeight = 0; /* the map container's height while it runs past the view's bottom, 0 at the view's own height */
+	let scrollPadding: Record<PaddingSide, number> = { top: 0, right: 0, bottom: 0, left: 0 }; /* the stops' padding at the last scroll update */
+	let globeCanvasHeight = 0; /* the map container's height while it runs past the view, 0 at the view's own height */
+	let globeCanvasAbove = false; /* the canvas runs up past the view's top on the way out, rather than down */
 	let baseFov = 36.87; /* maplibre's default, read at mount; the view's camera keeps this focal length whatever the canvas's height */
 	let fittedView = 0; /* the view's height the canvas was last fitted to */
 	let fittingCanvas = false;
@@ -310,93 +316,324 @@
 		return (f * R) / Math.sqrt(f * f + 2 * f * R);
 	}
 
-	/* quadratic, so the globe slows to a stop after the map pins rather than stopping with it */
-	function getOffsetEase(top: number, view: number): number {
-		return (1 - Math.min(1, Math.max(0, -top / (GLOBE_OFFSET_EASE_OUT * view)))) ** 2;
+	/* where the stops' padding puts the globe's center, from the view's top: maplibre's padded center, which it keeps on the canvas */
+	function getPaddedCenter(view: number): number {
+		return Math.min(view, Math.max(0, (scrollPadding.top + view - scrollPadding.bottom) / 2));
 	}
 
 	function getGlobeOffset(zoom: number, top: number = scrollWrapper.getBoundingClientRect().top): number {
 		if (globe.getProjection()?.type !== "globe") return globeOffset;
 
 		const view = globeWrapper.clientHeight;
-		const ease = getOffsetEase(top, view);
-		if (ease === 0) return 0;
-
+		const padded = Math.round((getPaddedCenter(view) - view / 2) * 4) / 4;
 		const radius = globeRadiusAt(zoom, view);
+		const needed = (1 + GLOBE_EDGE_CLEARANCE) * radius - view / 2; /* how far from the middle, away from an edge, the center clears it */
+		const blend = GLOBE_EDGE_CLEARANCE * radius;
 
 		/* rounded off where it reaches 0, so the globe doesn't change pace there */
-		const needed = (1 + GLOBE_TOP_CLEARANCE) * radius - view / 2;
-		const blend = GLOBE_TOP_CLEARANCE * radius;
-		const full = needed <= -blend ? 0 : needed >= blend ? needed : (needed + blend) ** 2 / (4 * blend);
+		const clear = (past: number): number => (past <= -blend ? 0 : past >= blend ? past : (past + blend) ** 2 / (4 * blend));
+		const down = top > 0 ? clear(needed - padded) : 0; /* the map's top edge on screen */
+		const up = window.innerHeight - top - view > 0 ? clear(needed + padded) : 0; /* its bottom edge */
+		const cap = (GLOBE_CANVAS_MAX - 0.5) * view;
 
-		return Math.round(Math.min(full * ease, (GLOBE_CANVAS_MAX - 0.5) * view) * 4) / 4;
+		return Math.round(Math.min(cap, Math.max(-cap, padded + down - up)) * 4) / 4;
 	}
 
-	/* the highest zoom whose offset is within that cap: past it the globe's top would run up past the map's edge, so a first zoom stop too high for the view holds there */
-	function fitGlobeZoom(zoom: number, top: number = scrollWrapper.getBoundingClientRect().top): number {
+	/* the zoom held lower where the globe can't clear the map's edges: past the canvas's cap, and where the map fills the view */
+	function fitGlobeZoom(zoom: number, top: number = scrollWrapper.getBoundingClientRect().top, middle: boolean = true): number {
 		if (globe.getProjection()?.type !== "globe") return zoom;
 
 		const view = globeWrapper.clientHeight;
-		const largest = ((GLOBE_CANVAS_MAX - 0.5) * view / getOffsetEase(top, view) + view / 2) / (1 + GLOBE_TOP_CLEARANCE); /* the radius whose offset is the cap */
-		const radius = globeRadiusAt(zoom, view);
-		if (!(radius > largest)) return zoom;
-
-		/* globeRadiusAt's r = fR / √(f² + 2fR), solved for R, which doubles per zoom level */
 		const f = view / 2 / Math.tan((baseFov * Math.PI) / 360);
+		/* globeRadiusAt's r = fR / √(f² + 2fR), solved for R, which doubles per zoom level */
 		const scale = (r: number) => (r * r + r * Math.sqrt(r * r + f * f)) / f;
+		const zoomAt = (from: number, radius: number) => from + Math.log2(scale(radius) / scale(globeRadiusAt(from, view)));
 
-		return zoom + Math.log2(scale(largest) / scale(radius));
+		/* the radius whose offset reaches the cap; the zoom holds there only while an edge is on screen */
+		const edges = top > 0 || window.innerHeight - top - view > 0;
+		const largest = (GLOBE_CANVAS_MAX * view) / (1 + GLOBE_EDGE_CLEARANCE);
+		let held = edges && globeRadiusAt(zoom, view) > largest ? zoomAt(zoom, largest) : zoom;
+
+		const share = middle ? (1 - Math.min(1, Math.abs(top) / (GLOBE_MIDDLE_EASE * view))) ** 2 : 0;
+		if (share > 0) {
+			const height = scrollWrapper.offsetHeight;
+			const filled = (100 * window.innerHeight) / (window.innerHeight + height); /* the scroll at which the map fills the view */
+			const filledZoom = getScrollValue(filled, "zoom");
+			const filledOffset = Math.min(view, Math.max(0, (getScrollValue(filled, "top") + view - getScrollValue(filled, "bottom")) / 2)) - view / 2;
+			/* the largest radius that clears both edges from there, with room for the rounding off */
+			const fits = (view / 2 - Math.abs(filledOffset)) / (1 + 2 * GLOBE_EDGE_CLEARANCE);
+			const short = Math.max(0, filledZoom - zoomAt(filledZoom, fits));
+			const scrolled = 100 * Math.min(1, Math.max(0, (window.innerHeight - top) / (window.innerHeight + height)));
+			if (short > 0) held = Math.min(held, getScrollValue(scrolled, "zoom") - short * share);
+		}
+
+		return held;
 	}
 
-	/* maplibre keeps the globe's center on its canvas, so a center below the view needs a canvas that runs past it, grown once for the slide-in's highest zoom */
+	/* maplibre keeps the globe's center on its canvas, so a center off the view needs a taller canvas, grown once per side */
 	function fitGlobeCanvas(): void {
 		const view = globeWrapper.clientHeight;
-		const fits = globeOffset <= view / 2;
-		if (view === fittedView && (fits ? globeCanvasHeight === 0 : globeCanvasHeight >= view / 2 + globeOffset)) return;
+		const fits = Math.abs(globeOffset) <= view / 2;
+		const above = globeOffset < 0;
+		if (view === fittedView && (fits ? globeCanvasHeight === 0 : above === globeCanvasAbove && globeCanvasHeight >= view / 2 + Math.abs(globeOffset))) return;
 
 		if (fits) {
 			globeCanvasHeight = 0;
 		} else {
-			const pin = (100 * window.innerHeight) / (window.innerHeight + scrollWrapper.offsetHeight);
-			const slideInZoom = Math.max(...ZOOM_STOPS.filter((stop) => stop.scroll < pin).map((stop) => stop.zoom), getScrollValue(pin, "zoom"));
-			const room = Math.max(globeOffset, (1 + GLOBE_TOP_CLEARANCE) * globeRadiusAt(slideInZoom, view) - view / 2);
+			const filled = (100 * window.innerHeight) / (window.innerHeight + scrollWrapper.offsetHeight);
+			const side = ZOOM_STOPS.filter((stop) => (above ? stop.scroll > filled : stop.scroll < filled)).map((stop) => stop.zoom);
+			const sideZoom = Math.max(...side, getScrollValue(filled, "zoom"));
+			const room = Math.max(Math.abs(globeOffset), (1 + GLOBE_EDGE_CLEARANCE) * globeRadiusAt(sideZoom, view) - view / 2);
 
 			globeCanvasHeight = Math.ceil(Math.min(view / 2 + room, GLOBE_CANVAS_MAX * view));
 		}
 
+		globeCanvasAbove = above;
 		globeContainer.style.height = globeCanvasHeight ? `${globeCanvasHeight}px` : "";
-		globeContainer.style.marginBottom = globeCanvasHeight ? `${view - globeCanvasHeight}px` : ""; /* so the grid row, and the sidebar in it, stay the view's height */
+		/* so the grid row, and the sidebar in it, stay the view's height */
+		globeContainer.style.marginTop = globeCanvasHeight && above ? `${view - globeCanvasHeight}px` : "";
+		globeContainer.style.marginBottom = globeCanvasHeight && !above ? `${view - globeCanvasHeight}px` : "";
 
 		fittedView = view;
 		fittingCanvas = true;
 		globe.resize();
 		fittingCanvas = false;
 
-		/* the same focal length as the view's own camera, so the canvas only runs further down the same picture */
+		/* the same focal length as the view's own camera, so the canvas only runs further along the same picture */
 		const height = globeCanvasHeight || view;
 		globe.setVerticalFieldOfView((2 * Math.atan(height / 2 / (view / 2 / Math.tan((baseFov * Math.PI) / 360))) * 180) / Math.PI);
 	}
 
-	/* the globe's center goes to the middle of the view plus the offset, from the canvas's top */
-	function globePadding(): { top: number; bottom: number } {
+	/* the globe's center goes down to the middle of the view plus the offset, and across by the stops' padding or the sidebar */
+	function globePadding(): { top: number; bottom: number; left: number; right: number } {
 		const view = globeWrapper.clientHeight;
-		const shift = view + 2 * globeOffset - (globeCanvasHeight || view);
+		const height = globeCanvasHeight || view;
+		const above = globeCanvasHeight && globeCanvasAbove ? height - view : 0; /* the canvas's run up past the view */
+		const shift = 2 * (above + view / 2 + globeOffset) - height;
+		const left = scrollPadding.left * (1 - exploreShare);
+		const right = scrollPadding.right + (sidebarInset - scrollPadding.right) * exploreShare;
 
-		return shift >= 0 ? { top: shift, bottom: 0 } : { top: 0, bottom: -shift };
+		return shift >= 0 ? { top: shift, bottom: 0, left, right } : { top: 0, bottom: -shift, left, right };
 	}
 
 	/* after the projection or the map's size changes */
 	function applyGlobeOffset(): void {
 		if (fittingCanvas) return;
 
+		if (globeActive) measureSidebarInset(); /* the sidebar's width goes with the window's */
+
+		if (nativeZoom) {
+			globeOffset = 0;
+			fitGlobeCanvas();
+			globe.jumpTo({ padding: globePadding() });
+			return;
+		}
+
 		const zoom = fitGlobeZoom(globe.getZoom()); /* a shorter view has room for less */
-		globeOffset = getGlobeOffset(zoom);
+		globeOffset = getGlobeOffset(zoom) * (1 - exploreShare);
 		fitGlobeCanvas();
 		globe.jumpTo({ zoom, padding: globePadding() });
 	}
 
+	/* by the scroll in mode 1, by the zoom in mode 2, and eased from mode 2's on the way out */
 	function getCloudOpacity(): number {
-		return getScrollValue(Number(scrollWrapper.getAttribute("data-scroll-percentage") ?? 0), "cloudOpacity");
+		if (nativeZoom) return getExploreCloudOpacity(globe.getZoom());
+
+		const scrolled = getScrollValue(Number(scrollWrapper.getAttribute("data-scroll-percentage") ?? 0), "cloudOpacity");
+		const from = modeSwitch?.cloudFrom ?? null;
+
+		return from === null ? scrolled : from + (scrolled - from) * (modeSwitch?.t ?? 1);
+	}
+
+	/* modes: mode 1 scrolls past the globe; mode 2, from the Explore button, locks the page and hands the zoom to maplibre */
+	type ExploreStop = { zoom: number; cloudOpacity: number };
+
+	type ModeSwitch = {
+		start: number;
+		t: number; /* eased, 0 to 1 */
+		shareFrom: number;
+		shareTo: number;
+		scrollFrom: number;
+		scrollTo: number;
+		/* eased from these to the scroll's zoom and clouds; null for the scroll's own */
+		zoomFrom: number | null;
+		cloudFrom: number | null;
+	};
+
+	const EXPLORE_STOPS: ExploreStop[] = [
+		{ zoom: 2, cloudOpacity: 0.62 },
+		{ zoom: 8, cloudOpacity: 0 }
+	];
+	const EXPLORE_MIN_ZOOM = 2;
+	const EXPLORE_MAX_ZOOM = 14;
+	const EXPLORE_SHOWN_BELOW_ZOOM = 4;
+	const MODE_SWITCH_DURATION = 800;
+
+	let globeActive = false; /* from the press that enters mode 2 to the one that leaves it */
+	let nativeZoom = false; /* once the map has lined up with the view in mode 2 */
+	let exploreShown = false;
+	let exploreButton: HTMLButtonElement;
+	let closeButton: HTMLButtonElement;
+	let exploreShare = 0; /* how far the camera has moved from mode 1's place toward mode 2's, 0 to 1 */
+	let sidebarInset = 0; /* mode 2's right padding */
+	let modeSwitch: ModeSwitch | null = null;
+	let modeSwitchFrame = 0;
+	let pageStyle: { overflow: string; gutter: string } | null = null; /* the root's inline styles before the lock */
+
+	/* linear interpolation between explore stops, held past either end */
+	function getExploreCloudOpacity(zoom: number): number {
+		const at = Math.max(zoom, EXPLORE_STOPS[0].zoom);
+
+		for (let i = 1; i < EXPLORE_STOPS.length; i++) {
+			const to = EXPLORE_STOPS[i];
+			if (at > to.zoom) continue;
+
+			const from = EXPLORE_STOPS[i - 1];
+			return from.cloudOpacity + ((at - from.zoom) / (to.zoom - from.zoom)) * (to.cloudOpacity - from.cloudOpacity);
+		}
+
+		return EXPLORE_STOPS[EXPLORE_STOPS.length - 1].cloudOpacity;
+	}
+
+	/* the map lines up with the view as the sidebar comes in, then maplibre's zoom takes over */
+	async function enterExplore(): Promise<void> {
+		if (globeActive) return;
+
+		const focusOnExplore = document.activeElement === exploreButton;
+
+		globeActive = true;
+		sidebarShown = true;
+		exploreShown = false;
+		lockPage();
+		measureSidebarInset();
+
+		/* pressed again partway out, the zoom eases on from where it is */
+		const zoomFrom = modeSwitch && modeSwitch.zoomFrom !== null ? globe.getZoom() : null;
+		startModeSwitch(1, window.scrollY + scrollWrapper.getBoundingClientRect().top, zoomFrom, null);
+
+		/* the Explore button fades out of reach, and Close takes its place in the sidebar's menu */
+		if (focusOnExplore) {
+			await tick();
+			closeButton.focus({ preventScroll: true });
+		}
+	}
+
+	/* the camera eases from where mode 2 left it back to the scroll's place */
+	async function leaveExplore(): Promise<void> {
+		if (!globeActive) return;
+
+		const zoom = globe.getZoom();
+		const cloudOpacity = getCloudOpacity();
+		const focusInSidebar = sidebar.contains(document.activeElement);
+
+		globeActive = false;
+		sidebarShown = false;
+		exploreShown = true;
+		setNativeZoom(false);
+		unlockPage();
+		startModeSwitch(0, window.scrollY, zoom, cloudOpacity);
+
+		/* the sidebar fades out of reach, and the Explore button comes back */
+		if (focusInSidebar) {
+			await tick();
+			exploreButton.focus({ preventScroll: true });
+		}
+	}
+
+	function startModeSwitch(shareTo: number, scrollTo: number, zoomFrom: number | null, cloudFrom: number | null): void {
+		cancelAnimationFrame(modeSwitchFrame);
+
+		/* with reduced motion, all at once */
+		const start = performance.now() - (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? MODE_SWITCH_DURATION : 0);
+		modeSwitch = { start, t: 0, shareFrom: exploreShare, shareTo, scrollFrom: window.scrollY, scrollTo, zoomFrom, cloudFrom };
+		stepModeSwitch();
+	}
+
+	function stepModeSwitch(): void {
+		if (!modeSwitch) return;
+
+		const progress = Math.min(1, (performance.now() - modeSwitch.start) / MODE_SWITCH_DURATION);
+		const { shareFrom, shareTo, scrollFrom, scrollTo } = modeSwitch;
+		modeSwitch.t = cubicInOut(progress);
+		exploreShare = shareFrom + (shareTo - shareFrom) * modeSwitch.t;
+
+		/* a locked page still scrolls from script */
+		if (scrollTo !== scrollFrom) {
+			const top = scrollFrom + (scrollTo - scrollFrom) * modeSwitch.t;
+			try {
+				window.scrollTo({ top, behavior: "instant" as ScrollBehavior });
+			} catch {
+				window.scrollTo(0, top); /* older Safari rejects "instant", as in +layout.svelte */
+			}
+		}
+
+		applyScrollZoom();
+
+		if (progress < 1) {
+			modeSwitchFrame = requestAnimationFrame(stepModeSwitch);
+			return;
+		}
+
+		modeSwitch = null;
+
+		if (shareTo === 1) {
+			setNativeZoom(true);
+		} else {
+			applyScrollZoom(); /* the Explore button goes by the zoom again */
+		}
+	}
+
+	function setNativeZoom(on: boolean): void {
+		nativeZoom = on;
+
+		if (on) {
+			globe.setMinZoom(Math.min(EXPLORE_MIN_ZOOM, globe.getZoom())); /* lower where the globe was held smaller to fit the view */
+			globe.setMaxZoom(EXPLORE_MAX_ZOOM);
+			/* around the center, where a project turned to stays */
+			globe.scrollZoom.enable({ around: "center" });
+			globe.touchZoomRotate.enable({ around: "center" });
+			globe.cooperativeGestures.disable();
+		} else {
+			globe.scrollZoom.disable();
+			globe.touchZoomRotate.enable();
+			globe.cooperativeGestures.enable();
+			globe.setMinZoom(null);
+			globe.setMaxZoom(null);
+		}
+	}
+
+	function lockPage(): void {
+		if (pageStyle) return;
+
+		const root = document.documentElement.style;
+		pageStyle = { overflow: root.getPropertyValue("overflow"), gutter: root.getPropertyValue("scrollbar-gutter") };
+		/* a scrollbar's room stays, so nothing beside it moves */
+		if (window.innerWidth > document.documentElement.clientWidth) root.setProperty("scrollbar-gutter", "stable");
+		root.setProperty("overflow", "hidden");
+	}
+
+	function unlockPage(): void {
+		if (!pageStyle) return;
+
+		const root = document.documentElement.style;
+		root.setProperty("overflow", pageStyle.overflow);
+		root.setProperty("scrollbar-gutter", pageStyle.gutter);
+		pageStyle = null;
+	}
+
+	/* so in mode 2 the globe centers in what the sidebar leaves */
+	function measureSidebarInset(): void {
+		sidebarInset = Math.max(0, globeWrapper.getBoundingClientRect().right - sidebar.getBoundingClientRect().left);
+	}
+
+	function onWindowKeydown(e: KeyboardEvent): void {
+		if (e.key === "Escape" && globeActive && !e.defaultPrevented) leaveExplore();
+	}
+
+	/* focus leaving the globe would otherwise land on the locked page behind it */
+	function onScrollWrapperFocusOut(e: FocusEvent): void {
+		const target = e.relatedTarget as Node | null;
+		if (globeActive && target && !scrollWrapper.contains(target)) leaveExplore();
 	}
 
 	/* tile prefetch: until a tile arrives, maplibre draws a coarser level in its place, so the levels next to the view are fetched ahead into the browser cache */
@@ -529,7 +766,8 @@
 			activeMarkerIndex = null;
 		}
 
-		if (index !== null) {
+		/* the sidebar shows only in mode 2 */
+		if (index !== null && globeActive) {
 			revealSidebarItem(index);
 		}
 	}
@@ -542,7 +780,9 @@
 		openedProjects[index] = true;
 	}
 
+	/* in mode 1, a marker enters mode 2 with its project open */
 	function onMarkerClick(index: number): void {
+		enterExplore();
 		activateProject(index);
 		revealSidebarItem(index);
 	}
@@ -623,11 +863,10 @@
 	}
 
 	/* sidebar: the menu buttons swap the results for one panel */
-	type SidebarView = "results" | "filter" | "search" | "settings";
+	type SidebarView = "results" | "filter" | "search";
 
 	let sidebarView: SidebarView = "results";
-	let sidebarCollapsed = false;
-	let sidebarShown = false; /* once the wrapper's top reaches the viewport's top, as the globe pins */
+	let sidebarShown = false; /* in mode 2 */
 	let sidebar: HTMLElement;
 	let sidebarMenu: HTMLDivElement;
 
@@ -646,7 +885,6 @@
 
 	function showSidebarView(view: SidebarView): void {
 		sidebarView = view;
-		sidebarCollapsed = false;
 		locationStep = 0; /* the filter panel reopens at the first location step */
 		keepMenuFocus();
 	}
@@ -654,45 +892,6 @@
 	function showResults(): void {
 		sidebarView = "results";
 		keepMenuFocus();
-	}
-
-	/* the collapsed menu is the results menu with its last two buttons stacked */
-	function collapseSidebar(): void {
-		sidebarView = "results";
-		sidebarCollapsed = true;
-		keepMenuFocus();
-	}
-
-	function expandSidebar(): void {
-		sidebarCollapsed = false;
-		keepMenuFocus();
-	}
-
-	/* only a threshold crossing applies the default, so the visitor's own toggle holds until the next one */
-	let zoomDefaultCollapsed: boolean | undefined;
-
-	function applySidebarDefault(collapsed: boolean): void {
-		if (collapsed === zoomDefaultCollapsed) return;
-		zoomDefaultCollapsed = collapsed;
-		if (collapsed === sidebarCollapsed) return;
-
-		/* only focus inside the sidebar moves, so scrolling never pulls it from elsewhere on the page */
-		const focusInSidebar = sidebar.contains(document.activeElement);
-
-		if (collapsed) sidebarView = "results";
-		sidebarCollapsed = collapsed;
-		if (focusInSidebar) keepMenuFocus();
-	}
-
-	/* the body slides up past its own top edge, as if under the menu */
-	function slideUnderMenu(node: HTMLElement, { duration = 400 } = {}): TransitionConfig {
-		const height = node.clientHeight;
-
-		return {
-			duration,
-			easing: cubicOut,
-			css: (t, u) => `transform: translateY(${-u * height}px); clip-path: inset(${u * height}px 0 0 0); opacity: ${t};`
-		};
 	}
 
 	const filterCta = {
@@ -785,9 +984,16 @@
 	let clouds: GlobeClouds;
 	let glow: GlobeGlow;
 	let glowOverflow: HTMLDivElement;
+	let glowOverflowBelow: HTMLDivElement;
+	let glowRoomObserver: ResizeObserver;
 
-	/* of the view's height: the farthest past the limb the glow falls to 1/e; about 3% when pinned, so it only narrows the large globe of the slide-in, whose glow reached 1/e over half a view out */
+	/* of the view's height: the farthest past the limb the glow falls to 1/e; it only narrows the large globe at either end */
 	const GLOW_SPREAD = 0.06;
+
+	/* the glow below the map stops at the page's end, so it adds no room to scroll into */
+	function fitGlowBelow(): void {
+		glowOverflowBelow.style.maxHeight = `${Math.max(0, document.body.getBoundingClientRect().bottom - scrollWrapper.getBoundingClientRect().bottom)}px`;
+	}
 
 	let inView = false;
 	let viewObserver: IntersectionObserver;
@@ -826,6 +1032,7 @@
 		attribution.classList.remove("maplibregl-compact-show");
 
 		globe.scrollZoom.disable();
+		globe.cooperativeGestures.enable(); /* mode 1: one finger scrolls the page past the globe, two move it */
 
 		clouds = createGlobeClouds(globe, {
 			texture: CLOUD_TEXTURE,
@@ -834,7 +1041,7 @@
 			getOpacity: getCloudOpacity
 		});
 
-		glow = createGlobeGlow(globe, { color: selectedTheme.glowColor, opacity: 0.8, width: 0.07, spread: () => GLOW_SPREAD * window.innerHeight, inner: 28, overflow: glowOverflow });
+		glow = createGlobeGlow(globe, { color: selectedTheme.glowColor, opacity: 0.8, width: 0.07, spread: () => GLOW_SPREAD * window.innerHeight, inner: 28, overflow: glowOverflow, overflowBelow: glowOverflowBelow });
 
 		globe.on("style.load", () => {
 			globe.setProjection({ type: "globe" });
@@ -886,6 +1093,9 @@
 		viewObserver.observe(globeWrapper);
 		document.addEventListener("visibilitychange", updateActivity);
 
+		glowRoomObserver = new ResizeObserver(fitGlowBelow);
+		glowRoomObserver.observe(document.body);
+
 		/* after load, so the markers and cloud texture don't compete with the initial tile requests */
 		globe.on("load", () => {
 			markers = createGlobeMarkers(globe, {
@@ -901,9 +1111,12 @@
 
 		/* teardown here rather than in onDestroy, which also runs on the server */
 		return () => {
+			cancelAnimationFrame(modeSwitchFrame);
+			unlockPage();
 			scrollObserver.disconnect();
 			viewObserver.disconnect();
 			document.removeEventListener("visibilitychange", updateActivity);
+			glowRoomObserver.disconnect();
 			clearTimeout(hoverRotateTimer);
 			stopReveal?.();
 			clouds.destroy();
@@ -913,24 +1126,32 @@
 	});
 </script>
 
+<svelte:window on:keydown={onWindowKeydown} />
+
 <template>
 	<div
 		class="globe-scroll-wrapper"
+		class:active={globeActive}
 		style:--background-color={selectedTheme.background}
 		bind:this={scrollWrapper}
 		use:animate={{ trigger: AnimateTrigger.WhileScrollingInView, animClass: "null" }}
+		on:focusout={onScrollWrapperFocusOut}
 	>
-		<!-- the glow above the top of the map, past the canvas and the wrapper's clip and fade-out mask -->
+		<!-- the glow above the top of the map, past the canvas and the wrapper's clip -->
 		<div class="globe-glow-overflow" bind:this={glowOverflow}></div>
-		<div
-			class="globe-wrapper"
-			bind:this={globeWrapper}
-			use:animate={{ trigger: AnimateTrigger.WhileScrollingInView, animClass: "globe-fade-out" }}
-		>
+		<!-- outside the map's clip, so it can stay below the header while the map runs up past the view -->
+		<button
+			type="button"
+			class="globe-explore"
+			class:shown={exploreShown}
+			bind:this={exploreButton}
+			on:click={enterExplore}
+		>Explore</button>
+		<div class="globe-wrapper" bind:this={globeWrapper}>
 			<div class="globe-container" bind:this={globeContainer}></div>
 
 			<div class="globe-marker-tooltip" role="tooltip" bind:this={tooltip}></div>
-			<aside class="globe-sidebar" class:collapsed={sidebarCollapsed} class:shown={sidebarShown} data-theme={selectedTheme.sidebarTheme} bind:this={sidebar}>
+			<aside class="globe-sidebar" class:shown={sidebarShown} data-theme={selectedTheme.sidebarTheme} bind:this={sidebar}>
 				<div class="globe-sidebar-menu" bind:this={sidebarMenu}>
 					{#if sidebarView !== "results"}
 						<button
@@ -947,252 +1168,188 @@
 					{#if sidebarView !== "search"}
 						<button
 							type="button"
-							disabled={sidebarCollapsed}
 							on:click={() => showSidebarView("search")}
 						>Search</button>
 					{/if}
-					{#if sidebarView !== "settings"}
-						<button
-							type="button"
-							disabled={sidebarCollapsed}
-							on:click={() => showSidebarView("settings")}
-						>Settings</button>
-					{/if}
+					<button
+						type="button"
+						bind:this={closeButton}
+						on:click={leaveExplore}
+					>Close</button>
 				</div>
-				<!-- outside the menu, in the sidebar's grid, so it can end on the page grid's lines -->
-				{#if sidebarCollapsed}
-					<div class="globe-sidebar-expand"
-					 in:fade={{ duration: 200, delay: 200 }}
-					 out:fade={{ duration: 200 }}
-					>
-						<Cta button sizeOverride="sm" hoverOverride="none"
-							 data={ {...filterCta,
-									 cta_text_light: "<span class='label-long'>Show projects</span><span class='label-short'>Projects</span>",
-									 cta_icon: "arrow_down"
-								  } }
-							 on:click={expandSidebar}
-						/>
-					</div>
-				{/if}
-				{#if !sidebarCollapsed}
-					<div class="globe-sidebar-collapsible" transition:slideUnderMenu>
-						<div class="globe-sidebar-body" bind:this={sidebarBody} on:scroll={onSidebarScroll}>
-							{#if sidebarView !== "results"}
-								<div class="globe-sidebar-panels" transition:slide={{ duration: 400 }}>
-									{#if sidebarView === "filter"}
-										<div class="globe-sidebar-panel"
-										 in:fade={{ duration: 200, delay: 201 }}
-										 out:fade={{ duration: 200 }}
-										>
-											{#each filterGroups as group}
-												<div class="globe-sidebar-filter">
-													<Cta button
-														 data={ {...filterCta,
-																 cta_text_light: `Filter by ${filterMenuLabel(group.arrayOf)}`,
-																 cta_icon: `${openFilter === group.arrayOf ? "arrow_up" : "arrow_down"}`
-															  } }
-														 aria-expanded={openFilter === group.arrayOf ? "true" : "false"}
-														 on:click={() => toggleFilter(group.arrayOf)}
-													/>
-													{#if openFilter === group.arrayOf}
-														<div class="globe-sidebar-container" transition:slide={{ duration: 400 }}>
-															{#if group.filterItems.length > 0}
-																<div class="filter-group">
-																	{#each globeFilterOptions(group, projects) as item}
-																		<div>
-																			<DataFeedFilterMenuItem sizeOverride="sm"
-																				data={ { item_name: item.name,
-																						 item_checked: group.filterIds.includes(item.id ?? ""),
-																						 input_name: group.arrayOf,
-																						 input_value: item.id
-																					 } }
-																				on:change={() => toggleFilterId(group, item.id)}
-																			/>
-																		</div>
-																	{/each}
+				<div class="globe-sidebar-body" bind:this={sidebarBody} on:scroll={onSidebarScroll}>
+					{#if sidebarView !== "results"}
+						<div class="globe-sidebar-panels" transition:slide={{ duration: 400 }}>
+							{#if sidebarView === "filter"}
+								<div class="globe-sidebar-panel"
+								 in:fade={{ duration: 200, delay: 201 }}
+								 out:fade={{ duration: 200 }}
+								>
+									{#each filterGroups as group}
+										<div class="globe-sidebar-filter">
+											<Cta button
+												 data={ {...filterCta,
+														 cta_text_light: `Filter by ${filterMenuLabel(group.arrayOf)}`,
+														 cta_icon: `${openFilter === group.arrayOf ? "arrow_up" : "arrow_down"}`
+													  } }
+												 aria-expanded={openFilter === group.arrayOf ? "true" : "false"}
+												 on:click={() => toggleFilter(group.arrayOf)}
+											/>
+											{#if openFilter === group.arrayOf}
+												<div class="globe-sidebar-container" transition:slide={{ duration: 400 }}>
+													{#if group.filterItems.length > 0}
+														<div class="filter-group">
+															{#each globeFilterOptions(group, projects) as item}
+																<div>
+																	<DataFeedFilterMenuItem sizeOverride="sm"
+																		data={ { item_name: item.name,
+																				 item_checked: group.filterIds.includes(item.id ?? ""),
+																				 input_name: group.arrayOf,
+																				 input_value: item.id
+																			 } }
+																		on:change={() => toggleFilterId(group, item.id)}
+																	/>
 																</div>
-															{:else}
-																<p>Loading…</p>
-															{/if}
+															{/each}
 														</div>
+													{:else}
+														<p>Loading…</p>
 													{/if}
 												</div>
-											{/each}
-											<div class="globe-sidebar-filter">
-												<Cta button
-													 data={ {...filterCta,
-															 cta_text_light: "Filter by Location",
-															 cta_icon: `${openFilter === "Location" ? "arrow_up" : "arrow_down"}`
-														  } }
-													 aria-expanded={openFilter === "Location" ? "true" : "false"}
-													 on:click={() => toggleFilter("Location")}
-												/>
-												{#if openFilter === "Location"}
-													<div class="globe-sidebar-container" transition:slide={{ duration: 400 }}>
-														<p>{locationStep === 0 ? "Select a region or country." : `Select a ${LOCATION_LEVELS[locationStep].name.toLowerCase()}.`}</p>
-														{#each locationEntries as group}
-															<div class="filter-group">
-																{#each group as entry}
-																	<svelte:element this={entry.level === 0 ? "h2" : "div"}>
-																		<DataFeedFilterMenuItem sizeOverride="sm"
-																			data={ { item_name: entry.value,
-																					 item_checked: isLocationSelected(locationSelection, entry)
-																				 } }
-																			on:change={() => locationSelection = toggleLocation(locationSelection, entry)}
-																		/>
-																	</svelte:element>
-																{/each}
-															</div>
-														{/each}
-														{#if locationIsSelected}
-															<div class="filter-actions">
-																<Cta button
-																	 data={ {...filterCta,
-																			 cta_text_light: `${matchCount} ${matchCount === 1 ? "Result" : "Results"} ✓`,
-																			 cta_icon: "none"
-																		  } }
-																	 on:click={showResults}
+											{/if}
+										</div>
+									{/each}
+									<div class="globe-sidebar-filter">
+										<Cta button
+											 data={ {...filterCta,
+													 cta_text_light: "Filter by Location",
+													 cta_icon: `${openFilter === "Location" ? "arrow_up" : "arrow_down"}`
+												  } }
+											 aria-expanded={openFilter === "Location" ? "true" : "false"}
+											 on:click={() => toggleFilter("Location")}
+										/>
+										{#if openFilter === "Location"}
+											<div class="globe-sidebar-container" transition:slide={{ duration: 400 }}>
+												<p>{locationStep === 0 ? "Select a region or country." : `Select a ${LOCATION_LEVELS[locationStep].name.toLowerCase()}.`}</p>
+												{#each locationEntries as group}
+													<div class="filter-group">
+														{#each group as entry}
+															<svelte:element this={entry.level === 0 ? "h2" : "div"}>
+																<DataFeedFilterMenuItem sizeOverride="sm"
+																	data={ { item_name: entry.value,
+																			 item_checked: isLocationSelected(locationSelection, entry)
+																		 } }
+																	on:change={() => locationSelection = toggleLocation(locationSelection, entry)}
 																/>
-																{#if nextLocation}
-																	<Cta button
-																		 data={ {...filterCta,
-																				 cta_text_light: `${nextLocation.count} ${LOCATION_LEVELS[nextLocation.step].plural} →`,
-																				 cta_icon: "none"
-																			  } }
-																		 on:click={() => locationStep = nextLocation.step}
-																	/>
-																{/if}
-															</div>
+															</svelte:element>
+														{/each}
+													</div>
+												{/each}
+												{#if locationIsSelected}
+													<div class="filter-actions">
+														<Cta button
+															 data={ {...filterCta,
+																	 cta_text_light: `${matchCount} ${matchCount === 1 ? "Result" : "Results"} ✓`,
+																	 cta_icon: "none"
+																  } }
+															 on:click={showResults}
+														/>
+														{#if nextLocation}
+															<Cta button
+																 data={ {...filterCta,
+																		 cta_text_light: `${nextLocation.count} ${LOCATION_LEVELS[nextLocation.step].plural} →`,
+																		 cta_icon: "none"
+																	  } }
+																 on:click={() => locationStep = nextLocation.step}
+															/>
 														{/if}
 													</div>
 												{/if}
 											</div>
-										</div>
-									{:else if sidebarView === "search"}
-										<div class="globe-sidebar-panel"
-										 in:fade={{ duration: 200, delay: 201 }}
-										 out:fade={{ duration: 200 }}
-										>
-											<div class="globe-sidebar-container">
-												<DataFeedFilterMenuSearch bind:value={searchText} autofocus on:submit={showResults} />
-											</div>
-										</div>
-									{:else if sidebarView === "settings"}
-										<div class="globe-sidebar-panel"
-										 in:fade={{ duration: 200, delay: 201 }}
-										 out:fade={{ duration: 200 }}
-										>
-											<div class="globe-sidebar-container">
-												<div class="filter-group">
-													<h2>Map theme</h2>
-													{#each MAP_THEMES as theme}
-														<div>
-															<DataFeedFilterMenuItem sizeOverride="sm"
-																data={ { item_name: theme.name,
-																		 item_checked: theme === selectedTheme,
-																		 input_type: "radio",
-																		 input_name: "map-theme",
-																		 input_value: theme.name
-																	 } }
-																on:change={() => selectTheme(theme)}
-															/>
-														</div>
-													{/each}
-												</div>
-												<div class="filter-group">
-													<h2>Markers</h2>
-													<div>
-														<DataFeedFilterMenuItem sizeOverride="sm"
-															data={ { item_name: "Hide non-matching",
-																	 item_checked: hideNonMatching
-																 } }
-															on:change={() => hideNonMatching = !hideNonMatching}
-														/>
-													</div>
-												</div>
-											</div>
-										</div>
-									{/if}
+										{/if}
+									</div>
 								</div>
-							{:else}
-								{#if matchCount === 0}
-									<p class="globe-sidebar-empty">No results match your query. Try another search or set of filters.</p>
-								{/if}
-								{#each projects as project, index}
-									{#if projectMatches[index]}
-										{@const link = itemLink(project)}
-										<div
-											class="globe-sidebar-item"
-											bind:this={sidebarItems[index]}
-											class:hovered={index === hoveredMarkerIndex}
-											class:active={index === activeMarkerIndex}
-											on:mouseenter={(e) => onSidebarHover(index, e)}
-											on:mousemove={(e) => onSidebarMove(index, e)}
-											on:mouseleave={onSidebarLeave}
-										>
-											<button
-												type="button"
-												aria-expanded={index === activeMarkerIndex ? "true" : "false"}
-												on:click={() => onSidebarClick(index)}
-											>
-												<!-- the open item's image replaces it; lazy, as most of the list is out of view, and decorative beside the title -->
-												<span class="sidebar-item-thumb">
-													{#if project.image?.filename_disk}
-														<img src={assetUrl(project.image.filename_disk)} alt="" loading="lazy" decoding="async" />
-													{/if}
-												</span>
-												<span class="sidebar-item-location">{project.location}</span>
-												<span class="sidebar-item-title">{project.title}</span>
-											</button>
-											<div class="globe-sidebar-item-details">
-												<div>
-													{#if openedProjects[index]}
-														{#if project.image?.filename_disk}
-															<img src={assetUrl(project.image.filename_disk)} alt={project.image.title ?? ""} />
-														{/if}
-														<div class="globe-sidebar-item-action">
-															<Cta button disabled sizeOverride="sm"
-																 data={ {...itemActionCta,
-																		 cta_text_light: "Details",
-																		 cta_icon: "plus"
-																	  } }
-															/>
-														</div>
-														{#if link}
-															<div class="globe-sidebar-item-action">
-																<Cta sizeOverride="sm"
-																	 data={ {...itemActionCta,
-																			 cta_text_light: "View case study",
-																			 cta_icon: "arrow_up_left",
-																			 cta_link: link
-																		  } }
-																/>
-															</div>
-														{/if}
-													{:else if link}
-														<!-- a plain link until the item first opens, so the server's markup links every project without a Cta per item -->
-														<a href={link}>View case study</a>
-													{/if}
-												</div>
-											</div>
-										</div>
-									{/if}
-								{/each}
+							{:else if sidebarView === "search"}
+								<div class="globe-sidebar-panel"
+								 in:fade={{ duration: 200, delay: 201 }}
+								 out:fade={{ duration: 200 }}
+								>
+									<div class="globe-sidebar-container">
+										<DataFeedFilterMenuSearch bind:value={searchText} autofocus on:submit={showResults} />
+									</div>
+								</div>
 							{/if}
 						</div>
-						<div class="globe-sidebar-collapse">
-							<Cta button sizeOverride="sm" hoverOverride="none"
-								 data={ {...filterCta,
-										 cta_text_light: "Hide projects",
-										 cta_icon: "arrow_up"
-									  } }
-								 on:click={collapseSidebar}
-							/>
-						</div>
-					</div>
-				{/if}
+					{:else}
+						{#if matchCount === 0}
+							<p class="globe-sidebar-empty">No results match your query. Try another search or set of filters.</p>
+						{/if}
+						{#each projects as project, index}
+							{#if projectMatches[index]}
+								{@const link = itemLink(project)}
+								<div
+									class="globe-sidebar-item"
+									bind:this={sidebarItems[index]}
+									class:hovered={index === hoveredMarkerIndex}
+									class:active={index === activeMarkerIndex}
+									on:mouseenter={(e) => onSidebarHover(index, e)}
+									on:mousemove={(e) => onSidebarMove(index, e)}
+									on:mouseleave={onSidebarLeave}
+								>
+									<button
+										type="button"
+										aria-expanded={index === activeMarkerIndex ? "true" : "false"}
+										on:click={() => onSidebarClick(index)}
+									>
+										<!-- the open item's image replaces it; lazy, as most of the list is out of view, and decorative beside the title -->
+										<span class="sidebar-item-thumb">
+											{#if project.image?.filename_disk}
+												<img src={assetUrl(project.image.filename_disk)} alt="" loading="lazy" decoding="async" />
+											{/if}
+										</span>
+										<span class="sidebar-item-location">{project.location}</span>
+										<span class="sidebar-item-title">{project.title}</span>
+									</button>
+									<div class="globe-sidebar-item-details">
+										<div>
+											{#if openedProjects[index]}
+												{#if project.image?.filename_disk}
+													<img src={assetUrl(project.image.filename_disk)} alt={project.image.title ?? ""} />
+												{/if}
+												<div class="globe-sidebar-item-action">
+													<Cta button disabled sizeOverride="sm"
+														 data={ {...itemActionCta,
+																 cta_text_light: "Details",
+																 cta_icon: "plus"
+															  } }
+													/>
+												</div>
+												{#if link}
+													<div class="globe-sidebar-item-action">
+														<Cta sizeOverride="sm"
+															 data={ {...itemActionCta,
+																	 cta_text_light: "View case study",
+																	 cta_icon: "arrow_up_left",
+																	 cta_link: link
+																  } }
+														/>
+													</div>
+												{/if}
+											{:else if link}
+												<!-- a plain link until the item first opens, so the server's markup links every project without a Cta per item -->
+												<a href={link}>View case study</a>
+											{/if}
+										</div>
+									</div>
+								</div>
+							{/if}
+						{/each}
+					{/if}
+				</div>
 			</aside>
 		</div>
+		<!-- and below its bottom, as it scrolls out -->
+		<div class="globe-glow-overflow below" bind:this={glowOverflowBelow}></div>
 	</div>
 </template>
 
@@ -1203,15 +1360,73 @@
 		display: grid;
 		grid-template-columns: subgrid;
 		align-content: start;
-		height: 700vh; /* so it reaches the viewport's top at 12.5% of animate.ts's scroll percentage (one view's height of the eight it scrolls through) */
+		height: 100vh; /* the map's own, so the map fills the view at animate.ts's 50% and scrolls through without pinning */
+		--sidebar-radius: calc(var(--GRID-CELL) / 8); /* the sidebar's corners, and the Explore button's */
+
+		// a squircle cuts about 0.57 times as deep into its corner as a round corner of the same radius
+		@supports (corner-shape: squircle) {
+			--sidebar-radius: calc(var(--GRID-CELL) / 8 * 1.75);
+		}
 	}
 	.globe-glow-overflow {
 		position: absolute;
 		left: 0;
 		right: 0;
 		bottom: 100%;
-		height: 100vh; /* room for the glow above the map, which reaches most of a view's height above a globe much larger than the view */
+		height: 100vh; /* room for the glow past the map, which reaches most of a view's height from a globe much larger than the view */
 		pointer-events: none;
+
+		// below the map as it scrolls out; capped at the page's end in script
+		&.below {
+			top: 100%;
+			bottom: auto;
+		}
+	}
+	// where Show projects was, in the sidebar's menu row up to the page's container-end; in the light sidebar's colors
+	.globe-explore {
+		grid-column: eighth-start 7 / container-end;
+		grid-row: 1;
+		align-self: start;
+		position: sticky; /* below the header while the map runs up past the view */
+		top: calc(var(--GRID-CELL) * 1.75);
+		z-index: 4; /* over the map's 3 */
+		margin-top: calc(var(--GRID-CELL) * 1.75); /* the sidebar's own */
+		margin-left: calc((var(--GRID-CELL) * 9.5 - var(--GRID-CELL)) / 3 + var(--GRID-CELL) / 2); /* past a menu button, a third of the sidebar's 9.5 cells less the gaps, and a gap */
+		padding: calc(var(--GRID-CELL) / 4) 0;
+		border: none;
+		border-radius: var(--sidebar-radius);
+		corner-shape: squircle;
+		background: white;
+		color: var(--COLOR-BLACK);
+		font-family: inherit;
+		font-size: var(--FONT-SIZE-SM);
+		cursor: pointer;
+		// visibility waits out the fade, then takes it out of reach
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none; /* while it fades out over the sidebar's menu */
+		transition: background-color 0.3s ease, opacity 0.4s ease, visibility 0s linear 0.4s;
+
+		// the sidebar's columns there, and a third of their width
+		@media (max-width: 62.5em) {
+			grid-column: half-start 2 / container-end;
+			margin-left: calc((100% - var(--GRID-CELL)) / 3 + var(--GRID-CELL) / 2);
+		}
+
+		@media (max-width: 31.25em) {
+			grid-column: container;
+		}
+
+		&.shown {
+			opacity: 1;
+			visibility: visible;
+			pointer-events: auto;
+			transition: background-color 0.3s ease, opacity 0.4s ease, visibility 0s;
+		}
+
+		&:hover {
+			background: #f2f2f3;
+		}
 	}
 	.globe-wrapper {
 		/*
@@ -1230,6 +1445,7 @@
 		top: 0;
 
 		grid-column: viewport;
+		grid-row: 1; /* the Explore button shares its row */
 		display: grid;
 		grid-template-columns: subgrid;
 
@@ -1276,7 +1492,6 @@
 			margin: calc(var(--GRID-CELL) * 1.75) calc(var(--GRID-CELL) / 2) 0 0;
 			height: calc(100% - var(--GRID-CELL) * 1.75);
 			min-height: 0; /* otherwise the results size the grid row instead of scrolling */
-			// the page's columns, so the expand button can end on one of their lines
 			display: grid;
 			grid-template-columns: subgrid;
 			grid-template-rows: auto minmax(0, 1fr); /* the menu, then the results, which scroll rather than size the row */
@@ -1294,7 +1509,7 @@
 				grid-column: container;
 			}
 
-			// transparent until the wrapper's top reaches the viewport's top; visibility waits out the fade, then takes the sidebar out of reach
+			// transparent outside mode 2; visibility waits out the fade, then takes the sidebar out of reach
 			opacity: 0;
 			visibility: hidden;
 			transition: opacity 0.4s ease, visibility 0s linear 0.4s;
@@ -1303,21 +1518,6 @@
 				opacity: 1;
 				visibility: visible;
 				transition: opacity 0.4s ease, visibility 0s;
-			}
-
-			--sidebar-radius: calc(var(--GRID-CELL) / 8);
-
-			// the collapsed stack's buttons: a third of the 9.5 grid cells the sidebar spans on desktop, less the two gaps, kept past 2000px, where the page's margins grow
-			// and the sidebar with them, so the expand button keeps its room up to the right margin; below 62.5em, a third of the sidebar itself
-			--sidebar-stack-width: calc((var(--GRID-CELL) * 9.5 - var(--GRID-CELL)) / 3);
-
-			@media (max-width: 62.5em) {
-				--sidebar-stack-width: calc((100% - var(--GRID-CELL)) / 3);
-			}
-
-			// a squircle cuts about 0.57 times as deep into its corner as a round corner of the same radius
-			@supports (corner-shape: squircle) {
-				--sidebar-radius: calc(var(--GRID-CELL) / 8 * 1.75);
 			}
 
 			// the sidebar's own theme colors, in place of the page section's
@@ -1330,8 +1530,6 @@
 			--sidebar-surface-alt: #f2f2f3;
 			--sidebar-card: #d8d9da;
 			--sidebar-rule: #e4e4e3;
-			--sidebar-stack-brightness-1: 0.9;
-			--sidebar-stack-brightness-2: 0.8;
 
 			// each gray is --COLOR-BLACK plus the light gray's distance from white
 			&[data-theme="dark"] {
@@ -1341,23 +1539,18 @@
 				--sidebar-surface-alt: #272524;
 				--sidebar-card: #413e3d;
 				--sidebar-rule: #353334;
-				--sidebar-stack-brightness-1: 1.7; /* a darker stack wouldn't show against black */
-				--sidebar-stack-brightness-2: 2.4;
 				color-scheme: dark; /* dark scrollbars and focus rings */
 			}
 
 			.globe-sidebar-menu {
 				grid-column: 1 / -1;
 				grid-row: 1;
-				position: relative;
-				isolation: isolate; /* otherwise the negative z-indexes below drop beneath the menu and stop taking clicks */
 				display: flex;
 				flex-direction: row;
 				column-gap: calc(var(--GRID-CELL) / 2);
 
 				> button {
 					flex: 1 1 0;
-					max-width: calc((100% - var(--GRID-CELL)) / 3); /* its width in the row, a third less the gaps, so the cap below transitions from it */
 					padding: calc(var(--GRID-CELL) / 4) 0;
 					border: none;
 					border-radius: var(--sidebar-radius);
@@ -1367,120 +1560,23 @@
 					font-family: inherit;
 					font-size: var(--FONT-SIZE-SM);
 					cursor: pointer;
-					transition: transform 0.4s ease, filter 0.4s ease, max-width 0.4s ease;
 
 					&:hover {
 						background: var(--sidebar-surface-alt);
 					}
-
-					// always under the first button, so they stay under it while sliding back out
-					&:nth-child(2) {
-						z-index: -1;
-					}
-
-					&:nth-child(3) {
-						z-index: -2;
-					}
 				}
 			}
 
-			// over the menu's row from a gap after the collapsed stack to the page's container-end, the right margin; not a padded subgrid,
-			// whose padding not every engine applies to the items in it (in one, this button covered Filter)
-			> .globe-sidebar-expand {
-				grid-column: 1 / container-end;
-				grid-row: 1;
-				margin-left: calc(var(--sidebar-stack-width) + var(--GRID-CELL) / 2); /* below 62.5em a share of this area, the sidebar's width there */
-			}
-
-			&.collapsed {
-				pointer-events: none; /* the globe stays draggable where the results were */
-
-				.globe-sidebar-menu {
-					// all three, so the two behind stay the front one's width
-					> button {
-						max-width: var(--sidebar-stack-width);
-					}
-
-					// only the front button, so the globe also takes the pointer beside it, where the expand button no longer reaches
-					> button:nth-child(1) {
-						pointer-events: auto;
-					}
-
-					> button:nth-child(2) {
-						pointer-events: none;
-						transform: translate(calc(-100% - var(--GRID-CELL) / 2 + var(--GRID-CELL) / 8), calc(var(--GRID-CELL) / 8));
-						filter: brightness(var(--sidebar-stack-brightness-1));
-					}
-
-					> button:nth-child(3) {
-						pointer-events: none;
-						transform: translate(calc(-200% - var(--GRID-CELL) + var(--GRID-CELL) / 4), calc(var(--GRID-CELL) / 4));
-						filter: brightness(var(--sidebar-stack-brightness-2));
-					}
-				}
-			}
-
-			.globe-sidebar-collapsible {
+			.globe-sidebar-body {
 				grid-column: 1 / -1;
 				grid-row: 2;
 				min-height: 0; /* otherwise the results size it instead of scrolling */
 				display: flex;
 				flex-direction: column;
-				row-gap: calc(var(--GRID-CELL) / 2);
-			}
-
-			.globe-sidebar-body {
-				flex: 1;
-				display: flex;
-				flex-direction: column;
 				overflow-y: scroll;
 				// room for an enlarged item, which the scroll area would otherwise clip
-				margin: calc(var(--GRID-CELL) / -10) calc(var(--GRID-CELL) / -10) 0;
+				margin: calc(var(--GRID-CELL) / -10) calc(var(--GRID-CELL) / -10) calc(var(--GRID-CELL) / 2); /* and half a cell clear of the view's bottom */
 				padding: calc(var(--GRID-CELL) / 10) calc(var(--GRID-CELL) / 10) 0;
-			}
-
-			.globe-sidebar-collapse {
-				flex-shrink: 0;
-				margin-bottom: calc(var(--GRID-CELL) / 2);
-			}
-
-			:global {
-				.globe-sidebar-expand > button {
-					pointer-events: auto;
-				}
-
-				// "Projects" alone up to 1280px wide, where "Show projects" leaves the button little room
-				.globe-sidebar-expand .label-short {
-					display: none;
-				}
-
-				@media (max-width: 80em) {
-					.globe-sidebar-expand .label-long {
-						display: none;
-					}
-
-					.globe-sidebar-expand .label-short {
-						display: inline;
-					}
-				}
-
-				.globe-sidebar-expand > button,
-				.globe-sidebar-collapse > button {
-					width: 100%;
-					justify-content: center;
-					padding: calc(var(--GRID-CELL) / 4) 0;
-					border-radius: var(--sidebar-radius);
-					corner-shape: squircle;
-					background: var(--sidebar-surface);
-					// the plain menu buttons' weight and height
-					font-weight: 400;
-					line-height: normal;
-					cursor: pointer;
-
-					&:hover {
-						background: var(--sidebar-surface-alt);
-					}
-				}
 			}
 
 			.globe-sidebar-panels {
@@ -1760,43 +1856,8 @@
 
 			.maplibregl-popup-content {
 				padding: 8px 10px;
-				font-family: system-ui, sans-serif;
+				font-family: var(--FONT-FAMILY-PROXIMA-NOVA);
 				font-size: 13px;
-			}
-		}
-	}
-
-	:global {
-		.globe-fade-out {
-			// 1 - φt² for the first 61.8%, then φ²(1 - t)²: gradual over the globe, steeper into the background
-			mask-image: linear-gradient(
-				rgba(0,0,0,1) 100vh,
-				rgba(0,0,0,0.984) calc(90vh + 10%),
-				rgba(0,0,0,0.935) calc(80vh + 20%),
-				rgba(0,0,0,0.854) calc(70vh + 30%),
-				rgba(0,0,0,0.741) calc(60vh + 40%),
-				rgba(0,0,0,0.595) calc(50vh + 50%),
-				rgba(0,0,0,0.418) calc(40vh + 60%),
-				rgba(0,0,0,0.382) calc(38.2vh + 61.8%),
-				rgba(0,0,0,0.236) calc(30vh + 70%),
-				rgba(0,0,0,0.105) calc(20vh + 80%),
-				rgba(0,0,0,0.026) calc(10vh + 90%),
-				rgba(0,0,0,0) 100%
-			);
-			mask-position: bottom;
-			mask-repeat: no-repeat;
-			animation: globe-fade-out 1s linear forwards;
-		}
-
-		@keyframes globe-fade-out {
-			0% {
-				mask-size: 100% 100%;
-			}
-			50% {
-				mask-size: 100% 100%;
-			}
-			100% {
-				mask-size: 100% calc(100% + 100vh);
 			}
 		}
 	}
