@@ -127,7 +127,8 @@
 				this={data.feed_source === "Awards" && item.project_name ? "div" : "a"}
 				href={`/${
 							data.feed_source === "Articles" ? "news" : 
-							(data.feed_source === "Careers" ? "careers" : "work")
+							(data.feed_source === "Careers" ? "careers" : 
+							(data.feed_source === "Studios" ? "offices" : "work"))
 					  }/${
 							data.feed_source === "Awards" && item.project ? 
 								item.project.slug : item.slug
