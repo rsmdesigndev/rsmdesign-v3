@@ -1,41 +1,18 @@
-<script context="module" lang="ts">
-	import { request } from "graphql-request";
-	import { env } from "$env/dynamic/public";
-	import { generateQuery, type QuerySource } from "$lib/cms/dataFeed/dataFeedQueries";
-	import { standardizeFilterPropertyNames, filterMenuCollection,
-			 type FilterItem, type FilterType } from "$lib/cms/dataFeed/dataFeedFilters";
-
-	// Shared by every menu instance in the same session
-	const loadedFilterItems: Record<string, Promise<FilterItem[]>> = {};
-
-	// Cache the promise rather than the result, so concurrent menus share one request
-	const loadFilterItems = (arrayOf: FilterType): Promise<FilterItem[]> => {
-		if (!(arrayOf in loadedFilterItems)) {
-			loadedFilterItems[arrayOf] = request(env.PUBLIC_DIRECTUS_API_URL, generateQuery(arrayOf as QuerySource))
-				.then((response: any) => standardizeFilterPropertyNames(arrayOf, response?.[filterMenuCollection(arrayOf)] ?? []))
-				.catch(error => {
-					delete loadedFilterItems[arrayOf];
-					console.warn(`Could not load the ${arrayOf} filter list:`, error);
-					return [];
-				});
-		}
-
-		return loadedFilterItems[arrayOf];
-	};
-</script>
-
 <script lang="ts">
 	import { onMount, createEventDispatcher } from 'svelte';
 	import { page } from "$app/stores";
 	import { mergeFilterItems, sanitizeSearchText, feedFiltersToUrlParams,
-			 filterMenuLabel, filterMenuHeading,
+			 filterMenuLabel, filterMenuHeading, filterMenuCollection,
 			 type FeedFilters } from "$lib/cms/dataFeed/dataFeedFilters";
+	import { loadFilterItems } from "$lib/cms/dataFeed/dataFeedFilterItems";
 	import { slide, fade } from "svelte/transition";
 	import Cta, { type CtaData } from "../../atoms/Cta.svelte";
+	import DataFeedFilterMenuItem from "./DataFeedFilterMenuItem.svelte";
+	import DataFeedFilterMenuSearch from "./DataFeedFilterMenuSearch.svelte";
 
 	export let feedFilters: FeedFilters = [];
 	export let searchText: string = "";
-	export let feedView: "Grid" | "Table" | "Ticker Tape" = "Grid";
+	export let feedView: "Grid" | "Table" | "Ticker Tape" | "Globe" = "Grid";
 
 	// Load filters
 	const loadFilters = async () => {
@@ -133,6 +110,18 @@
 		}
 	}
 
+	function toggleFilterId(group: FeedFilters[number], id?: string | null) {
+		if (!id) {
+			return;
+		}
+
+		group.filterIds = group.filterIds.includes(id)
+			? group.filterIds.filter(filterId => filterId !== id)
+			: [...group.filterIds, id];
+		feedFilters = feedFilters;
+		dispatch('updateFilters');
+	}
+
 	function toggleFeedView(view: string) {
 		if (view != feedView) {
 			feedView = view;
@@ -166,12 +155,12 @@
 </script>
 
 <template>
-	<div 
+	<div
 		class="project-filter-menu-container"
 	>
 		<div>
 			<div role="radiogroup" aria-label="Results view">
-				<button 
+				<button
 					bind:this={gridRadio}
 					class="button-icon button-grid"
 					class:active={gridChecked}
@@ -186,7 +175,7 @@
 					<span />
 					<span />
 				</button>
-				<button 
+				<button
 					bind:this={tableRadio}
 					class="button-icon button-table"
 					class:active={tableChecked}
@@ -206,7 +195,7 @@
 				{#each feedFilters as group}
 					{#if filterMenuLabel(group.arrayOf)}
 						<Cta button
-							 data={ {...filterMenuCta, 
+							 data={ {...filterMenuCta,
 									 cta_text_light: filterMenuLabel(group.arrayOf),
 									 cta_icon: `${openFilterMenu === group.arrayOf ? "arrow_up" : "arrow_down"}`
 								  } }
@@ -217,7 +206,7 @@
 				{/each}
 				{#if shareParams}
 					<Cta button
-						 data={ {...filterMenuCta, 
+						 data={ {...filterMenuCta,
 								 cta_text_light: "Share",
 								 cta_icon: "none"
 							  } }
@@ -226,7 +215,7 @@
 					/>
 				{/if}
 				<Cta button
-					 data={ {...filterMenuCta, 
+					 data={ {...filterMenuCta,
 							 cta_text_light: "Filter",
 							 cta_icon: `${openFilterMenu === "all" ? "arrow_up" : "arrow_down"}`
 						  } }
@@ -238,7 +227,7 @@
 		</div>
 		<div>
 			<Cta button
-				 data={ {...filterMenuCta, 
+				 data={ {...filterMenuCta,
 				 		 cta_icon_position: "left",
 						 cta_text_light: "Search",
 						 cta_icon: `${openFilterMenu === "search" ? "cancel" : "search"}`
@@ -264,17 +253,14 @@
 									<h2>{filterMenuHeading(group.arrayOf)}</h2>
 									{#each group.filterItems as item}
 										<div>
-											<label class="filter-button">
-												<input type="checkbox"
-													   name={group.arrayOf}
-													   value={item.id}
-													   bind:group={group.filterIds}
-													   on:change={() => dispatch('updateFilters')}
-												/>
-												<span class="filter-name">
-													{item.name}
-												</span>
-											</label>
+											<DataFeedFilterMenuItem
+												data={ { item_name: item.name,
+														 item_checked: group.filterIds.includes(item.id ?? ""),
+														 input_name: group.arrayOf,
+														 input_value: item.id
+													 } }
+												on:change={() => toggleFilterId(group, item.id)}
+											/>
 										</div>
 									{/each}
 								</div>
@@ -285,15 +271,7 @@
 					{/each}
 					{#if openFilterMenu === "search"}
 						<div class="search">
-							<form on:submit|preventDefault={search}>
-								<button type="submit" aria-label="Search button">
-									<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-										<rect width="10" height="2.25" transform="matrix(-0.707107 -0.707107 -0.707107 0.707107 20.6621 19.0703)" />
-										<circle cx="6.875" cy="6.875" r="6.875" transform="matrix(-1 0 0 1 14.8125 1.0625)" stroke-width="2.125"/>
-									</svg>
-								</button>
-								<input bind:value={searchText} placeholder="Project name, location, etc…" aria-label="Search bar" autofocus />
-							</form>
+							<DataFeedFilterMenuSearch bind:value={searchText} autofocus on:submit={search} />
 						</div>
 					{/if}
 				</div>
@@ -459,72 +437,11 @@
 				clip-path: inset(50%);
 			}
 
-			.filter-button {
-				position: relative;
-				display: flex;
-				align-items: baseline;
-
-				font-family: var(--FONT-FAMILY-PROXIMA-NOVA);
-				font-size: var(--FONT-SIZE-MD);
-				font-weight: 300;
-				line-height: 1.333;
-
-				color: var(--color-cta, var(--color-primary, inherit));
-				cursor: pointer;
-				transition: color 0.3s ease;
-
-				// Visually hidden but still focusable and announced
-				input {
-					position: absolute;
-					width: 1px;
-					height: 1px;
-					margin: -1px;
-					padding: 0;
-					border: 0;
-					overflow: hidden;
-					white-space: nowrap;
-					clip-path: inset(50%);
-				}
-
-				.filter-name {
-					transition: color 0.3s ease;
-
-					&::after {
-						position: absolute;
-						top: calc(50% - 0.1rem);
-						left: -1rem;
-
-						content: "";
-						width: 0.33rem;
-						height: 0.33rem;
-						border-radius: 50%;
-						border: 1px solid transparent;
-						transition: border-color 0.3s ease, background-color 0.3s ease;
-					}
-				}
-
-				input:checked + .filter-name::after {
-					border-color: var(--color-primary);
-					background-color: var(--color-primary);
-				}
-
-				&:hover .filter-name::after,
-				&:hover input:checked + .filter-name::after {
-					border-color: var(--color-primary);
-					background-color: transparent;
-				}
-
-				input:focus-visible + .filter-name {
-					outline: 2px solid var(--color-accent, var(--COLOR-ORANGE));
-					outline-offset: 0.25rem;
-				}
-			}
-
 			> .project-filters {
 				grid-column: main;
 				display: grid;
 				grid-template-columns: subgrid;
-				
+
 				> div {
 					grid-row: 1;
 					grid-column: 1 / -1;
@@ -580,77 +497,9 @@
 						grid-template-columns: repeat(3, 1fr);
 					}
 
-					> form {
-						grid-column: 2;
-						display: flex;
-
-						> button {
-							width: auto;
-							background: transparent;
-							margin: 0;
-							padding: 0.5rem;
-							height: 100%;
-							transition: background-color 0.3s ease;
-							border: none;
-							border-radius: 50%;
-							font-weight: 300;
-							font-size: var(--FONT-SIZE-XL);
-							line-height: 0;
-							> svg {
-								height: var(--SPACE-SM);
-								width: auto;
-								rect {
-									fill: var(--color-primary);
-									transition: fill 0.3s ease;
-								}
-								circle {
-									stroke: var(--color-primary);
-									transition: stroke 0.3s ease;
-								}
-							}
-							&:hover {
-								> svg {
-									rect {
-										fill: var(--color-accent);
-									}
-									circle {
-										stroke: var(--color-accent);
-									}
-								}
-							}
-						}
-
-						> input {
-							flex: 1 1 auto;
-							background: none;
-							border: none;
-							border-bottom: 1px inset var(--color-tertiary);
-							border-radius: 0;
-							max-width: 100%;
-							padding: 0.25rem 0.75rem;
-							background-color: transparent;
-							transition: background-color 0.2s ease;
-							color: var(--color-primary);
-							font-size: var(--FONT-SIZE-MD);
-							font-weight: 300;
-							caret-color: var(--COLOR-MID-GRAY);
-
-							&::placeholder {
-								color: var(--color-primary);
-								font-size: var(--FONT-SIZE-MD);
-								font-weight: 300;
-							}
-
-							&:focus {
-								outline: none;
-								background-color: var(--color-background);
-								border-bottom: none;
-								border-radius: 0.25rem;
-							}
-
-							&.active {
-								color: var(--COLOR-ORANGE);
-							}
+					:global {
+						form {
+							grid-column: 2;
 						}
 					}
 				}

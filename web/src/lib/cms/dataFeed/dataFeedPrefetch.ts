@@ -37,7 +37,9 @@ const prefetchDataFeed = async (
 		return;
 	}
 
-	const fromUrl: boolean = shouldApplyUrlFilters(feed.feed_show_filter_menu, searchParams);
+	// the globe applies URL params in the browser, over its whole feed
+	const isGlobe: boolean = feed.feed_view === "Globe";
+	const fromUrl: boolean = !isGlobe && shouldApplyUrlFilters(feed.feed_show_filter_menu, searchParams);
 	const feedFilters = fromUrl
 		? feedFiltersFromUrlParams(feedFilterGroups(feed), searchParams)
 		: feedFilterGroups(feed);
@@ -45,7 +47,7 @@ const prefetchDataFeed = async (
 
 	const filters: string[] = filtersArrayToGraphql(feedFilters);
 	const query: string = generateQuery(
-		source.querySource,
+		isGlobe ? "projectsGlobe" : source.querySource,
 		filters,
 		feed.feed_filter_logic,
 		searchToGraphql(feed.feed_source, searchTerm)
@@ -61,7 +63,7 @@ const prefetchDataFeed = async (
 
 		if (response) {
 			feed.feed_items = response[source.collection] ?? [];
-			
+
 			// Mark feed for re-fetching if it was pre-rendered, to apply filters
 			feed.feed_url_filtered = fromUrl;
 			feed.feed_total_count = response[feedAggregate(source.collection)]?.[0]?.count?.id ?? 0;

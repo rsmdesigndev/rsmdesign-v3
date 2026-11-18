@@ -1,7 +1,7 @@
 import { filterIdToGraphql, filterStringToGraphql } from "$lib/cms/dataFeed/dataFeedFilters";
 import { feedGridItemsPerLoad } from "$lib/cms/dataFeed/dataFeedGridLayout";
 
-export type QuerySource = "projects" | "articles" | "team" | "awards" | "testimonials" | "careers" | "studios" | "services" | "markets" | "topics";
+export type QuerySource = "projects" | "projectsGlobe" | "articles" | "team" | "awards" | "testimonials" | "careers" | "studios" | "services" | "markets" | "topics";
 
 type FeedSourceConfig = {
 	querySource: QuerySource;
@@ -52,6 +52,11 @@ export const feedItemsPerLoad = (feed: {
 	feed_grid_dynamic_images?: unknown[] | null;
 	feed_table_items_per_load?: number | null;
 }, loadedItemCount: number = 0): number | undefined => {
+	// the globe filters in the browser, so it loads its whole feed at once (-1 is Directus for no limit)
+	if (feed.feed_view === "Globe") {
+		return -1;
+	}
+
 	if (feed.feed_view !== "Grid") {
 		return feed.feed_table_items_per_load ?? undefined;
 	}
@@ -239,6 +244,88 @@ export const generateQuery = (
 						}
 					}
 				`;
+		case "projectsGlobe":
+			// slug breaks ties, so the prerendered order and the browser's refresh agree
+			return `query ProjectsGlobe($limit: Int, $offset: Int, $skipCount: Boolean!${searchVariable}) {
+						projects(
+							limit: $limit
+							offset: $offset
+							sort: ["project_location_city.country.country_name", "project_location_city.state_province.state_province_name", "project_location_city.city_name", "slug"]
+							filter: {
+								_and: [
+									{ visibility: { _nin: ["draft", "archived"] } },
+									{
+										_${logic}: [
+											${filterString}
+										]
+									}${searchClause}
+								]
+							}
+						) {
+							id
+							slug
+							project_title
+							location
+							grid_image {
+								filename_disk
+								title
+							}
+							project_description
+							project_keywords
+							collaborators
+							services {
+								services_id {
+									id
+									name
+								}
+							}
+							hidden_services {
+								services_id {
+									name
+								}
+							}
+							markets {
+								markets_id {
+									id
+									name
+								}
+							}
+							hidden_markets {
+								markets_id {
+									name
+								}
+							}
+							project_location_city {
+								id
+								city_name
+								state_province {
+									state_province_name
+								}
+								country {
+									country_name
+								}
+							}
+							project_location_lng
+							project_location_lat
+						}
+						projects_aggregated(
+							filter: {
+								_and: [
+									{ visibility: { _nin: ["draft", "archived"] } },
+									{
+										_${logic}: [
+											${filterString}
+										]
+									}${searchClause}
+								]
+							}
+						) @skip(if: $skipCount) {
+							count {
+								id
+							}
+						}
+					}
+				`;
 		case "articles":
 			return `query Articles($limit: Int, $offset: Int${searchVariable}) {
 						news_posts(
@@ -301,8 +388,8 @@ export const generateQuery = (
 							limit: $limit
 							offset: $offset
 							sort: ["sort_priority", "-banner_grid_image_sort"]
-							filter: { 
-								visibility: { _in: ["visible", "visibleInFeeds"] } 
+							filter: {
+								visibility: { _in: ["visible", "visibleInFeeds"] }
 							}
 						) {
 							id
@@ -339,8 +426,8 @@ export const generateQuery = (
 							limit: $limit
 							offset: $offset
 							sort: ["-year", "-awards_page_sort"]
-							filter: { 
-								visibility: { _nin: ["draft", "archived"] } 
+							filter: {
+								visibility: { _nin: ["draft", "archived"] }
 							}
 						) {
 							id
@@ -390,8 +477,8 @@ export const generateQuery = (
 						testimonials(
 							limit: $limit
 							offset: $offset
-							filter: { 
-								visibility: { _eq: "visible" } 
+							filter: {
+								visibility: { _eq: "visible" }
 							}
 						) {
 							id
@@ -417,7 +504,7 @@ export const generateQuery = (
 						}
 						testimonials_aggregated(
 							filter: {
-								visibility: { _eq: "visible" } 
+								visibility: { _eq: "visible" }
 							})
 						{
 							count {
@@ -432,8 +519,8 @@ export const generateQuery = (
 							limit: $limit
 							offset: $offset
 							sort: ["sort"]
-							filter: { 
-								visibility: { _eq: "visible" } 
+							filter: {
+								visibility: { _eq: "visible" }
 							}
 						) {
 							id
@@ -455,7 +542,7 @@ export const generateQuery = (
 						}
 						careers_aggregated(
 							filter: {
-								visibility: { _eq: "visible" } 
+								visibility: { _eq: "visible" }
 							})
 						{
 							count {
@@ -470,8 +557,8 @@ export const generateQuery = (
 							limit: $limit
 							offset: $offset
 							sort: ["sort_priority"]
-							filter: { 
-								visibility: { _eq: "visible" } 
+							filter: {
+								visibility: { _eq: "visible" }
 							}
 						) {
 							id
@@ -492,7 +579,7 @@ export const generateQuery = (
 						}
 						studio_locations_aggregated(
 							filter: {
-								visibility: { _eq: "visible" } 
+								visibility: { _eq: "visible" }
 							})
 						{
 							count {
