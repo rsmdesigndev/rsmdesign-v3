@@ -10,7 +10,7 @@
 	import { loadScript } from "$lib/loadScript";
 	import type { BleedData } from "../organisms/CardColumn.svelte";
 
-	export let data: AccordionData;
+	export let data: ContactFormData;
 	export let bleed: BleedData;
 
 	let formString: string = "2e023912-84d4-47b4-868e-022377eceee0";
