@@ -30,19 +30,45 @@
 	let stickyImageIndex: number = 0;
 	$: if (selectedItem >= 0) stickyImageIndex = selectedItem;
 
+	$: itemHref = (item: any): string | null => {
+		if (data.feed_source === "Studios") return null;
+		if (data.feed_source === "Awards") {
+			return item.project && !item.project_name
+				? `/work/${item.project.slug}${itemParams}`
+				: null;
+		}
+		const section =
+			data.feed_source === "Articles" ? "news" :
+			data.feed_source === "Careers" ? "careers" : "work";
+		return `/${section}/${item.slug}${itemParams}`;
+	};
+
+	let resumeScrollTimer: ReturnType<typeof setTimeout>;
+	function pauseScrollSelection() {
+		selectOnScroll = false;
+		clearTimeout(resumeScrollTimer);
+		resumeScrollTimer = setTimeout(() => {
+			selectOnScroll = true;
+		}, 5000);
+	}
+
 	function selectItemOnMouseover(i: number) {
 		if (selectOnHover && innerWidth > 1000) {
 			selectedItem = i;
-
-			selectOnScroll = false;
-
-			setTimeout(() => {
-				selectOnScroll = true;
-			}, 5000);
+			pauseScrollSelection();
 		}
 	}
 	function deselectItemOnMouseout() {
 		if (selectOnHover && innerWidth > 1000) {
+			selectedItem = -1;
+		}
+	}
+	function selectItemOnFocus(i: number) {
+		selectedItem = i;
+		pauseScrollSelection();
+	}
+	function deselectItemOnBlur(i: number) {
+		if (selectedItem === i) {
 			selectedItem = -1;
 		}
 	}
@@ -103,36 +129,30 @@
 				{/if}
 			</div>
 		{/if}
-		<div class={`sticky-image table-style-${data.feed_table_style}`}>
+		<div class={`sticky-image table-style-${data.feed_table_style}`} aria-hidden="true">
 			{#each feedData as item, i}
 				{#if data.feed_source === "Awards"}
 					{#if item.project}
 						<img class:active={i === stickyImageIndex}
 							 src={assetUrl(item.project.grid_image?.filename_disk)}
-							 alt={item.project.grid_image?.title}
+							 alt=""
 							 loading="lazy"
 						/>
 					{/if}
 				{:else}
 					<img class:active={i === stickyImageIndex}
 						 src={assetUrl(item.grid_image?.filename_disk)}
-						 alt={item.grid_image?.title}
+						 alt=""
 						 loading="lazy"
 					/>
 				{/if}
 			{/each}
 		</div>
 		{#each feedData as item, i}
-			<svelte:element 
-				this={data.feed_source === "Awards" && item.project_name ? "div" : "a"}
-				href={`/${
-							data.feed_source === "Articles" ? "news" : 
-							(data.feed_source === "Careers" ? "careers" : 
-							(data.feed_source === "Studios" ? "offices" : "work"))
-					  }/${
-							data.feed_source === "Awards" && item.project ? 
-								item.project.slug : item.slug
-					  }${itemParams}`}
+			{@const href = itemHref(item)}
+			<svelte:element
+				this={href ? "a" : "div"}
+				{href}
 				class={`table-item
 						table-style-${data.feed_table_style}
 						${data.feed_source === "Studios" ? "table-item-studio" : ""}
@@ -140,8 +160,10 @@
 					  `}
 				class:active={selectedItem === i}
 				class:condense-on-mobile={data.feed_source === "Projects" || data.feed_source === "Articles"}
-				on:mouseover|preventDefault={() => selectItemOnMouseover(i)}
+				on:mouseover={() => selectItemOnMouseover(i)}
 				on:mouseout={() => deselectItemOnMouseout()}
+				on:focusin={() => selectItemOnFocus(i)}
+				on:focusout={() => deselectItemOnBlur(i)}
 				use:selectItemOnIntersection={i}
 			>
 				{#if data.feed_table_style === "simple"}
@@ -239,7 +261,8 @@
 						{:else if data.feed_source === "Articles"}
 							{item.topics?.[0]?.news_topics_id?.name}
 							{#if item.topics?.length > 1}
-								<span title={item.topics.map((topic) => topic.news_topics_id.name).join("\n")}>+&nbsp;{item.topics?.length - 1}</span>
+								<span aria-hidden="true" title={item.topics.map((topic) => topic.news_topics_id?.name).join("\n")}>+&nbsp;{item.topics.length - 1}</span>
+								<span class="visually-hidden">, also tagged {item.topics.slice(1).map((topic) => topic.news_topics_id?.name).join(", ")}</span>
 							{/if}
 						{:else if data.feed_source === "Awards"}
 							{item.year}
@@ -252,6 +275,7 @@
 			<figure class={`table-style-${data.feed_table_style}
 							image-position-${data.feed_table_image_position}
 						  `}
+					aria-hidden="true"
 			>
 				{#if data.feed_table_style === "simple"}
 					<picture>
@@ -259,7 +283,7 @@
 							<source media="(min-width: 31.25em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
 						{/if}
 						<img src={assetUrl(item.grid_image?.filename_disk)}
-							 alt={item.grid_image?.title}
+							 alt=""
 						/>
 					</picture>
 				{:else}
@@ -268,13 +292,13 @@
 						{#if item.project}
 							<img style:--top={`calc(50vh - 1px * ${imgHeight} / 2)`}
 								 src={assetUrl(item.project.grid_image?.filename_disk)}
-								 alt={item.project.grid_image?.title}
+								 alt=""
 							/>
 						{/if}
 					{:else}
 						<img style:--top={`calc(50vh - 1px * ${imgHeight} / 2)`}
 							 src={assetUrl(item.grid_image?.filename_disk)}
-							 alt={item.grid_image?.title}
+							 alt=""
 						/>
 					{/if}
 				{/if}
@@ -332,7 +356,7 @@
 		}
 	}
 	.table-item {
-		color: var(--color-tertiary, var(--COLOR-MID-GRAY));
+		color: var(--color-tertiary, var(--COLOR-DIM-GRAY));
 		transition: color 0.3s ease;
 
 		display: grid;
@@ -348,10 +372,14 @@
 			}
 		}
 
-		&.active {
+		&.active,
+		&:focus-visible,
+		&.table-item-studio:focus-within {
 			color: var(--color-primary, var(--COLOR-BLACK));
 			transition: color 0.3s ease;
+		}
 
+		&.active {
 			+ figure > picture,
 			+ figure > img {
 				opacity: 1;
@@ -447,12 +475,12 @@
 				border-bottom: 1px solid var(--color-secondary, var(--COLOR-MID-GRAY));
 			}
 			
-			color: var(--color-secondary, var(--COLOR-MID-GRAY));
 			transition: color 0.3s ease, border-color 0.3s ease;
 
 			font-size: var(--FONT-SIZE-MD);
 
-			&.active {
+			&.active,
+			&:focus-visible {
 				color: var(--color-primary, var(--COLOR-BLACK));
 				border-color: var(--color-primary, var(--COLOR-BLACK));
 
@@ -571,6 +599,23 @@
 				}
 			}
 		}
+
+		@media (prefers-contrast: more) {
+			color: var(--color-primary, var(--COLOR-BLACK));
+		}
+	}
+
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		padding: 0;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		clip-path: inset(50%);
+		white-space: nowrap;
+		border: 0;
 	}
 	.sticky-image {
 		display: none;

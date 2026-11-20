@@ -142,8 +142,8 @@
 		},
 		dark: {
 			primary: "white",
-			secondary: "var(--COLOR-MID-GRAY)",
-			tertiary: "var(--COLOR-DIM-GRAY)",
+			secondary: "var(--COLOR-DIM-GRAY)",
+			tertiary: "var(--COLOR-MID-GRAY)",
 			accent: "var(--COLOR-ORANGE)"
 		},
 		color: {
@@ -184,6 +184,12 @@
 				--color-tertiary: ${theme.tertiary};
 				--color-accent: ${theme.accent};
 				--color-background: ${colorBackground};
+			}
+			@media (prefers-contrast: more) {
+				:root {
+					--color-secondary: var(--color-primary);
+					--color-tertiary: var(--color-primary);
+				}
 			}
 		</style>`
 	}
