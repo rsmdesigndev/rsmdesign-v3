@@ -38,6 +38,7 @@
 	description={data.service.seo_page_description ?? undefined}
 	noindex={data.service.visibility === "draft"}
 	slug={`services/${data.service.slug}`}
+	image={data.service.grid_image}
 />
 
 <template>

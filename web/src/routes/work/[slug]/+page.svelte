@@ -56,6 +56,7 @@
 	description={data.project.seo_page_description ?? undefined}
 	noindex={data.project.visibility === "draft"}
 	slug={`work/${data.project.slug}`}
+	image={data.project.hero_image}
 />
 
 <!--<svelte:head>
