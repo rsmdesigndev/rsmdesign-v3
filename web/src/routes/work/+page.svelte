@@ -9,6 +9,7 @@
 <SeoHead
 	title={data?.work_page?.seo_title}
 	description={data?.work_page?.seo_page_description}
+	slug="work"
 />
 
 <template>

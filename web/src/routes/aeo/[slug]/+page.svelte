@@ -11,6 +11,7 @@
 	title={`FAQs · ${data.article.aeo_article_heading}`}
 	description={data.article.aeo_article_page_description}
 	noindex={data.article.aeo_article_visibility === "feed"}
+	slug={`aeo/${data.article.slug}`}
 />
 
 <template>

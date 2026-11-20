@@ -14,6 +14,7 @@
 	title={data.team.name ?? ""} 
 	description={data.team.seo_page_description ?? undefined} 
 	noindex={!data.team.has_profile_page || data.team.visibility === "draft"}
+	slug={`team/${data.team.slug}`}
 />
 
 <svelte:head>

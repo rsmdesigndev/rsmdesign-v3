@@ -37,6 +37,7 @@
 	title={data.service.name ?? ""}
 	description={data.service.seo_page_description ?? undefined}
 	noindex={data.service.visibility === "draft"}
+	slug={`services/${data.service.slug}`}
 />
 
 <template>

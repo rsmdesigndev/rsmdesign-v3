@@ -17,6 +17,7 @@
 	title={data.book.title ?? ""}
 	description={data.book.seo_page_description ?? undefined}
 	noindex={data.book.visibility === "draft"}
+	slug={`book/${data.book.slug}`}
 />
 
 <template>

@@ -13,6 +13,7 @@
 	title={`${data.career.name} · Careers`}
 	description={data.career.seo_page_description ?? ""}
 	noindex={data.career.visibility === "draft"}
+	slug={`careers/${data.career.slug}`}
 />
 
 <template>

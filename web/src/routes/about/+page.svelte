@@ -9,6 +9,7 @@
 <SeoHead
 	title="About Us"
 	description="We are a passionate team of designers, architects, and storytellers working at the intersection of graphics and architecture. Learn about us."
+	slug="about"
 />
 
 <template>

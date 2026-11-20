@@ -7,6 +7,7 @@
 <SeoHead
 	title="Contact Form Received"
 	description="Thanks for reaching out."
+	slug="contact-form-received"
 >
 </SeoHead>
 

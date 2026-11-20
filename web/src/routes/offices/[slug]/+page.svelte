@@ -36,6 +36,7 @@
 	title={data.studioLocation.seo_page_title ?? ""}
 	description={data.studioLocation.seo_page_description ?? undefined}
 	noindex={data.studioLocation.visibility === "draft"}
+	slug={`offices/${data.studioLocation.slug}`}
 />
 
 <template>

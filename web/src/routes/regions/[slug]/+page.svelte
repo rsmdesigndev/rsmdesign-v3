@@ -28,6 +28,7 @@
 	title={data.geographicalRegion.name ?? ""}
 	description={data.geographicalRegion.seo_page_description ?? undefined}
 	noindex={data.geographicalRegion.visibility === "draft"}
+	slug={`regions/${data.geographicalRegion.slug}`}
 />
 
 {#if data.geographicalRegion.use_page_blocks}

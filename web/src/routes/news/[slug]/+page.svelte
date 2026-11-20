@@ -22,6 +22,7 @@
 	title={data.news_post.post_title ?? ""}
 	description={data.news_post.seo_page_description ?? undefined}
 	noindex={data.news_post.visibility === "draft"}
+	slug={`news/${data.news_post.slug}`}
 />
 
 <template>

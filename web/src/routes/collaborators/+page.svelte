@@ -9,6 +9,7 @@
 <SeoHead 
 	title="Clients & Collaborators" 
 	description="RSM Design collaborates with a wide range of design and development partners resulting in hundreds of successful and well-known brands for cities, communities, large mixed-use projects, retail developments, hotels, restaurants, businesses and unique products."
+	slug="collaborators"
 />
 
 <template>

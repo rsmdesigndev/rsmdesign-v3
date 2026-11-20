@@ -7,6 +7,7 @@
 <SeoHead
 	title="Project Inquiry"
 	description="RSM Design looks forward to hearing about your project and we will reach out quickly. Fill out the form or call us directly."
+	slug="project-inquiry"
 />
 
 <svelte:head>
@@ -32,6 +33,9 @@
 </template>
 
 <style lang="scss">
+	div.container {
+		margin-top: var(--SPACE-MD);
+	}
 	h1 {
 		grid-column: whole;
 		margin: var(--GRID-CELL) 0 calc(var(--GRID-CELL) * 2);

@@ -9,6 +9,7 @@
 <SeoHead
 	title="Our Markets & Services"
 	description="We provide branding, wayfinding, placemaking, environmental graphic design, and more in retail, civic, mixed-use, and residential spaces."
+	slug="expertise"
 />
 
 <template>

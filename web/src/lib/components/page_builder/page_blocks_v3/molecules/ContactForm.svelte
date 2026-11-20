@@ -7,6 +7,7 @@
 
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { loadScript } from "$lib/loadScript";
 	import type { BleedData } from "../organisms/CardColumn.svelte";
 
 	export let data: AccordionData;
@@ -19,13 +20,20 @@
 	}
 
 	onMount(() => {
-		(globalThis as any).hbspt.forms.create({
-			target: ".form-container",
-			region: "na1",
-			portalId: "8650991",
-			formId: formString
-		});
+		let destroyed = false;
 
+		loadScript("https://js.hsforms.net/forms/v2.js").then(() => {
+			// The visitor may have navigated away while the script loaded
+			if (destroyed) return;
+			(globalThis as any).hbspt.forms.create({
+				target: ".form-container",
+				region: "na1",
+				portalId: "8650991",
+				formId: formString
+			});
+		}, (error) => console.warn(error));
+
+		return () => (destroyed = true);
 	})
 </script>
 

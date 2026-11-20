@@ -24,7 +24,8 @@
 <SeoHead 
 	title={data.page.name ?? ""} 
 	description={data.page.seo_page_description ?? undefined} 
-	noindex={data.page.visibility === "draft"}
+	noindex="true"
+	slug={`rsm/${data.page.slug}`}
 />
 
 <div class="container">

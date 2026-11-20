@@ -4,13 +4,16 @@
 	import Footer from "$lib/components/Footer.svelte";
 	import { env } from "$env/dynamic/public";
 	import { afterNavigate, beforeNavigate } from "$app/navigation";
+	import { page } from "$app/stores";
 	import { onMount, tick } from "svelte";
 	import { loading } from "$lib/loading";
+	import { loadScript } from "$lib/loadScript";
 	import Loading from "$lib/components/Loading.svelte";
 
 	export let data: PageData;
 
 	let headerHeight = "75px";
+	let needsLottie = $page.url.pathname === "/";
 	let mainElement: HTMLElement;
 	let isSkipPending = false;
 
@@ -35,6 +38,7 @@
 		if (navigation.type === "leave") return;
 		if (!navigation.to) return;
 		if (navigation.to.url.pathname === navigation.from?.url.pathname) return;
+		if (navigation.to.url.pathname === "/") needsLottie = true;
 
 		loading.start(navigation.to.url.pathname);
 	});
@@ -43,6 +47,13 @@
 		// Schedule the dismiss FIRST so a throw later in this handler
 		// (e.g. an unsupported scrollTo option) can't leave the loader stuck.
 		loading.finish();
+
+		loadScript("https://js.hscta.net/cta/current.js").then(() => {
+			const { hbspt } = globalThis as any;
+			hbspt.cta.load(8650991, "a7e092d0-0a82-4e1f-9fe0-4dbd4168a71f", { region: "na1" });
+			hbspt.cta.load(8650991, "1d028b4f-d7f2-4748-a84c-b3cdb478be90", { region: "na1" });
+			hbspt.cta.load(8650991, "e1bf5048-093b-41cd-b416-3cc760855b59", { region: "na1" });
+		}, (error) => console.warn(error));
 
 		setTimeout(updateHeaderSize, 0);
 
@@ -75,6 +86,9 @@
 <svelte:head>
 	{#if env.PUBLIC_NOINDEX === "true"}
 		<meta name="robots" content="noindex, nofollow" />
+	{/if}
+	{#if needsLottie}
+		<script src="https://unpkg.com/@lottiefiles/lottie-player@1.5.7/dist/lottie-player.js"></script>
 	{/if}
 </svelte:head>
 

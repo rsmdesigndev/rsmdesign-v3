@@ -9,6 +9,7 @@
 <SeoHead
 	title={data.contact_page.seo_title}
 	description={data.contact_page.seo_page_description}
+	slug="contact"
 />
 
 <template>

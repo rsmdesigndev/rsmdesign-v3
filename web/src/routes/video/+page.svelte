@@ -11,6 +11,7 @@
 <SeoHead
 	title={data.video?.seo_title ?? ""}
 	description={data.video?.seo_page_description ?? undefined}
+    slug="video"
 />
 
 <template>

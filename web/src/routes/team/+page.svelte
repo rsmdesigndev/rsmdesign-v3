@@ -14,6 +14,7 @@
 <SeoHead
 	title={data.team_page?.seo_title}
 	description={data.team_page?.seo_page_description}
+	slug="team"
 />
 
 <svelte:head>

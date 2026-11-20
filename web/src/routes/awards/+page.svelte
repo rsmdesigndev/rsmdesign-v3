@@ -12,6 +12,7 @@
 <SeoHead
 	title={data.awards_page?.seo_title}
 	description={data.awards_page?.seo_page_description}
+	slug="awards"
 />
 
 <template>

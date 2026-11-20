@@ -37,6 +37,7 @@
 	title={data.market.name ?? ""} 
 	description={data.market.seo_page_description ?? ""} 
 	noindex={data.market.visibility === "draft"}
+	slug={`markets/${data.market.slug}`}
 />
 
 <template>

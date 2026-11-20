@@ -9,6 +9,7 @@
 <SeoHead
 	title="News & Information"
 	description="Learn about our industry, projects, studios, team members, press, and more. Read the latest news and information on our site today."
+	slug="news"
 />
 
 <template>

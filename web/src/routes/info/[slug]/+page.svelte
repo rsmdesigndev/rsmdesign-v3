@@ -9,6 +9,7 @@
 <SeoHead
 	title={`${data.page.seo_page_title}`}
 	description={data.page.seo_page_description ?? ""}
+	slug={`info/${data.page.slug}`}
 />
 
 <template>
