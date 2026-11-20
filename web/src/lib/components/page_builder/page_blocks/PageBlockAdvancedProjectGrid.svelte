@@ -159,7 +159,7 @@
               <figure>
                 <img
                   src={assetUrl(project.grid_image?.filename_disk)}
-                  alt={project.grid_image?.title}
+                  alt={project.grid_image?.description}
                 />
                 <figcaption>
                   <h3 class="xl">{project.project_title}</h3>
