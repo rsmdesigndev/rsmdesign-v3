@@ -513,7 +513,7 @@
 			<div class="project-filter-menu-wrapper">
 				<div class="project-filter-menu-heading">
 					<Heading 
-						data={ { heading_type: "page",
+						data={ { heading_type: data.feed_source === "Projects" ? "page" : "section",
 								 heading_primary: "large",
 								 heading_size: "xxxl",
 								 heading_weight: "regular",
