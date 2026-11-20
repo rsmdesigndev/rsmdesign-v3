@@ -475,7 +475,7 @@
 				border-bottom: 1px solid var(--color-secondary, var(--COLOR-MID-GRAY));
 			}
 			
-			transition: color 0.3s ease, border-color 0.3s ease;
+			transition: color 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
 
 			font-size: var(--FONT-SIZE-MD);
 
@@ -483,10 +483,16 @@
 			&:focus-visible {
 				color: var(--color-primary, var(--COLOR-BLACK));
 				border-color: var(--color-primary, var(--COLOR-BLACK));
+				background-color: #f2f2f3;
 
 				+ figure + .table-style-detailed {
 					border-color: var(--color-primary, var(--COLOR-BLACK));
 				} 
+
+				.table-item-col1 {
+					padding-left: var(--SPACE-SM);
+					margin-right: calc(var(--SPACE-SM) * -1);
+				}
 			}
 
 			> .table-item-cols-container {
@@ -528,6 +534,7 @@
 				@media (max-width: 31.25em) {
 					grid-column: main;
 				}
+				transition: padding 0.3s ease, margin 0.3s ease;
 			}
 
 			.table-item-col2 {
