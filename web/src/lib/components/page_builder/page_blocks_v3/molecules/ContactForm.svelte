@@ -10,7 +10,7 @@
 	import { loadScript } from "$lib/loadScript";
 	import type { BleedData } from "../organisms/CardColumn.svelte";
 
-	export let data: ContactFormData;
+	export let data: AccordionData;
 	export let bleed: BleedData;
 
 	let formString: string = "2e023912-84d4-47b4-868e-022377eceee0";
@@ -19,19 +19,24 @@
 		formString = "d6c9df29-b04b-4940-801c-e32db3bcc605";
 	}
 
+	let loaded = false;
+
 	onMount(() => {
 		let destroyed = false;
 
 		loadScript("https://js.hsforms.net/forms/v2.js").then(() => {
-			// The visitor may have navigated away while the script loaded
 			if (destroyed) return;
 			(globalThis as any).hbspt.forms.create({
 				target: ".form-container",
 				region: "na1",
 				portalId: "8650991",
-				formId: formString
+				formId: formString,
+				onFormReady: () => (loaded = true)
 			});
-		}, (error) => console.warn(error));
+		}, (error) => {
+			loaded = true;
+			console.warn(error);
+		});
 
 		return () => (destroyed = true);
 	})
@@ -39,6 +44,8 @@
 
 <template>
 	<div class="form-container"
+		 class:book={data.form === "Book"}
+		 class:loaded
 		 style:--grid-column-start={bleed.left ? "2" : "1"}
 		 style:--grid-column-end={bleed.right ? "-2" : "-1"}
 	>
@@ -48,5 +55,15 @@
 <style lang="scss">
 	.form-container {
 		grid-column: var(--grid-column-start) / var(--grid-column-end);
+
+		min-height: 1400px;
+
+		&.book {
+			min-height: 1000px;
+		}
+
+		&.loaded {
+			min-height: 0;
+		}
 	}
 </style>
