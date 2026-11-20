@@ -50,7 +50,6 @@
 		}
 	}
 
-	// focus leaving the header would otherwise land behind the open menu
 	function closeMenuOnFocusLeave(event: FocusEvent) {
 		const header = event.currentTarget as HTMLElement;
 		const focusTarget = event.relatedTarget as Node | null;
@@ -332,6 +331,7 @@
 			   href="/" 
 			   aria-label="Navigate to RSM Design homepage" 
 			   on:click={closeMenu}
+			   on:focus={closeMenu}
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 22.572">
 					<title>RSM Design logotype</title>
@@ -507,6 +507,10 @@
 				z-index: 4;
 				//margin-top: calc(-1 * var(--SPACE-LG));
 				margin-bottom: calc(-1px * var(--logo-height));
+
+				&:has(:focus-visible) {
+					z-index: 6;
+				}
 			}
 			// BREADCRUMBS + MENU BUTTON
 			&.nav-wrapper {

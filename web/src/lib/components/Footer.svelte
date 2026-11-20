@@ -33,7 +33,23 @@
 	function handleClick() {
 		footerIsActive = false;
 	}
+
+	let footer: HTMLElement;
+
+	function followKeyboardFocus(event: FocusEvent) {
+		const target = event.target;
+		if (!(target instanceof Element) || !target.matches(":focus-visible")) return;
+
+		if (!footer.contains(target)) {
+			footerIsActive = false;
+		} else if (!footerIsActive) {
+			footerIsActive = true;
+			footer.scrollIntoView({ block: "start" });
+		}
+	}
 </script>
+
+<svelte:window on:focusin={followKeyboardFocus} />
 
 <template>
 	<div class="activation-trigger"
@@ -42,12 +58,13 @@
 
 	<footer id="footer"
 			class:active={footerIsActive}
+			bind:this={footer}
 	>
 		<div class="footer-bg" />
 		<div class="footer-container">
 			<div class="footer-col1">
 				<a class="footer-logo" href="/">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-label="Navigate to RSM Design homepage">
 						<g class="logomark" fill-rule="nonzero">
 							<path d="M49.8 72.14c-3.72 0-6.92-.95-9.38-3.7l4.01-3.76c1.55 1.7 3.16 2.96 5.71 2.96 1.76 0 4.01-.86 4.01-2.76 0-4.96-12.98-1.05-12.98-10.23 0-5.36 4.81-7.76 9.67-7.76 3.21 0 6.62 1 8.57 3.66l-4 3.6a5.46 5.46 0 0 0-4.72-2.45c-1.6 0-3.5.75-3.5 2.55 0 4.31 12.97.8 12.97 10.18 0 5.7-5.46 7.71-10.37 7.71M38.72 53.05a12.07 12.07 0 0 0-2.9-.45 6.05 6.05 0 0 0-6.47 6.06v12.88h-6.02V47.5h6.02v3.8h.1a7.66 7.66 0 0 1 7.11-4.4 7.63 7.63 0 0 1 2.16.35zm53.46 23.8a54.3 54.3 0 0 0 1.8-3.02A13.87 13.87 0 0 0 95 70.12q.05-.37.1-.61V57.9c0-3-.9-5.6-4.46-5.6-3.76 0-5.16 3.1-5.16 6.2v13.03h-6.02V57.22c0-2.96-1.2-4.92-4.1-4.92-3.97 0-5.52 2.91-5.52 6.12v13.13h-6.01V47.49h5.7v3.76h.1A7.64 7.64 0 0 1 77 46.89c3.71 0 6.27 1.45 7.52 4.46a8.37 8.37 0 0 1 7.92-4.46c3.93 0 6.28 1.71 7.53 4.36.01-.42.04-.83.04-1.25A50 50 0 0 0 50 0 50 50 0 0 0 0 50a50 50 0 0 0 50 50 49.96 49.96 0 0 0 42.16-23.15z"/>
 						</g>
@@ -241,6 +258,7 @@
 		//background-color: var(--COLOR-BLACK);
 		opacity: 0;
 		transition: opacity 1s ease;
+		pointer-events: none;
 
 		// Colors
 		--color-primary: white;
@@ -248,6 +266,7 @@
 
 		&.active {
 			opacity: 1;
+			pointer-events: auto;
 
 			+ div.menu-bar {
 				opacity: 1;
