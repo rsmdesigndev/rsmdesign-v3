@@ -4,7 +4,7 @@
 	import { animate, AnimateTrigger } from "$lib/animate";
 	import { formatDate } from "$lib/format";
 	import Heading from "../../atoms/Heading.svelte";
-	import { onTriggerLine } from "../../scripts/triggerLine";
+	import { onTriggerLine, triggerLine, LOW_TRIGGER_LINE } from "../../scripts/triggerLine";
 	
 	export type dataFeedTableData = {
 		feed_source?: string | null;
@@ -43,19 +43,15 @@
 		return `/${section}/${item.slug}${itemParams}`;
 	};
 
-	let resumeScrollTimer: ReturnType<typeof setTimeout>;
-	function pauseScrollSelection() {
-		selectOnScroll = false;
-		clearTimeout(resumeScrollTimer);
-		resumeScrollTimer = setTimeout(() => {
-			selectOnScroll = true;
-		}, 5000);
-	}
-
 	function selectItemOnMouseover(i: number) {
 		if (selectOnHover && innerWidth > 1000) {
 			selectedItem = i;
-			pauseScrollSelection();
+
+			selectOnScroll = false;
+
+			setTimeout(() => {
+				selectOnScroll = true;
+			}, 5000);
 		}
 	}
 	function deselectItemOnMouseout() {
@@ -63,14 +59,30 @@
 			selectedItem = -1;
 		}
 	}
-	function selectItemOnFocus(i: number) {
+	function selectItemOnFocus(i: number, e: FocusEvent) {
+		if (selectedItem === i) return;
 		selectedItem = i;
-		pauseScrollSelection();
-	}
-	function deselectItemOnBlur(i: number) {
-		if (selectedItem === i) {
-			selectedItem = -1;
+
+		selectOnScroll = false;
+
+		setTimeout(() => {
+			selectOnScroll = true;
+		}, 5000);
+
+		const row = e.currentTarget as HTMLElement;
+
+		if (triggerLine(true) === LOW_TRIGGER_LINE) {
+			window.scrollBy({
+				top: row.getBoundingClientRect().top - (window.innerHeight * LOW_TRIGGER_LINE - 1),
+				behavior: "auto"
+			});
+			return;
 		}
+
+		row.scrollIntoView({
+			block: "center",
+			behavior: "auto"
+		});
 	}
 	function selectItemOnIntersection(node: Element, i: number) {
 		return onTriggerLine(node, () => {
@@ -160,10 +172,9 @@
 					  `}
 				class:active={selectedItem === i}
 				class:condense-on-mobile={data.feed_source === "Projects" || data.feed_source === "Articles"}
-				on:mouseover={() => selectItemOnMouseover(i)}
+				on:mouseover|preventDefault={() => selectItemOnMouseover(i)}
 				on:mouseout={() => deselectItemOnMouseout()}
-				on:focusin={() => selectItemOnFocus(i)}
-				on:focusout={() => deselectItemOnBlur(i)}
+				on:focusin={(e) => selectItemOnFocus(i, e)}
 				use:selectItemOnIntersection={i}
 			>
 				{#if data.feed_table_style === "simple"}
@@ -261,8 +272,8 @@
 						{:else if data.feed_source === "Articles"}
 							{item.topics?.[0]?.news_topics_id?.name}
 							{#if item.topics?.length > 1}
-								<span aria-hidden="true" title={item.topics.map((topic) => topic.news_topics_id?.name).join("\n")}>+&nbsp;{item.topics.length - 1}</span>
-								<span class="visually-hidden">, also tagged {item.topics.slice(1).map((topic) => topic.news_topics_id?.name).join(", ")}</span>
+								<span aria-hidden="true" title={item.topics.map((topic) => topic.news_topics_id.name).join("\n")}>+&nbsp;{item.topics?.length - 1}</span>
+								<span class="other-topics">, also tagged {item.topics.slice(1).map((topic) => topic.news_topics_id.name).join(", ")}</span>
 							{/if}
 						{:else if data.feed_source === "Awards"}
 							{item.year}
@@ -483,7 +494,7 @@
 			&:focus-visible {
 				color: var(--color-primary, var(--COLOR-BLACK));
 				border-color: var(--color-primary, var(--COLOR-BLACK));
-				background-color: #f2f2f3;
+				background-color: color-mix(in srgb, var(--color-primary, var(--COLOR-BLACK)) 5.5%, var(--color-background, white));
 
 				+ figure + .table-style-detailed {
 					border-color: var(--color-primary, var(--COLOR-BLACK));
@@ -572,6 +583,18 @@
 					text-decoration-style: dotted;
 					text-decoration-skip: ink;
 				}
+
+				> .other-topics {
+					position: absolute;
+					width: 1px;
+					height: 1px;
+					margin: -1px;
+					padding: 0;
+					border: 0;
+					overflow: hidden;
+					white-space: nowrap;
+					clip-path: inset(50%);
+				}
 			}
 
 			@media (max-width: 31.25em) {
@@ -606,23 +629,6 @@
 				}
 			}
 		}
-
-		@media (prefers-contrast: more) {
-			color: var(--color-primary, var(--COLOR-BLACK));
-		}
-	}
-
-	.visually-hidden {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		margin: -1px;
-		padding: 0;
-		overflow: hidden;
-		clip: rect(0 0 0 0);
-		clip-path: inset(50%);
-		white-space: nowrap;
-		border: 0;
 	}
 	.sticky-image {
 		display: none;
