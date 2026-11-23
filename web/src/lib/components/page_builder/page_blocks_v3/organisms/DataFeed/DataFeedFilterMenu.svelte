@@ -437,7 +437,7 @@
 			margin-top: var(--SPACE-MD);
 			padding: var(--SPACE-MD) 0;
 			grid-column: viewport;
-			background-color: #f2f2f3;
+			background-color: color-mix(in srgb, var(--color-primary, var(--COLOR-BLACK)) 5.5%, var(--color-background, white));
 
 			display: grid;
 			grid-template-columns: subgrid;
