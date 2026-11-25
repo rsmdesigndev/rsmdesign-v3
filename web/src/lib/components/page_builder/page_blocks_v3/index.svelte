@@ -136,26 +136,26 @@
 	const themes: Record<string, Theme> = {
 		light: {
 			primary: "var(--COLOR-BLACK)",
-			secondary: "var(--COLOR-MID-GRAY)",
-			tertiary: "var(--COLOR-DIM-GRAY)",
+			secondary: "var(--COLOR-DIM-GRAY)",
+			tertiary: "var(--COLOR-DARK-GRAY)",
 			accent: "var(--COLOR-ORANGE)"
 		},
 		dark: {
 			primary: "white",
-			secondary: "var(--COLOR-DIM-GRAY)",
-			tertiary: "var(--COLOR-MID-GRAY)",
-			accent: "var(--COLOR-ORANGE)"
+			secondary: "var(--COLOR-MID-GRAY)",
+			tertiary: "var(--COLOR-LIGHT-GRAY)",
+			accent: "var(--COLOR-ORANGE-DARK)"
 		},
 		color: {
 			primary: "white",
 			secondary: "white",
-			tertiary: "var(--COLOR-DIM-GRAY)",
+			tertiary: "var(--COLOR-DARK-GRAY)",
 			accent: "var(--COLOR-BLACK)"
 		},
 		neutral: {
 			primary: "white",
 			secondary: "var(--COLOR-BLACK)",
-			tertiary: "var(--COLOR-DIM-GRAY)",
+			tertiary: "var(--COLOR-DARK-GRAY)",
 			accent: "var(--COLOR-BLACK)"
 		}
 	};

@@ -392,8 +392,8 @@
       }
 
       &:disabled {
-        background: var(--COLOR-MID-GRAY);
-        color: var(--COLOR-DIM-GRAY);
+        background: var(--COLOR-LIGHT-GRAY);
+        color: var(--COLOR-BLACK);
         cursor: not-allowed;
         opacity: 0.4;
       }

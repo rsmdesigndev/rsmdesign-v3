@@ -262,7 +262,7 @@
 
 		// Colors
 		--color-primary: white;
-		--color-accent: var(--COLOR-ORANGE);
+		--color-accent: var(--COLOR-ORANGE-DARK);
 
 		&.active {
 			opacity: 1;
@@ -330,7 +330,7 @@
 				}
 
 				&:hover > svg > .logomark {
-					fill: var(--COLOR-ORANGE);
+					fill: var(--COLOR-ORANGE-DARK);
 				}
 			}
 
@@ -387,7 +387,7 @@
 					}
 
 					&:hover > svg > .logomark {
-						fill: var(--COLOR-ORANGE);
+						fill: var(--COLOR-ORANGE-DARK);
 					}
 				}
 
@@ -561,7 +561,7 @@
 
 						&:hover {
 							> svg > g.social-icon {
-								fill: var(--color-accent, var(--COLOR-ORANGE));
+								fill: var(--color-accent, var(--COLOR-ORANGE-DARK));
 							}
 						}
 

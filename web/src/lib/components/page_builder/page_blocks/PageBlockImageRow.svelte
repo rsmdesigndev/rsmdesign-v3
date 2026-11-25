@@ -163,7 +163,7 @@
 		figcaption {
 			margin-top: 0.5em;
 			font-size: var(--FONT-SIZE-SM);
-			color: var(--COLOR-MID-GRAY);
+			color: var(--COLOR-DIM-GRAY);
 			text-align: right;
 		}
 

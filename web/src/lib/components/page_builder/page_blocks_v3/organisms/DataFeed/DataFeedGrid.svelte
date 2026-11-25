@@ -128,26 +128,26 @@
 						<picture>
 							{#if data.feed_source === "Team"}
 								<img src={assetUrl(item.headshot?.filename_disk)}
-									 alt={item.headshot?.title}
+									 alt={item.headshot?.description}
 								/>
 							<!--{:else if data.feed_source === "Testimonials"}
 								<img src={assetUrl(item.banner_image?.filename_disk)}
-									 alt={item.banner_image?.title}
+									 alt={item.banner_image?.description}
 								/>-->
 							{:else if data.feed_grid_style === "dynamic"}
 								{#if usesHeroImage(gridLayout.itemGridColumns[i]?.desktop)}
 									<source media="not all and (max-width: 62.5em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
 								{/if}
 								<img src={assetUrl(item.grid_image?.filename_disk)}
-									 alt={item.grid_image?.title}
+									 alt={item.grid_image?.description}
 								/>
 							{:else if data.feed_grid_style === "banner"}
 								<img src={assetUrl(item.hero_image?.filename_disk)}
-									 alt={item.hero_image?.title}
+									 alt={item.hero_image?.description}
 								/>
 							{:else}
 								<img src={assetUrl(item.grid_image?.filename_disk)}
-									 alt={item.grid_image?.title}
+									 alt={item.grid_image?.description}
 								/>
 							{/if}
 						</picture>

@@ -93,7 +93,7 @@
                     <img
                       transition:fade={{ duration: 200 }}
                       src={assetUrl(article.grid_image.filename_disk)}
-                      alt={article.grid_image.title}
+                      alt={article.grid_image.description}
                       class="article-grid__image"
                     />
                   </div>
@@ -123,7 +123,7 @@
                   <img
                     transition:fade={{ duration: 200 }}
                     src={assetUrl(article.grid_image.filename_disk)}
-                    alt={article.grid_image.title}
+                    alt={article.grid_image.description}
                     class="article-grid__image"
                   />
                 </div>

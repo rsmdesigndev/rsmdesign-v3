@@ -147,14 +147,14 @@
 					{#if item.project}
 						<img class:active={i === stickyImageIndex}
 							 src={assetUrl(item.project.grid_image?.filename_disk)}
-							 alt=""
+							 alt={item.project.grid_image?.description}
 							 loading="lazy"
 						/>
 					{/if}
 				{:else}
 					<img class:active={i === stickyImageIndex}
 						 src={assetUrl(item.grid_image?.filename_disk)}
-						 alt=""
+						 alt={item.grid_image?.description}
 						 loading="lazy"
 					/>
 				{/if}
@@ -294,7 +294,7 @@
 							<source media="(min-width: 31.25em)" srcset={assetUrl(item.hero_image?.filename_disk)} />
 						{/if}
 						<img src={assetUrl(item.grid_image?.filename_disk)}
-							 alt=""
+							 alt={item.grid_image?.description}
 						/>
 					</picture>
 				{:else}
@@ -303,13 +303,13 @@
 						{#if item.project}
 							<img style:--top={`calc(50vh - 1px * ${imgHeight} / 2)`}
 								 src={assetUrl(item.project.grid_image?.filename_disk)}
-								 alt=""
+								 alt={item.project.grid_image?.description}
 							/>
 						{/if}
 					{:else}
 						<img style:--top={`calc(50vh - 1px * ${imgHeight} / 2)`}
 							 src={assetUrl(item.grid_image?.filename_disk)}
-							 alt=""
+							 alt={item.grid_image?.description}
 						/>
 					{/if}
 				{/if}
@@ -367,7 +367,7 @@
 		}
 	}
 	.table-item {
-		color: var(--color-tertiary, var(--COLOR-DIM-GRAY));
+		color: var(--color-secondary, var(--COLOR-MID-GRAY));
 		transition: color 0.3s ease;
 
 		display: grid;

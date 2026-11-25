@@ -304,7 +304,7 @@
 					transition: color 0.3s ease;
 
 					&:hover {
-						color: var(--COLOR-MID-GRAY);
+						color: var(--COLOR-DIM-GRAY);
 					}
 				}
 

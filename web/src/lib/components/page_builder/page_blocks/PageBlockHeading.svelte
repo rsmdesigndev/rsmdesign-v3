@@ -113,7 +113,7 @@
 		white-space: pre-line;
 	}
 	.md {
-		color: var(--COLOR-MID-GRAY);
+		color: var(--COLOR-DIM-GRAY);
 	}
 	sup {
 		font-size: 50%;
